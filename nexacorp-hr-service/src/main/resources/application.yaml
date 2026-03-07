@@ -1,0 +1,16 @@
+
+server:
+  port: 8084
+
+spring:
+  application:
+    name: nexacorp-hr-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hr_db
+    username: postgres
+    password: postgres
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
