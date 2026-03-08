@@ -1,0 +1,10 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ai-assistant-naive
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
