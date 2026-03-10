@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 public class ChatService {
 
     private final ChatClient chatClient;
+    private final OrchestrationService orchestrationService;
+
 
     public ChatResponse handleMessage(String message) {
         String currentUser = "john.doe";   // simulate authenticated user
@@ -46,7 +48,8 @@ public class ChatService {
                 .call()
                 .entity(ChatIntent.class);
 
-        return new ChatResponse("Intent: " + intent);
+        String response = orchestrationService.execute(intent);
 
+        return new ChatResponse(response);
     }
 }
