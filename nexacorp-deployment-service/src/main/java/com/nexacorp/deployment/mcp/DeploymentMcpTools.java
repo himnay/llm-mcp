@@ -8,6 +8,7 @@ import org.springaicommunity.mcp.annotation.McpTool;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
@@ -40,11 +41,11 @@ class DeploymentMcpTools {
                                        String environment,
                                        String scheduledTime,
                                        String owner) {
-
+        LocalDateTime scheduled = OffsetDateTime.parse(scheduledTime).toLocalDateTime();
         return deploymentService.createDeployment(
                 serviceName,
                 DeploymentEnvironment.valueOf(environment),
-                LocalDateTime.parse(scheduledTime),
+                scheduled,
                 owner
         );
     }
