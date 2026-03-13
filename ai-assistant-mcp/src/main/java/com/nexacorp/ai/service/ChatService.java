@@ -2,6 +2,7 @@ package com.nexacorp.ai.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -9,11 +10,25 @@ import org.springframework.stereotype.Service;
 public class ChatService {
 
     private final ChatClient chatClient;
+    private final ToolCallbackProvider mcpToolProvider;
 
     public String handleMessage(String message) {
+
+        String currentUser = "john.doe";   // simulate authenticated user
+        String currentTime = java.time.ZonedDateTime.now().toString();
+
+        String systemPrompt = """
+            You are an enterprise AI assistant.
+            Context:
+            - Current user: %s
+            - Current date and time: %s
+            """.formatted(currentUser, currentTime);
+
         String response = chatClient
                 .prompt()
+                .system(systemPrompt)
                 .user(message)
+                .toolCallbacks(mcpToolProvider)
                 .call()
                 .content();
 

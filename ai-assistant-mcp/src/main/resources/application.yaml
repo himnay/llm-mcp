@@ -5,3 +5,18 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+
+    mcp:
+      client:
+        enabled: true
+        streamable-http:
+          connections:
+            hr:
+              url: http://localhost:8084
+            deployment:
+              url: http://localhost:8082
+
+logging:
+  level:
+    io:
+      modelcontextprotocol: DEBUG
