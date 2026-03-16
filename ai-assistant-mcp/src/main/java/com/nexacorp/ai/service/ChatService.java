@@ -11,8 +11,11 @@ public class ChatService {
 
     private final ChatClient chatClient;
     private final ToolCallbackProvider mcpToolProvider;
+    private final PromptLoader promptLoader;
 
     public String handleMessage(String message) {
+
+        String processedPrompt = promptLoader.loadPrompt(message);
 
         String currentUser = "john.doe";   // simulate authenticated user
         String currentTime = java.time.ZonedDateTime.now().toString();
@@ -27,7 +30,7 @@ public class ChatService {
         String response = chatClient
                 .prompt()
                 .system(systemPrompt)
-                .user(message)
+                .user(processedPrompt)
                 .toolCallbacks(mcpToolProvider)
                 .call()
                 .content();

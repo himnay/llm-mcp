@@ -17,6 +17,8 @@ spring:
               url: http://localhost:8082
             notification:
               url: http://localhost:8083
+            ticket:
+              url: http://localhost:8081
 
 logging:
   level:
