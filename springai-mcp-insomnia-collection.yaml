@@ -1,0 +1,924 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: spring-ai-mcp
+meta:
+  id: wrk_2ec694f9439a4e939a0452e1d93bcdc2
+  created: 1777462263921
+  modified: 1777462263921
+  description: ""
+collection:
+  - name: HR Service
+    meta:
+      id: fld_0864052387ca4fe391689b105728c952
+      created: 1777462609829
+      modified: 1777540580557
+      sortKey: -1777469645933
+      description: ""
+    children:
+      - url: http://localhost:8084/hr/leave/john.doe?date=2026-04-30
+        name: Check On Leave
+        meta:
+          id: req_f2298fd155be444a8f6d5ec91c5eef56
+          created: 1777462275809
+          modified: 1777469517366
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613385
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8084/hr/leave?username=john.doe&date=2026-04-30
+        name: Apply Leave
+        meta:
+          id: req_04dfdbc5c22348dcbf48d4334a8cb141
+          created: 1777462656071
+          modified: 1777462782926
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613285
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8084/hr/replacement/john.doe?date=2026-04-30
+        name: Find Replacement
+        meta:
+          id: req_490efddefbdc4b6da626274a5e7b8f56
+          created: 1777462833866
+          modified: 1777462883640
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613335
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8084/mcp
+        name: MCP Tools
+        meta:
+          id: req_06da989014aa4499a2515f1f231773c8
+          created: 1777527359603
+          modified: 1777527733091
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613485
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "1",
+            	"method": "tools/list",
+            	"params": {}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8084/mcp
+        name: MCP Tools HandShake
+        meta:
+          id: req_e333c70a3bc54da09bf699970780f3fd
+          created: 1777527918784
+          modified: 1777527937811
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613585
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": 1,
+            	"method": "initialize",
+            	"params": {
+            		"protocolVersion": "2024-11-05",
+            		"capabilities": {},
+            		"clientInfo": {
+            			"name": "postman-test",
+            			"version": "1.0.0"
+            		}
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8084/mcp
+        name: MCP Apply Leave
+        meta:
+          id: req_e00c32f1c8e14e8c9b6dc575934f1eee
+          created: 1777529371295
+          modified: 1777529466981
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613435
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "2",
+            	"method": "tools/call",
+            	"params": {
+            		"name": "applyLeave",
+            		"arguments": {
+            			"username": "john.doe",
+            			"date": "2026-03-12"
+            		}
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8084/mcp
+        name: MCP Find Replacement
+        meta:
+          id: req_1d6802a3f71848bb834d1b410861864a
+          created: 1777530423262
+          modified: 1777530431756
+          isPrivate: false
+          description: ""
+          sortKey: -1777462613410
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "2",
+            	"method": "tools/call",
+            	"params": {
+            		"name": "findReplacement",
+            		"arguments": {
+            			"username": "john.doe",
+            			"date": "2026-03-12"
+            		}
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Deployment Service
+    meta:
+      id: fld_30ca7a2c1e4242c68baefc874612ee64
+      created: 1777466408033
+      modified: 1777540584351
+      sortKey: -1777469103502
+      description: ""
+    children:
+      - url: http://localhost:8082/deployments?serviceName=billing-service&environment=PROD&scheduledTime=2026-03-10T14:00:00&owner=john.doe
+        name: Create Deployment
+        meta:
+          id: req_256a98db7c4b4d46ad77fb91d0282441
+          created: 1777466435787
+          modified: 1777466734004
+          isPrivate: false
+          description: ""
+          sortKey: -1777466733966
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8082/deployments
+        name: List Deployment
+        meta:
+          id: req_4905e3bcb1c540a8914317b6719be5ec
+          created: 1777466552461
+          modified: 1777466736707
+          isPrivate: false
+          description: ""
+          sortKey: -1777466734066
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8082/deployments/4/reschedule?newTime=2026-05-11T10:00:00
+        name: ReSchedule
+        meta:
+          id: req_01e3213c5a024d42b60f3b455dda0dae
+          created: 1777466584093
+          modified: 1777466742998
+          isPrivate: false
+          description: ""
+          sortKey: -1777466733866
+        method: PUT
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8082/mcp
+        name: MCP Tools HandShake
+        meta:
+          id: req_3aa82ebb44724e4e898f317f6e3e8fad
+          created: 1777530520749
+          modified: 1777530529975
+          isPrivate: false
+          description: ""
+          sortKey: -1777466734166
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": 1,
+            	"method": "initialize",
+            	"params": {
+            		"protocolVersion": "2024-11-05",
+            		"capabilities": {},
+            		"clientInfo": {
+            			"name": "postman-test",
+            			"version": "1.0.0"
+            		}
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8082/mcp
+        name: MCP Tools
+        meta:
+          id: req_98a8da7921cc4142a000a2312a55574f
+          created: 1777530539543
+          modified: 1777530549988
+          isPrivate: false
+          description: ""
+          sortKey: -1777466734116
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "1",
+            	"method": "tools/list",
+            	"params": {}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8082/mcp
+        name: MCP Get Deployments
+        meta:
+          id: req_8968591e8191471897a2966da9ea70b4
+          created: 1777530905588
+          modified: 1777530948390
+          isPrivate: false
+          description: ""
+          sortKey: -1777466734091
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "2",
+            	"method": "tools/call",
+            	"params": {
+            		"name": "getDeployments"
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Notification Service
+    meta:
+      id: fld_b8283c88b3a948958c8eefef50722369
+      created: 1777468348184
+      modified: 1777540586533
+      sortKey: -1777468914672.5
+      description: ""
+    children:
+      - url: http://localhost:8083/notifications
+        name: List Notifications
+        meta:
+          id: req_b3a3fcc6872b4880a9e1d444a83c79ed
+          created: 1777468354676
+          modified: 1777468400389
+          isPrivate: false
+          description: ""
+          sortKey: -1777468357666
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8083/notifications?recipient=dev-team&channel=INTERNAL&message=Deployment
+          rescheduled successfully
+        name: Create Notification
+        meta:
+          id: req_f63e013c61c64744baf7a348a42e507d
+          created: 1777468449539
+          modified: 1777468518058
+          isPrivate: false
+          description: ""
+          sortKey: -1777467545866
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8083/mcp
+        name: MCP Tools HandShake
+        meta:
+          id: req_570be73a5e7a48eaae831cc76c21af93
+          created: 1777530580826
+          modified: 1777530598035
+          isPrivate: false
+          description: ""
+          sortKey: -1777468357766
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": 1,
+            	"method": "initialize",
+            	"params": {
+            		"protocolVersion": "2024-11-05",
+            		"capabilities": {},
+            		"clientInfo": {
+            			"name": "postman-test",
+            			"version": "1.0.0"
+            		}
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8083/mcp
+        name: MCP Tools
+        meta:
+          id: req_d496f0ea924d46268835159449d55138
+          created: 1777530619350
+          modified: 1777530619350
+          isPrivate: false
+          description: ""
+          sortKey: -1777468357691
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "1",
+            	"method": "tools/list",
+            	"params": {}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Ticket Service
+    meta:
+      id: fld_3d71ff4d3c62423fbd81088b7a361645
+      created: 1777468561071
+      modified: 1777540588443
+      sortKey: -1777468725843
+      description: ""
+    children:
+      - url: http://localhost:8081/tickets
+        name: List Tickets
+        meta:
+          id: req_90cf14de49ec4d5dbc41e1248a09af3a
+          created: 1777468569030
+          modified: 1777468599814
+          isPrivate: false
+          description: ""
+          sortKey: -1777468599760
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8081/tickets?title=Cache Failure&description=Redis cluster
+          not responding&priority=HIGH&assignee=sarah.dev
+        name: Add Ticket
+        meta:
+          id: req_24ee6736de1547ef9c5f6504a272bc62
+          created: 1777468619253
+          modified: 1777468686301
+          isPrivate: false
+          description: ""
+          sortKey: -1777468478713
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8081/tickets/4/status?status=CLOSED
+        name: Update Status
+        meta:
+          id: req_bf172e711b594bcda3a2c829f8a11f61
+          created: 1777468720706
+          modified: 1777468755324
+          isPrivate: false
+          description: ""
+          sortKey: -1777468418189.5
+        method: PUT
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8081/mcp
+        name: MCP Prompt
+        meta:
+          id: req_50506938bbb54c7a9dbe77f9a62d46f1
+          created: 1777530589641
+          modified: 1777557717689
+          isPrivate: false
+          description: ""
+          sortKey: -1777468599810
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "1",
+            	"method": "prompts/list",
+            	"params": {}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8081/mcp
+        name: MCP Tools HandShake
+        meta:
+          id: req_93230de0cd7b499bb574745536a8f2f5
+          created: 1777530610442
+          modified: 1777530631900
+          isPrivate: false
+          description: ""
+          sortKey: -1777468599860
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": 1,
+            	"method": "initialize",
+            	"params": {
+            		"protocolVersion": "2024-11-05",
+            		"capabilities": {},
+            		"clientInfo": {
+            			"name": "postman-test",
+            			"version": "1.0.0"
+            		}
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8081/mcp
+        name: MCP Analyze Tickets
+        meta:
+          id: req_b37f09cde9bb4f87986aaf8fe53f9f46
+          created: 1777558410974
+          modified: 1777558431949
+          isPrivate: false
+          description: ""
+          sortKey: -1777468599785
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"jsonrpc": "2.0",
+            	"id": "1",
+            	"method": "prompts/get",
+            	"params": {
+            		"name": "analyze-tickets"
+            	}
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: Accept
+            value: application/json, text/event-stream
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: AI Assistant
+    meta:
+      id: fld_6e48cc211a4c4df5a4f31335688d2fa8
+      created: 1777470730795
+      modified: 1777540555111
+      sortKey: -1777470730795
+      description: ""
+    children:
+      - url: http://localhost:8080/chat
+        name: " Apply Leave"
+        meta:
+          id: req_2c1a9700c3874fe2afbc9882c8f3fed6
+          created: 1777470735382
+          modified: 1777540935014
+          isPrivate: false
+          description: ""
+          sortKey: -1777470735382
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Apply leave for tomorrow"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Deployment
+        meta:
+          id: req_1d2cc8eef75b4a2b91ca79bbb5c64216
+          created: 1777540940565
+          modified: 1777540988885
+          isPrivate: false
+          description: ""
+          sortKey: -1777469667621
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"message": "Create a new deployment for the billing-api service in the production environment scheduled for tomorrow and assign it to me"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Reassign
+        meta:
+          id: req_7399f8ea86844e9a9e6ec008d57704e3
+          created: 1777541363646
+          modified: 1777541384066
+          isPrivate: false
+          description: ""
+          sortKey: -1777469133740.5
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "I am on leafe tomorrow. Reassign my deployment"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: -ve InValid User
+        meta:
+          id: req_cb51e02936ca4b07ac94de7186a6e525
+          created: 1777547245674
+          modified: 1777547282330
+          isPrivate: false
+          description: ""
+          sortKey: -1777468866800.25
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Assign deployment 100 to bob.johnson"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Notification
+        meta:
+          id: req_9619f1885ac042d0a37e468e032c4a45
+          created: 1777547890843
+          modified: 1777547906717
+          isPrivate: false
+          description: ""
+          sortKey: -1777468733330.125
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Cancel deployment 4 and notify dev-team"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_e7207b8b3e3d810e45660f29404059c9c79bc340
+    created: 1777462263999
+    modified: 1777462263999
+environments:
+  name: Base Environment
+  meta:
+    id: env_e7207b8b3e3d810e45660f29404059c9c79bc340
+    created: 1777462263989
+    modified: 1777462263989
+    isPrivate: false
