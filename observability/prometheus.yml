@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Apps run on the host (./mvnw spring-boot:run); Prometheus runs in Docker and
+# reaches them via host.docker.internal. Each Spring Boot service exposes
+# /actuator/prometheus.
+scrape_configs:
+  - job_name: 'ai-assistant-mcp'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+        labels: { application: 'ai-assistant-mcp' }
+
+  - job_name: 'ticket-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:8081']
+        labels: { application: 'ticket-service' }
+
+  - job_name: 'deployment-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:8082']
+        labels: { application: 'deployment-service' }
+
+  - job_name: 'notification-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:8083']
+        labels: { application: 'notification-service' }
+
+  - job_name: 'hr-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:8084']
+        labels: { application: 'hr-service' }

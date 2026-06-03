@@ -1,0 +1,13 @@
+package com.org.ai;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class AiAssistantNaiveApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(AiAssistantNaiveApplication.class, args);
+    }
+
+}

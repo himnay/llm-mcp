@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "name": "assistant",
+      "type": "com.org.ai.config.AssistantProperties",
+      "sourceType": "com.org.ai.config.AssistantProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "assistant.default-user",
+      "type": "java.lang.String",
+      "description": "Default acting user when no authenticated principal is available.",
+      "sourceType": "com.org.ai.config.AssistantProperties",
+      "defaultValue": "john.doe"
+    },
+    {
+      "name": "assistant.name",
+      "type": "java.lang.String",
+      "description": "Display name \/ persona of the assistant.",
+      "sourceType": "com.org.ai.config.AssistantProperties",
+      "defaultValue": "Enterprise AI Assistant"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}
