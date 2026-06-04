@@ -1,2 +1,18 @@
+### OS / editor ###
 .DS_Store
-.idea
+Thumbs.db
+*~
+*.swp
+
+### IDE ###
+.idea/
+*.iml
+.vscode/
+
+### Maven build output (all modules) ###
+target/
+
+### Logs / local env ###
+*.log
+logs/
+.env

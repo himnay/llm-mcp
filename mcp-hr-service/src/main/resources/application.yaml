@@ -1,0 +1,66 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: mcp-hr-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/spring_ai}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      connection-timeout: 10000
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history_hr
+    baseline-on-migrate: true
+  jpa:
+    properties:
+      jakarta:
+        persistence:
+          query:
+            timeout: 5000
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STATELESS
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Org HR service (MCP server) — leave and replacement management
+
+mcp:
+  security:
+    token: ${MCP_AUTH_TOKEN:}
+    default-user: system
+    require-user-for-writes: false
+    rate-limit-per-minute: 120
+  output:
+    max-chars: 8000
+
+logging:
+  level:
+    com.org.hr: INFO

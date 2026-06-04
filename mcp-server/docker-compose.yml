@@ -1,0 +1,30 @@
+services:
+  # MCP Inspector — debug/test UI for the downstream MCP servers.
+  # Lives here in the MCP client repo so the whole MCP surface can be
+  # inspected from one place. Connect the UI to any server, e.g.:
+  #   HR           -> http://host.docker.internal:8084/mcp
+  #   Ticket       -> http://host.docker.internal:8081/mcp
+  #   Deployment   -> http://host.docker.internal:8082/mcp
+  #   Notification -> http://host.docker.internal:8083/mcp
+  mcp-inspector:
+    image: node:22-alpine
+    container_name: mcp-inspector
+    command: npx -y @modelcontextprotocol/inspector
+    environment:
+      # Bind to all interfaces so the host browser can reach it
+      HOST: 0.0.0.0
+      CLIENT_PORT: "6274"
+      SERVER_PORT: "6277"
+      # Don't try to launch a browser inside the container
+      MCP_AUTO_OPEN_ENABLED: "false"
+      # Local dev convenience: skip the proxy auth token.
+      # Remove this if you want the token-protected proxy.
+      DANGEROUSLY_OMIT_AUTH: "true"
+    ports:
+      - "6274:6274"   # Inspector web UI  -> http://localhost:6274
+      - "6277:6277"   # MCP proxy server
+    # Lets the in-container proxy reach an MCP server running on the host.
+    # In the UI use transport "Streamable HTTP" and the URLs noted above.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
