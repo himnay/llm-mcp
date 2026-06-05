@@ -1,0 +1,151 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    environment:
+      POSTGRES_DB: spring_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spring_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: ["-config.file=/etc/tempo.yml"]
+    restart: unless-stopped
+    ports:
+      - "3200:3200"   # Tempo HTTP API / Grafana query
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP  ← services send traces here
+    volumes:
+      - ../observability/tempo.yml:/etc/tempo.yml:ro
+      - tempo-data:/tmp/tempo
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # http://localhost:3000  (admin / admin)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - tempo
+  hr-service:
+    build:
+      context: ../mcp-server-hr-service
+    container_name: hr-service
+    environment: &server-env
+      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  ticket-service:
+    build:
+      context: ../mcp-server-ticket-service
+    container_name: ticket-service
+    environment: *server-env
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  deployment-service:
+    build:
+      context: ../mcp-server-deployment-service
+    container_name: deployment-service
+    environment: *server-env
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  notification-service:
+    build:
+      context: ../mcp-server-notification-service
+    container_name: notification-service
+    environment: *server-env
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Debug UI ───────────────────────────────────────────────────────────────
+  # MCP Inspector — debug/test UI for the downstream MCP servers.
+  # Connect the UI (transport "Streamable HTTP") to any server, e.g.:
+  #   HR           -> http://host.docker.internal:8084/mcp
+  #   Ticket       -> http://host.docker.internal:8081/mcp
+  #   Deployment   -> http://host.docker.internal:8082/mcp
+  #   Notification -> http://host.docker.internal:8083/mcp
+  mcp-inspector:
+    image: node:22-alpine
+    container_name: mcp-inspector
+    command: npx -y @modelcontextprotocol/inspector
+    environment:
+      # Bind to all interfaces so the host browser can reach it
+      HOST: 0.0.0.0
+      CLIENT_PORT: "6274"
+      SERVER_PORT: "6277"
+      # Don't try to launch a browser inside the container
+      MCP_AUTO_OPEN_ENABLED: "false"
+      # Local dev convenience: skip the proxy auth token.
+      DANGEROUSLY_OMIT_AUTH: "true"
+    ports:
+      - "6274:6274"   # Inspector web UI  -> http://localhost:6274
+      - "6277:6277"   # MCP proxy server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  tempo-data:
+  grafana-data:

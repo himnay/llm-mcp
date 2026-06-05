@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: ai-mcp-server
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    mcp:
+      client:
+        enabled: true
+        streamable-http:
+          connections:
+            ticket:
+              url: http://localhost:8081
+            deployment:
+              url: http://localhost:8082
+            notification:
+              url: http://localhost:8083
+            hr:
+              url: http://localhost:8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Org AI assistant — MCP client over HR / ticket / deployment / notification servers
+
+assistant:
+  name: Enterprise AI Assistant
+  default-user: john.doe
+  mcp-auth-token: ${MCP_AUTH_TOKEN:}
+  memory-window: 20
+  max-tool-iterations: 5
+  max-tool-result-chars: 8000
+  rate-limit-per-minute: 30
+  sensitive-words: []
+  write-tool-keywords:
+    - apply
+    - create
+    - update
+    - delete
+    - send
+    - deploy
+    - trigger
+    - rollback
+    - cancel
+    - remove
+    - approve
+    - assign
+    - reschedule
+
+logging:
+  level:
+    io:
+      modelcontextprotocol: DEBUG
