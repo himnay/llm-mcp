@@ -14,9 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class RateLimiter {
 
-    private record Window(long epochMinute, AtomicInteger count) {
-    }
-
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
 
     /**
@@ -31,5 +28,8 @@ public class RateLimiter {
         Window window = windows.compute(key, (k, cur) ->
                 (cur == null || cur.epochMinute() != minute) ? new Window(minute, new AtomicInteger(0)) : cur);
         return window.count().incrementAndGet() <= maxPerMinute;
+    }
+
+    private record Window(long epochMinute, AtomicInteger count) {
     }
 }

@@ -27,6 +27,16 @@ public class RequestContextFilter extends OncePerRequestFilter {
     private final AssistantProperties properties;
     private final RateLimiter rateLimiter;
 
+    private static void writeError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        String body = "{\"status\":" + status.value()
+                + ",\"error\":\"" + status.getReasonPhrase() + "\""
+                + ",\"message\":\"" + message.replace("\"", "'") + "\""
+                + ",\"timestamp\":" + System.currentTimeMillis() + "}";
+        response.getWriter().write(body);
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -46,15 +56,5 @@ public class RequestContextFilter extends OncePerRequestFilter {
         } finally {
             RequestContext.clear();
         }
-    }
-
-    private static void writeError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        response.setStatus(status.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        String body = "{\"status\":" + status.value()
-                + ",\"error\":\"" + status.getReasonPhrase() + "\""
-                + ",\"message\":\"" + message.replace("\"", "'") + "\""
-                + ",\"timestamp\":" + System.currentTimeMillis() + "}";
-        response.getWriter().write(body);
     }
 }

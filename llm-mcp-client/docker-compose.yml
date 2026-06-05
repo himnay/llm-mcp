@@ -12,14 +12,14 @@ services:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d spring_ai"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d spring_ai" ]
       interval: 10s
       timeout: 5s
       retries: 5
   tempo:
     image: grafana/tempo:latest
     container_name: tempo
-    command: ["-config.file=/etc/tempo.yml"]
+    command: [ "-config.file=/etc/tempo.yml" ]
     restart: unless-stopped
     ports:
       - "3200:3200"   # Tempo HTTP API / Grafana query
@@ -29,7 +29,7 @@ services:
       - ../observability/tempo.yml:/etc/tempo.yml:ro
       - tempo-data:/tmp/tempo
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/ready || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3200/ready || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -48,7 +48,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5

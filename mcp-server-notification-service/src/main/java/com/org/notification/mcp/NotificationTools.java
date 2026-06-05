@@ -36,6 +36,20 @@ class NotificationTools {
 
     // ─────────────────────────────── READ tools ──────────────────────────────
 
+    private static void requireNonBlank(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+        }
+    }
+
+    // ─────────────────────────────── WRITE tools ─────────────────────────────
+
+    private static long elapsedMs(long startNano) {
+        return (System.nanoTime() - startNano) / 1_000_000L;
+    }
+
+    // ─────────────────────────────── helpers ─────────────────────────────────
+
     @Tool(name = "getNotifications", description = "Get all notifications")
     public String getNotifications() {
         String actingUser = resolveUser();
@@ -52,8 +66,6 @@ class NotificationTools {
             throw ex;
         }
     }
-
-    // ─────────────────────────────── WRITE tools ─────────────────────────────
 
     @Tool(
             name = "sendNotification",
@@ -90,8 +102,6 @@ class NotificationTools {
         }
     }
 
-    // ─────────────────────────────── helpers ─────────────────────────────────
-
     private String resolveUser() {
         String user = ActingUserContext.get();
         return (user != null && !user.isBlank()) ? user : securityProperties.getDefaultUser();
@@ -104,15 +114,5 @@ class NotificationTools {
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }
-    }
-
-    private static void requireNonBlank(String value, String fieldName) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
-        }
-    }
-
-    private static long elapsedMs(long startNano) {
-        return (System.nanoTime() - startNano) / 1_000_000L;
     }
 }

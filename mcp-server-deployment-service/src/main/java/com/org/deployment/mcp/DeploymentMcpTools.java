@@ -36,6 +36,60 @@ class DeploymentMcpTools {
 
     // ─────────────────────────────── READ tools ──────────────────────────────
 
+    private static void requireNonBlank(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+        }
+    }
+
+    private static DeploymentEnvironment parseEnvironment(String environment) {
+        try {
+            return DeploymentEnvironment.valueOf(environment.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid environment '" + environment + "'. Allowed values: DEV, QA, PROD");
+        }
+    }
+
+    // ─────────────────────────────── WRITE tools ─────────────────────────────
+
+    /**
+     * Parses an ISO datetime string that may include an offset (e.g. {@code 2025-06-01T10:00:00+05:30})
+     * or be a plain local datetime (e.g. {@code 2025-06-01T10:00:00}).
+     */
+    private static LocalDateTime parseScheduledTime(String value) {
+        String trimmed = value.trim();
+        // Try OffsetDateTime first (contains offset info)
+        try {
+            return OffsetDateTime.parse(trimmed).toLocalDateTime();
+        } catch (DateTimeParseException ignored) {
+            // fall through
+        }
+        // Fall back to plain LocalDateTime
+        try {
+            return LocalDateTime.parse(trimmed);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(
+                    "scheduledTime '" + value + "' is not a valid ISO datetime. "
+                            + "Use format yyyy-MM-ddTHH:mm:ss (e.g. 2025-06-01T14:00:00)");
+        }
+    }
+
+    private static LocalDateTime parseLocalDateTime(String value) {
+        String trimmed = value.trim();
+        try {
+            return LocalDateTime.parse(trimmed);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(
+                    "newTime '" + value + "' is not a valid ISO local datetime. "
+                            + "Use format yyyy-MM-ddTHH:mm:ss (e.g. 2025-06-01T14:00:00)");
+        }
+    }
+
+    private static long elapsedMs(long startNano) {
+        return (System.nanoTime() - startNano) / 1_000_000L;
+    }
+
     @Tool(name = "getDeployments", description = "Get all deployments")
     public String getDeployments() {
         String actingUser = resolveUser();
@@ -53,6 +107,8 @@ class DeploymentMcpTools {
             throw ex;
         }
     }
+
+    // ─────────────────────────────── helpers ─────────────────────────────────
 
     @Tool(name = "getDeployment", description = "Get a deployment by its id")
     public String getDeployment(Long id) {
@@ -75,8 +131,6 @@ class DeploymentMcpTools {
             throw ex;
         }
     }
-
-    // ─────────────────────────────── WRITE tools ─────────────────────────────
 
     @Tool(
             name = "createDeployment",
@@ -202,8 +256,6 @@ class DeploymentMcpTools {
         }
     }
 
-    // ─────────────────────────────── helpers ─────────────────────────────────
-
     private String resolveUser() {
         String user = ActingUserContext.get();
         return (user != null && !user.isBlank()) ? user : securityProperties.getDefaultUser();
@@ -216,57 +268,5 @@ class DeploymentMcpTools {
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }
-    }
-
-    private static void requireNonBlank(String value, String fieldName) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
-        }
-    }
-
-    private static DeploymentEnvironment parseEnvironment(String environment) {
-        try {
-            return DeploymentEnvironment.valueOf(environment.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException(
-                    "Invalid environment '" + environment + "'. Allowed values: DEV, QA, PROD");
-        }
-    }
-
-    /**
-     * Parses an ISO datetime string that may include an offset (e.g. {@code 2025-06-01T10:00:00+05:30})
-     * or be a plain local datetime (e.g. {@code 2025-06-01T10:00:00}).
-     */
-    private static LocalDateTime parseScheduledTime(String value) {
-        String trimmed = value.trim();
-        // Try OffsetDateTime first (contains offset info)
-        try {
-            return OffsetDateTime.parse(trimmed).toLocalDateTime();
-        } catch (DateTimeParseException ignored) {
-            // fall through
-        }
-        // Fall back to plain LocalDateTime
-        try {
-            return LocalDateTime.parse(trimmed);
-        } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
-                    "scheduledTime '" + value + "' is not a valid ISO datetime. "
-                            + "Use format yyyy-MM-ddTHH:mm:ss (e.g. 2025-06-01T14:00:00)");
-        }
-    }
-
-    private static LocalDateTime parseLocalDateTime(String value) {
-        String trimmed = value.trim();
-        try {
-            return LocalDateTime.parse(trimmed);
-        } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
-                    "newTime '" + value + "' is not a valid ISO local datetime. "
-                            + "Use format yyyy-MM-ddTHH:mm:ss (e.g. 2025-06-01T14:00:00)");
-        }
-    }
-
-    private static long elapsedMs(long startNano) {
-        return (System.nanoTime() - startNano) / 1_000_000L;
     }
 }

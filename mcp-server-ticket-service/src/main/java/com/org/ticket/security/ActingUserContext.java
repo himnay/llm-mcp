@@ -9,7 +9,8 @@ public final class ActingUserContext {
 
     private static final ThreadLocal<String> HOLDER = new ThreadLocal<>();
 
-    private ActingUserContext() {}
+    private ActingUserContext() {
+    }
 
     public static void set(String user) {
         HOLDER.set(user);

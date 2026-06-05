@@ -1,22 +1,38 @@
 spring:
   application:
     name: ai-mcp-server
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/spring_ai}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      connection-timeout: 10000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history_chat
+    baseline-on-migrate: true
+    baseline-version: 0
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
-    mcp:
-      client:
-        enabled: true
-        streamable-http:
-          connections:
-            ticket:
-              url: http://localhost:8081
-            deployment:
-              url: http://localhost:8082
-            notification:
-              url: http://localhost:8083
-            hr:
-              url: http://localhost:8084
+mcp:
+  client:
+    enabled: true
+    streamable-http:
+      connections:
+        ticket:
+          url: http://localhost:8081
+        deployment:
+          url: http://localhost:8082
+        notification:
+          url: http://localhost:8083
+        hr:
+          url: http://localhost:8084
 
 management:
   endpoints:
@@ -49,7 +65,7 @@ assistant:
   max-tool-iterations: 5
   max-tool-result-chars: 8000
   rate-limit-per-minute: 30
-  sensitive-words: []
+  sensitive-words: [ ]
   write-tool-keywords:
     - apply
     - create

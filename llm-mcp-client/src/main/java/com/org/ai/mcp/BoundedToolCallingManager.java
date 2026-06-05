@@ -32,7 +32,9 @@ public class BoundedToolCallingManager implements ToolCallingManager {
         this.maxIterations = maxIterations;
     }
 
-    /** Reset the per-request iteration counter. Must be called before each chat call. */
+    /**
+     * Reset the per-request iteration counter. Must be called before each chat call.
+     */
     public static void reset() {
         ITERATIONS.set(0);
     }

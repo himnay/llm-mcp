@@ -21,6 +21,17 @@ public class McpClientHealthIndicator implements HealthIndicator {
 
     private final List<McpSyncClient> mcpSyncClients;
 
+    private static String serverName(McpSyncClient client) {
+        try {
+            if (client.getServerInfo() != null && client.getServerInfo().name() != null) {
+                return client.getServerInfo().name();
+            }
+        } catch (Exception ignored) {
+            // fall through to default
+        }
+        return "mcp-server";
+    }
+
     @Override
     public Health health() {
         Map<String, Object> details = new LinkedHashMap<>();
@@ -38,16 +49,5 @@ public class McpClientHealthIndicator implements HealthIndicator {
         }
 
         return (allUp ? Health.up() : Health.down()).withDetails(details).build();
-    }
-
-    private static String serverName(McpSyncClient client) {
-        try {
-            if (client.getServerInfo() != null && client.getServerInfo().name() != null) {
-                return client.getServerInfo().name();
-            }
-        } catch (Exception ignored) {
-            // fall through to default
-        }
-        return "mcp-server";
     }
 }

@@ -1,15 +1,17 @@
 # Observability Setup — Metrics & Distributed Tracing
 
-Every service is instrumented for **metrics** (Micrometer → Prometheus) and **distributed tracing** (Micrometer Tracing → OTLP → Grafana Tempo). The `docker-compose.yml` at the repo root provides PostgreSQL plus the full observability backend.
+Every service is instrumented for **metrics** (Micrometer → Prometheus) and **distributed tracing** (Micrometer
+Tracing → OTLP → Grafana Tempo). The `docker-compose.yml` at the repo root provides PostgreSQL plus the full
+observability backend.
 
 ## Stack
 
-| Component  | Purpose                                   | URL                                  |
-|------------|-------------------------------------------|--------------------------------------|
-| PostgreSQL | App databases (auto-created on first run) | `localhost:5432`                     |
-| Prometheus | Scrapes `/actuator/prometheus` per service| http://localhost:9090                |
-| Tempo      | Receives OTLP traces (HTTP `:4318`)       | http://localhost:3200                |
-| Grafana    | Dashboards + Tempo/Prometheus datasources | http://localhost:3000 (admin/admin)  |
+| Component  | Purpose                                    | URL                                 |
+|------------|--------------------------------------------|-------------------------------------|
+| PostgreSQL | App databases (auto-created on first run)  | `localhost:5432`                    |
+| Prometheus | Scrapes `/actuator/prometheus` per service | http://localhost:9090               |
+| Tempo      | Receives OTLP traces (HTTP `:4318`)        | http://localhost:3200               |
+| Grafana    | Dashboards + Tempo/Prometheus datasources  | http://localhost:3000 (admin/admin) |
 
 ## Quick start
 

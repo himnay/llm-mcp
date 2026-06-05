@@ -37,6 +37,27 @@ class HrMcpTools {
     // applyLeave — WRITE tool
     // -------------------------------------------------------------------------
 
+    private static LocalDate parseDate(String date) {
+        try {
+            return LocalDate.parse(date);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid date format '" + date + "' — expected yyyy-MM-dd", ex);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // findReplacement — READ tool
+    // -------------------------------------------------------------------------
+
+    private static long elapsedMs(long startNano) {
+        return (System.nanoTime() - startNano) / 1_000_000L;
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
     @Tool(
             name = "applyLeave",
             description = "Apply leave for a user on a specific ISO-8601 date (yyyy-MM-dd)"
@@ -64,7 +85,7 @@ class HrMcpTools {
                 && securityProperties.getDefaultUser().equalsIgnoreCase(actingUser)) {
             throw new IllegalStateException(
                     "applyLeave requires an identified acting user; "
-                    + "provide the X-Acting-User header");
+                            + "provide the X-Acting-User header");
         }
 
         long start = System.nanoTime();
@@ -82,10 +103,6 @@ class HrMcpTools {
             throw ex;
         }
     }
-
-    // -------------------------------------------------------------------------
-    // findReplacement — READ tool
-    // -------------------------------------------------------------------------
 
     @Tool(
             name = "findReplacement",
@@ -121,22 +138,5 @@ class HrMcpTools {
                     actingUser, username, date, ex.getClass().getSimpleName(), elapsedMs(start));
             throw ex;
         }
-    }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private static LocalDate parseDate(String date) {
-        try {
-            return LocalDate.parse(date);
-        } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
-                    "Invalid date format '" + date + "' — expected yyyy-MM-dd", ex);
-        }
-    }
-
-    private static long elapsedMs(long startNano) {
-        return (System.nanoTime() - startNano) / 1_000_000L;
     }
 }

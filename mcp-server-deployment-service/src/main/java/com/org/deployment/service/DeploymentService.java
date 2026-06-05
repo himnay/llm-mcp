@@ -1,9 +1,9 @@
 package com.org.deployment.service;
 
+import com.org.deployment.exception.ResourceNotFoundException;
 import com.org.deployment.model.Deployment;
 import com.org.deployment.model.DeploymentEnvironment;
 import com.org.deployment.model.DeploymentStatus;
-import com.org.deployment.exception.ResourceNotFoundException;
 import com.org.deployment.repository.DeploymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

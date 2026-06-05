@@ -1,7 +1,6 @@
 package com.org.hr.security;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Simple fixed-window per-user rate limiter backed by a {@link ConcurrentHashMap}.
@@ -13,7 +12,9 @@ public class RateLimiter {
 
     private final int maxPerMinute;
 
-    /** key → [count, windowStartMs] stored in a small long[2] array */
+    /**
+     * key → [count, windowStartMs] stored in a small long[2] array
+     */
     private final ConcurrentHashMap<String, long[]> counters = new ConcurrentHashMap<>();
 
     public RateLimiter(int maxPerMinute) {
@@ -24,7 +25,7 @@ public class RateLimiter {
      * Attempts to consume one request token for {@code key}.
      *
      * @return {@code true} if the request is within the allowed rate,
-     *         {@code false} if it should be rejected (429).
+     * {@code false} if it should be rejected (429).
      */
     public boolean tryAcquire(String key) {
         long now = System.currentTimeMillis();
@@ -39,7 +40,9 @@ public class RateLimiter {
         return entry[0] <= maxPerMinute;
     }
 
-    /** Exposed for tests — returns current count within active window. */
+    /**
+     * Exposed for tests — returns current count within active window.
+     */
     int currentCount(String key) {
         long[] entry = counters.get(key);
         if (entry == null) return 0;

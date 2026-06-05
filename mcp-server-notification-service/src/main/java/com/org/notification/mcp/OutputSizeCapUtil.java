@@ -8,7 +8,8 @@ final class OutputSizeCapUtil {
     static final int DEFAULT_MAX_CHARS = 8_000;
     private static final String TRUNCATION_SUFFIX = "…[truncated]";
 
-    private OutputSizeCapUtil() {}
+    private OutputSizeCapUtil() {
+    }
 
     /**
      * Returns {@code text} unchanged if it is within {@link #DEFAULT_MAX_CHARS};

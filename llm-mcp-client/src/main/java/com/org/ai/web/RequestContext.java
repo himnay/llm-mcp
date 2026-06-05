@@ -8,9 +8,6 @@ package com.org.ai.web;
  */
 public final class RequestContext {
 
-    private record Ctx(String user, String conversationId, boolean allowWriteTools) {
-    }
-
     private static final ThreadLocal<Ctx> HOLDER = new ThreadLocal<>();
 
     private RequestContext() {
@@ -20,7 +17,9 @@ public final class RequestContext {
         HOLDER.set(new Ctx(user, conversationId, allowWriteTools));
     }
 
-    /** Update conversation id / write flag while preserving the resolved user. */
+    /**
+     * Update conversation id / write flag while preserving the resolved user.
+     */
     public static void update(String conversationId, boolean allowWriteTools) {
         Ctx current = HOLDER.get();
         String user = current == null ? null : current.user();
@@ -44,5 +43,8 @@ public final class RequestContext {
 
     public static void clear() {
         HOLDER.remove();
+    }
+
+    private record Ctx(String user, String conversationId, boolean allowWriteTools) {
     }
 }

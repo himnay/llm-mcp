@@ -38,6 +38,10 @@ public class TicketController {
     private final TicketService ticketService;
     private final SecurityProperties securityProperties;
 
+    private static long elapsedMs(long startNano) {
+        return (System.nanoTime() - startNano) / 1_000_000L;
+    }
+
     @PostMapping
     public Ticket createTicket(@RequestParam @NotBlank String title,
                                @RequestParam @NotBlank String description,
@@ -89,6 +93,8 @@ public class TicketController {
         }
     }
 
+    // ─────────────────────────────── helpers ─────────────────────────────────
+
     @PutMapping("/{id}/assign")
     public Ticket assignTicket(@PathVariable @Positive Long id,
                                @RequestParam @NotBlank String assignee) {
@@ -107,8 +113,6 @@ public class TicketController {
         }
     }
 
-    // ─────────────────────────────── helpers ─────────────────────────────────
-
     private String resolveUser() {
         String user = ActingUserContext.get();
         return (user != null && !user.isBlank()) ? user : securityProperties.getDefaultUser();
@@ -121,9 +125,5 @@ public class TicketController {
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }
-    }
-
-    private static long elapsedMs(long startNano) {
-        return (System.nanoTime() - startNano) / 1_000_000L;
     }
 }

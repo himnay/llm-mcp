@@ -19,10 +19,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "mcp.security")
 public class SecurityProperties {
 
-    /** Shared bearer token.  Empty = insecure dev mode (startup WARN emitted). */
+    /**
+     * Shared bearer token.  Empty = insecure dev mode (startup WARN emitted).
+     */
     private String token = "";
 
-    /** Fallback acting-user name when no X-Acting-User header is present. */
+    /**
+     * Fallback acting-user name when no X-Acting-User header is present.
+     */
     private String defaultUser = "system";
 
     /**
@@ -31,6 +35,8 @@ public class SecurityProperties {
      */
     private boolean requireUserForWrites = false;
 
-    /** Max requests per user per minute before HTTP 429 is returned. */
+    /**
+     * Max requests per user per minute before HTTP 429 is returned.
+     */
     private int rateLimitPerMinute = 120;
 }

@@ -11,7 +11,9 @@ public class RateLimiter {
 
     private final int limitPerMinute;
 
-    /** key = user, value = [requestCount, windowStartMs] packed for thread-safety via sync on the value array. */
+    /**
+     * key = user, value = [requestCount, windowStartMs] packed for thread-safety via sync on the value array.
+     */
     private final ConcurrentHashMap<String, long[]> windows = new ConcurrentHashMap<>();
 
     public RateLimiter(int limitPerMinute) {

@@ -38,12 +38,12 @@ class TicketPromptProvider {
         log.info("PROMPT analyze-tickets | user={} ticketCount={}", actingUser, tickets.size());
         String prompt = """
                 You are a Org operations analyst.
-
+                
                 Analyze the current support tickets and provide insights.
-
+                
                 Tickets:
                 """ + cappedSummary + """
-
+                
                 Provide:
                 1. Overall ticket situation
                 2. High priority issues
