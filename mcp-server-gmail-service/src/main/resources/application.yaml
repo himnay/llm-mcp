@@ -1,0 +1,53 @@
+server:
+  port: ${SERVER_PORT:8086}
+
+spring:
+  application:
+    name: gmail-service
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STREAMABLE
+
+gmail:
+  access-token: ${GMAIL_ACCESS_TOKEN:}
+  api-base-url: https://gmail.googleapis.com/gmail/v1
+  user-id: me
+  default-page-size: 20
+
+mcp:
+  security:
+    token: ${MCP_AUTH_TOKEN:}
+    default-user: system
+    require-user-for-writes: false
+    rate-limit-per-minute: 120
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Org Gmail integration service (MCP server)
+
+logging:
+  level:
+    com.org.gmail: INFO

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Aggregator-only POM — does not act as a parent.
+        Each module keeps its own spring-boot-starter-parent.
+        Run from this directory:
+            ./mvnw clean package -DskipTests          # build all
+            ./mvnw clean package -pl llm-travel       # build one module
+            ./mvnw clean package -pl llm-travel,mcp-server-hr-service  # build subset
+    -->
+
+    <groupId>com.org</groupId>
+    <artifactId>llm-mcp-root</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>llm-mcp :: root</name>
+    <description>Aggregator — builds all MCP server modules and the client</description>
+
+    <modules>
+        <module>mcp-server-hr-service</module>
+        <module>mcp-server-ticket-service</module>
+        <module>mcp-server-notification-service</module>
+        <module>mcp-server-deployment-service</module>
+        <module>llm-travel</module>
+        <module>llm-mcp-client</module>
+        <module>mcp-server-travel-service</module>
+        <module>mcp-server-github-service</module>
+        <module>mcp-server-gmail-service</module>
+    </modules>
+
+</project>

@@ -33,6 +33,10 @@ mcp:
           url: http://localhost:8083
         hr:
           url: http://localhost:8084
+        github:
+          url: http://localhost:8085
+        gmail:
+          url: http://localhost:8086
 
 management:
   endpoints:

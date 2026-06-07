@@ -1,0 +1,72 @@
+server:
+  port: ${SERVER_PORT:8086}
+  shutdown: graceful
+
+spring:
+  application:
+    name: mcp-travel-service
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STATELESS
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 50ms,100ms,200ms,500ms,1s,2s,5s
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+
+amadeus:
+  base-url: ${AMADEUS_BASE_URL:https://test.api.amadeus.com}
+  client-id: ${AMADEUS_CLIENT_ID:}
+  client-secret: ${AMADEUS_CLIENT_SECRET:}
+  timeout-seconds: ${AMADEUS_TIMEOUT_SECONDS:10}
+
+mcp:
+  security:
+    token: ${MCP_AUTH_TOKEN:}
+    default-user: system
+    rate-limit-per-minute: 120
+  output:
+    max-chars: 8000
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: MCP Travel Service — flight availability via Amadeus API
+
+app:
+  metadata:
+    project-name: MCP Travel Service
+    description: Flight availability MCP server using Amadeus API
+    group-id: com.org
+    artifact-id: mcp-travel-service
+    project-version: 0.0.1-SNAPSHOT
+    spring-ai-version: 2.0.0-M8
+    database: None
+
+logging:
+  level:
+    com.org.travel: INFO

@@ -24,9 +24,7 @@ public class AppConfig {
      */
     @Bean
     @Primary
-    public ToolCallbackProvider resilientToolCallbackProvider(
-            ToolCallbackProvider mcpToolCallbackProvider,
-            CircuitBreakerRegistry circuitBreakerRegistry) {
+    public ToolCallbackProvider resilientToolCallbackProvider(ToolCallbackProvider mcpToolCallbackProvider, CircuitBreakerRegistry circuitBreakerRegistry) {
         return new ResilientToolCallbackProvider(mcpToolCallbackProvider, circuitBreakerRegistry);
     }
 }

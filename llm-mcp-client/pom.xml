@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>mcp-chat-client</artifactId>
+    <artifactId>llm-mcp-client</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>Org AI assistant (MCP client)</description>
 

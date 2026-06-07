@@ -1,0 +1,566 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: llm-mcp-client
+meta:
+  id: wrk_4f1e8a6c9d2b4a7e9c3f5d8a1b6e7c90
+  created: 1780000000000
+  modified: 1780000000000
+  description: Requests against the llm-mcp-client (Enterprise AI Assistant) — the MCP client that orchestrates HR, Ticket, Deployment, Notification, GitHub and Gmail MCP servers via natural-language chat.
+collection:
+  - name: Chat
+    meta:
+      id: fld_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d
+      created: 1780000001000
+      modified: 1780000001000
+      sortKey: -1780000001000
+      description: POST /chat — send a natural-language message; the assistant resolves it via the registered MCP tools.
+    children:
+      - url: http://localhost:8080/chat
+        name: HR — Apply Leave
+        meta:
+          id: req_a1b1c1d1e1f1a2b2c2d2e2f2a3b3c3d3
+          created: 1780000002000
+          modified: 1780000002000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000002000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Apply leave for tomorrow"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: HR — Find Replacement
+        meta:
+          id: req_b1c1d1e1f1a2b2c2d2e2f2a3b3c3d3e3
+          created: 1780000003000
+          modified: 1780000003000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000003000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Who can replace me on leave next Monday?"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Ticket — Create
+        meta:
+          id: req_c1d1e1f1a2b2c2d2e2f2a3b3c3d3e3f3
+          created: 1780000004000
+          modified: 1780000004000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000004000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Open a high priority ticket: Redis cluster not responding, assign it to sarah.dev"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Ticket — Update Status
+        meta:
+          id: req_d1e1f1a2b2c2d2e2f2a3b3c3d3e3f3a4
+          created: 1780000005000
+          modified: 1780000005000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000005000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Close ticket number 4"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Deployment — Create
+        meta:
+          id: req_e1f1a2b2c2d2e2f2a3b3c3d3e3f3a4b4
+          created: 1780000006000
+          modified: 1780000006000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000006000
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"message": "Create a new deployment for the billing-api service in the production environment scheduled for tomorrow and assign it to me"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Deployment — Reassign
+        meta:
+          id: req_f1a2b2c2d2e2f2a3b3c3d3e3f3a4b4c4
+          created: 1780000007000
+          modified: 1780000007000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000007000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "I am on leave tomorrow. Reassign my deployment"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Deployment — Cancel + Notify
+        meta:
+          id: req_a2b2c2d2e2f2a3b3c3d3e3f3a4b4c4d4
+          created: 1780000008000
+          modified: 1780000008000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000008000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Cancel deployment 4 and notify dev-team"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Notification — List
+        meta:
+          id: req_b2c2d2e2f2a3b3c3d3e3f3a4b4c4d4e4
+          created: 1780000009000
+          modified: 1780000009000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000009000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Show me the latest notifications for the dev-team"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: GitHub — Repo & Commit Metrics
+        meta:
+          id: req_c2d2e2f2a3b3c3d3e3f3a4b4c4d4e4f4
+          created: 1780000010000
+          modified: 1780000010000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000010000
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"message": "Get repository info for spring-projects/spring-boot and show me commit metrics for the last 30 days"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: GitHub — Open PRs & Issues
+        meta:
+          id: req_d2e2f2a3b3c3d3e3f3a4b4c4d4e4f4a5
+          created: 1780000011000
+          modified: 1780000011000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000011000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "List the open pull requests and issues for owner spring-projects repo spring-ai"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: GitHub — Create Issue
+        meta:
+          id: req_e2f2a3b3c3d3e3f3a4b4c4d4e4f4a5b5
+          created: 1780000012000
+          modified: 1780000012000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000012000
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"message": "Create an issue in spring-projects/spring-ai titled 'Docs: clarify MCP server auth' with body 'The auth section needs an example for bearer tokens' and label documentation"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Gmail — Unread Inbox Summary
+        meta:
+          id: req_f2a3b3c3d3e3f3a4b4c4d4e4f4a5b5c6
+          created: 1780000013000
+          modified: 1780000013000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000013000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Search my inbox for unread emails and summarize the most important ones"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: Gmail — Draft Reply
+        meta:
+          id: req_a3b3c3d3e3f3a4b4c4d4e4f4a5b5c6d6
+          created: 1780000014000
+          modified: 1780000014000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000014000
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"message": "Draft an email to alice@example.com with subject 'Deployment update' saying the billing-api deployment has been rescheduled to tomorrow at 2pm"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/chat
+        name: -ve — Invalid User Reference
+        meta:
+          id: req_b3c3d3e3f3a4b4c4d4e4f4a5b5c6d6e7
+          created: 1780000015000
+          modified: 1780000015000
+          isPrivate: false
+          description: Negative test — references a user that doesn't exist; the assistant should respond gracefully.
+          sortKey: -1780000015000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"message": "Assign deployment 100 to bob.johnson"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: X-Acting-User
+            value: john.doe
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Actuator
+    meta:
+      id: fld_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e
+      created: 1780000016000
+      modified: 1780000016000
+      sortKey: -1780000016000
+      description: Operational endpoints exposed by the client (health, info, metrics, prometheus, loggers, env).
+    children:
+      - url: http://localhost:8080/actuator/health
+        name: Health
+        meta:
+          id: req_c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9
+          created: 1780000017000
+          modified: 1780000017000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000017000
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/actuator/info
+        name: Info
+        meta:
+          id: req_d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0
+          created: 1780000018000
+          modified: 1780000018000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000018000
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/actuator/metrics
+        name: Metrics
+        meta:
+          id: req_e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1
+          created: 1780000019000
+          modified: 1780000019000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000019000
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/actuator/prometheus
+        name: Prometheus Scrape
+        meta:
+          id: req_f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2
+          created: 1780000020000
+          modified: 1780000020000
+          isPrivate: false
+          description: ""
+          sortKey: -1780000020000
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a
+    created: 1780000000500
+    modified: 1780000000500
+environments:
+  name: Base Environment
+  meta:
+    id: env_4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a
+    created: 1780000000200
+    modified: 1780000000200
+    isPrivate: false
+  data:
+    base_url: http://localhost:8080

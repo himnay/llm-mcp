@@ -1,0 +1,8 @@
+target/
+.git/
+.idea/
+*.iml
+logs/
+docker-compose.yml
+README.md
+observability/

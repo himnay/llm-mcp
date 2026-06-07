@@ -1,0 +1,26 @@
+services:
+  mcp-travel-service:
+    build: .
+    container_name: mcp-travel-service
+    ports:
+      - "8086:8086"
+    environment:
+      SERVER_PORT: 8086
+      AMADEUS_CLIENT_ID: ${AMADEUS_CLIENT_ID}
+      AMADEUS_CLIENT_SECRET: ${AMADEUS_CLIENT_SECRET}
+      AMADEUS_BASE_URL: ${AMADEUS_BASE_URL:-https://test.api.amadeus.com}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4318}
+      TRACING_SAMPLING: ${TRACING_SAMPLING:-1.0}
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8086/actuator/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 600M
