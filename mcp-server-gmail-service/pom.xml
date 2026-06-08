@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>gmail-service</artifactId>
+    <artifactId>mcp-server-gmail-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>Org Gmail integration service (MCP server)</description>
 

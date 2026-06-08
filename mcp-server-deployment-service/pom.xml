@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>deployment-service</artifactId>
+    <artifactId>mcp-server-deployment-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>Org deployment scheduling service (MCP server)</description>
 

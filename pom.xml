@@ -14,7 +14,7 @@
     -->
 
     <groupId>com.org</groupId>
-    <artifactId>llm-mcp-root</artifactId>
+    <artifactId>llm-mcp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>llm-mcp :: root</name>
@@ -25,7 +25,6 @@
         <module>mcp-server-ticket-service</module>
         <module>mcp-server-notification-service</module>
         <module>mcp-server-deployment-service</module>
-        <module>llm-travel</module>
         <module>llm-mcp-client</module>
         <module>mcp-server-travel-service</module>
         <module>mcp-server-github-service</module>

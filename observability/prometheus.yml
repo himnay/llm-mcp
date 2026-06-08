@@ -35,3 +35,21 @@ scrape_configs:
     static_configs:
       - targets: [ 'host.docker.internal:8084' ]
         labels: { application: 'hr-service' }
+
+  - job_name: 'github-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'host.docker.internal:8085' ]
+        labels: { application: 'github-service' }
+
+  - job_name: 'gmail-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'host.docker.internal:8086' ]
+        labels: { application: 'gmail-service' }
+
+  - job_name: 'travel-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'host.docker.internal:8087' ]
+        labels: { application: 'travel-service' }

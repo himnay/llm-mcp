@@ -18,9 +18,11 @@ public class AppConfig {
     }
 
     /**
-     * Wraps the auto-configured MCP {@link ToolCallbackProvider} with per-server
-     * circuit breakers. Marked {@code @Primary} so {@link com.org.ai.service.ChatService}
-     * injects this wrapper instead of the raw provider.
+     * ToolCallbackProvider bean that wraps the MCP ToolCallbackProvider with a ResilientToolCallbackProvider to add resilience features like circuit breaking.
+     * This allows the application to handle failures gracefully when invoking tools, improving overall robustness.
+     * @param mcpToolCallbackProvider
+     * @param circuitBreakerRegistry
+     * @return
      */
     @Bean
     @Primary

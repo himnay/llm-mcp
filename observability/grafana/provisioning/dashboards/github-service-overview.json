@@ -1,0 +1,126 @@
+{
+  "uid": "github-service-overview",
+  "title": "GitHub Service — Isolation Overview",
+  "tags": [
+    "org",
+    "mcp",
+    "github-service",
+    "spring-boot"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Service Up",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        { "refId": "A", "expr": "up{application=\"github-service\"}", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP Request Rate (req/s)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "sum by (application) (rate(http_server_requests_seconds_count{application=\"github-service\"}[1m]))", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP Latency p95 (s)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (application, le) (rate(http_server_requests_seconds_bucket{application=\"github-service\"}[5m])))", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP 5xx Error Rate (req/s)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 5 },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "sum by (application) (rate(http_server_requests_seconds_count{application=\"github-service\", status=~\"5..\"}[1m]))", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Heap Used (bytes)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "sum by (application) (jvm_memory_used_bytes{application=\"github-service\", area=\"heap\"})", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Process CPU Usage",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "process_cpu_usage{application=\"github-service\"}", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Live Threads",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 13 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "jvm_threads_live_threads{application=\"github-service\"}", "legendFormat": "{{application}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "GC Pause (p99, s)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 16 },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        { "refId": "A", "expr": "rate(jvm_gc_pause_seconds_sum{application=\"github-service\"}[5m]) / clamp_min(rate(jvm_gc_pause_seconds_count{application=\"github-service\"}[5m]), 1)", "legendFormat": "{{application}}" }
+      ]
+    }
+  ]
+}

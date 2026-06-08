@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>mcp-hr-service</artifactId>
+    <artifactId>mcp-server-hr-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>Org HR service (MCP server)</description>
 

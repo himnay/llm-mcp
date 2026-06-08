@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>mcp-travel-service</artifactId>
+    <artifactId>mcp-server-travel-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>MCP Travel Service — flight availability via Amadeus API</description>
 

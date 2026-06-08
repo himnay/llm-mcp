@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>github-service</artifactId>
+    <artifactId>mcp-server-github-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>Org GitHub integration service (MCP server)</description>
 

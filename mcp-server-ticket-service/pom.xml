@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.org</groupId>
-    <artifactId>ticket-service</artifactId>
+    <artifactId>mcp-server-ticket-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>Org ticket service (MCP server)</description>
 
