@@ -80,7 +80,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 | `OPENAI_API_KEY` (`spring.ai.openai.api-key`)     | *(required)*                                 | OpenAI API key for the chat model                                 |
 | `MCP_AUTH_TOKEN` (`assistant.mcp-auth-token`)     | *(empty)*                                    | Shared bearer token attached to every outbound MCP call            |
 | `assistant.name`                                  | `Enterprise AI Assistant`                    | Assistant persona name, rendered into the system prompt            |
-| `assistant.default-user`                          | `john.doe`                                   | Fallback acting/conversation user when `X-User-Id` is absent       |
+| `assistant.default-user`                          | `himansu.nayak`                                   | Fallback acting/conversation user when `X-User-Id` is absent       |
 | `assistant.memory-window`                         | `20`                                         | Number of past messages replayed as conversation history per turn  |
 | `assistant.max-tool-iterations`                   | `5`                                          | Hard cap on tool-execution rounds per chat request                 |
 | `assistant.max-tool-result-chars`                 | `8000`                                       | Max characters of a single tool result fed back into the model     |

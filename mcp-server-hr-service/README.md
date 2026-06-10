@@ -95,10 +95,10 @@ curl -s http://localhost:8084/mcp \
 curl -s http://localhost:8084/mcp \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $TOKEN" \
-  -H 'X-Acting-User: john.doe' \
+  -H 'X-Acting-User: himansu.nayak' \
   -d '{
         "jsonrpc":"2.0","id":2,"method":"tools/call",
-        "params":{"name":"applyLeave","arguments":{"username":"john.doe","date":"2026-06-10"}}
+        "params":{"name":"applyLeave","arguments":{"username":"himansu.nayak","date":"2026-06-10"}}
       }'
 ```
 
@@ -110,7 +110,7 @@ curl -s http://localhost:8084/mcp \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
         "jsonrpc":"2.0","id":3,"method":"tools/call",
-        "params":{"name":"findReplacement","arguments":{"username":"john.doe","date":"2026-06-10"}}
+        "params":{"name":"findReplacement","arguments":{"username":"himansu.nayak","date":"2026-06-10"}}
       }'
 ```
 

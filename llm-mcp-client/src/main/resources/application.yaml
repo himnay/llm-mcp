@@ -20,23 +20,26 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
-mcp:
-  client:
-    enabled: true
-    streamable-http:
-      connections:
-        ticket:
-          url: http://localhost:8081
-        deployment:
-          url: http://localhost:8082
-        notification:
-          url: http://localhost:8083
-        hr:
-          url: http://localhost:8084
-        github:
-          url: http://localhost:8085
-        gmail:
-          url: http://localhost:8086
+    mcp:
+      client:
+        enabled: true
+        initialized: false
+        toolcallback:
+          enabled: false
+        streamable-http:
+          connections:
+#            ticket:
+#              url: http://localhost:8081
+#            deployment:
+#              url: http://localhost:8082
+#            notification:
+#              url: http://localhost:8083
+#            hr:
+#              url: http://localhost:8084
+            github:
+              url: http://localhost:8085
+#            gmail:
+#              url: http://localhost:8086
 
 management:
   endpoints:
@@ -63,7 +66,7 @@ info:
 
 assistant:
   name: Enterprise AI Assistant
-  default-user: john.doe
+  default-user: himansu.nayak
   mcp-auth-token: ${MCP_AUTH_TOKEN:}
   memory-window: 20
   max-tool-iterations: 5

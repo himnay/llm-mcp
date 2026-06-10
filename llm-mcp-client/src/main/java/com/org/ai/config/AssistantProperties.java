@@ -23,7 +23,7 @@ public class AssistantProperties {
     /**
      * Default acting user when no authenticated principal is available.
      */
-    private String defaultUser = "john.doe";
+    private String defaultUser = "himansu.nayak";
 
     /**
      * Shared bearer token sent to downstream MCP servers. Bound from MCP_AUTH_TOKEN.

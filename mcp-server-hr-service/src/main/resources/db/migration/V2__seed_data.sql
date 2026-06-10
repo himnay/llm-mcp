@@ -1,6 +1,6 @@
 INSERT INTO employee (username, full_name, team)
 VALUES
-    ('john.doe', 'John Doe', 'backend'),
+    ('himansu.nayak', 'John Doe', 'backend'),
     ('alice.smith', 'Alice Smith', 'backend'),
     ('sarah.dev', 'Sarah Dev', 'backend'),
     ('bob.johnson', 'Bob Johnson', 'frontend'),

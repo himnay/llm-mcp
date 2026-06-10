@@ -15,7 +15,7 @@ collection:
       sortKey: -1777469645933
       description: ""
     children:
-      - url: http://localhost:8084/hr/leave/john.doe?date=2026-04-30
+      - url: http://localhost:8084/hr/leave/himansu.nayak?date=2026-04-30
         name: Check On Leave
         meta:
           id: req_f2298fd155be444a8f6d5ec91c5eef56
@@ -38,7 +38,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: http://localhost:8084/hr/leave?username=john.doe&date=2026-04-30
+      - url: http://localhost:8084/hr/leave?username=himansu.nayak&date=2026-04-30
         name: Apply Leave
         meta:
           id: req_04dfdbc5c22348dcbf48d4334a8cb141
@@ -61,7 +61,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: http://localhost:8084/hr/replacement/john.doe?date=2026-04-30
+      - url: http://localhost:8084/hr/replacement/himansu.nayak?date=2026-04-30
         name: Find Replacement
         meta:
           id: req_490efddefbdc4b6da626274a5e7b8f56
@@ -179,7 +179,7 @@ collection:
             	"params": {
             		"name": "applyLeave",
             		"arguments": {
-            			"username": "john.doe",
+            			"username": "himansu.nayak",
             			"date": "2026-03-12"
             		}
             	}
@@ -219,7 +219,7 @@ collection:
             	"params": {
             		"name": "findReplacement",
             		"arguments": {
-            			"username": "john.doe",
+            			"username": "himansu.nayak",
             			"date": "2026-03-12"
             		}
             	}
@@ -247,7 +247,7 @@ collection:
       sortKey: -1777469103502
       description: ""
     children:
-      - url: http://localhost:8082/deployments?serviceName=billing-service&environment=PROD&scheduledTime=2026-03-10T14:00:00&owner=john.doe
+      - url: http://localhost:8082/deployments?serviceName=billing-service&environment=PROD&scheduledTime=2026-03-10T14:00:00&owner=himansu.nayak
         name: Create Deployment
         meta:
           id: req_256a98db7c4b4d46ad77fb91d0282441

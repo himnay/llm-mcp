@@ -99,7 +99,7 @@ cd llm-mcp-client && ./mvnw spring-boot:run                  # :8080
 ```bash
 curl -s localhost:8080/chat \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Who can cover for john.doe tomorrow?"}'
+  -d '{"message":"Who can cover for himansu.nayak tomorrow?"}'
 ```
 
 A message beginning with `/` (e.g. `/analyze-tickets`) is treated as an MCP prompt name and expanded into the
@@ -132,7 +132,7 @@ calls to the downstream MCP servers over Streamable HTTP.
 | Property                          | Default                   | Description                                               |
 |-----------------------------------|---------------------------|-----------------------------------------------------------|
 | `assistant.name`                  | `Enterprise AI Assistant` | Display name / persona                                    |
-| `assistant.default-user`          | `john.doe`                | Acting user when no authenticated principal is present    |
+| `assistant.default-user`          | `himansu.nayak`                | Acting user when no authenticated principal is present    |
 | `assistant.mcp-auth-token`        | *(env: MCP_AUTH_TOKEN)*   | Token forwarded to MCP servers as `Bearer` header         |
 | `assistant.memory-window`         | `20`                      | Number of conversation turns kept in context              |
 | `assistant.max-tool-iterations`   | `5`                       | Max tool-call rounds per chat turn before forcing a reply |
