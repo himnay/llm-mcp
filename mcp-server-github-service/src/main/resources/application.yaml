@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: github-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cache:
+    type: redis
   ai:
     mcp:
       server:
@@ -14,6 +20,7 @@ github:
   token: ${GITHUB_TOKEN:}
   api-base-url: https://api.github.com
   default-page-size: 30
+  cache-ttl-seconds: 120
 
 mcp:
   security:

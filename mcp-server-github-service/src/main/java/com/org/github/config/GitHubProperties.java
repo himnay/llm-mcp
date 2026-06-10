@@ -12,4 +12,6 @@ public class GitHubProperties {
     private String apiBaseUrl = "https://api.github.com";
     /** Default page size for list operations */
     private int defaultPageSize = 30;
+    /** How long (seconds) to cache GitHub API responses */
+    private int cacheTtlSeconds = 120;
 }

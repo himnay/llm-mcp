@@ -117,6 +117,18 @@ services:
 #      postgres:
 #        condition: service_healthy
 #    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   github-service:
     build:
       context: ./mcp-server-github-service
@@ -125,8 +137,13 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "8085:8085"
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
   gmail-service:
     build:

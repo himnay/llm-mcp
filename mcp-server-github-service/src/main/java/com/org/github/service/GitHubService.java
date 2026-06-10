@@ -4,6 +4,8 @@ import com.org.github.config.GitHubProperties;
 import com.org.github.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -16,6 +18,7 @@ public class GitHubService {
     private final RestClient gitHubRestClient;
     private final GitHubProperties gitHubProperties;
 
+    @Cacheable(value = "github", key = "'repo:' + #owner + '/' + #repo")
     public String getRepository(String owner, String repo) {
         try {
             return gitHubRestClient.get()
@@ -27,6 +30,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'commits:' + #owner + '/' + #repo + ':' + #branch + ':p' + #page")
     public String getCommitHistory(String owner, String repo, String branch, int page) {
         try {
             return gitHubRestClient.get()
@@ -39,6 +43,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'metrics:' + #owner + '/' + #repo + ':' + #since + ':' + #until")
     public String getCommitMetrics(String owner, String repo, String since, String until) {
         try {
             String uri = "/repos/{owner}/{repo}/commits?per_page=100&since={since}&until={until}";
@@ -51,6 +56,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'branches:' + #owner + '/' + #repo")
     public String listBranches(String owner, String repo) {
         try {
             return gitHubRestClient.get()
@@ -63,6 +69,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'prs:' + #owner + '/' + #repo + ':' + #state")
     public String getPullRequests(String owner, String repo, String state) {
         try {
             return gitHubRestClient.get()
@@ -75,6 +82,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'issues:' + #owner + '/' + #repo + ':' + #state + ':' + #labels")
     public String getIssues(String owner, String repo, String state, String labels) {
         try {
             String uri = labels != null && !labels.isBlank()
@@ -89,6 +97,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'contributors:' + #owner + '/' + #repo")
     public String getContributors(String owner, String repo) {
         try {
             return gitHubRestClient.get()
@@ -101,6 +110,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'workflows:' + #owner + '/' + #repo + ':' + #workflowId")
     public String getWorkflowRuns(String owner, String repo, String workflowId) {
         try {
             String uri = workflowId != null && !workflowId.isBlank()
@@ -115,6 +125,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'releases:' + #owner + '/' + #repo")
     public String getReleases(String owner, String repo) {
         try {
             return gitHubRestClient.get()
@@ -127,6 +138,7 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'search:' + #query + ':' + #sort + ':' + #order")
     public String searchRepositories(String query, String sort, String order) {
         try {
             return gitHubRestClient.get()
@@ -139,15 +151,35 @@ public class GitHubService {
         }
     }
 
+    @Cacheable(value = "github", key = "'codefreq:' + #owner + '/' + #repo")
     public String getCodeFrequency(String owner, String repo) {
-        try {
-            return gitHubRestClient.get()
-                    .uri("/repos/{owner}/{repo}/stats/code_frequency", owner, repo)
-                    .retrieve()
-                    .body(String.class);
-        } catch (HttpClientErrorException.NotFound ex) {
-            throw new ResourceNotFoundException("Repository " + owner + "/" + repo + " not found");
+        // GitHub computes stats asynchronously: returns 202 until ready. Retry up to 3×.
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                String[] result = {null};
+                HttpStatusCode[] status = {null};
+                gitHubRestClient.get()
+                        .uri("/repos/{owner}/{repo}/stats/code_frequency", owner, repo)
+                        .exchange((req, resp) -> {
+                            status[0] = resp.getStatusCode();
+                            result[0] = new String(resp.getBody().readAllBytes());
+                            return result[0];
+                        });
+                if (status[0] != null && status[0].value() == 202) {
+                    Thread.sleep(1500);
+                    continue;
+                }
+                return result[0];
+            } catch (HttpClientErrorException.NotFound ex) {
+                throw new ResourceNotFoundException("Repository " + owner + "/" + repo + " not found");
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted waiting for GitHub stats", ex);
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to fetch code frequency: " + ex.getMessage(), ex);
+            }
         }
+        return "[]";
     }
 
     public String createIssue(String owner, String repo, String title, String body, String labels) {
