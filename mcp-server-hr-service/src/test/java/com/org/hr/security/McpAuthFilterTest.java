@@ -50,7 +50,6 @@ class McpAuthFilterTest {
         RateLimiter limiter = new RateLimiter(120);
         McpAuthFilter filter = new McpAuthFilter(props, objectMapper, limiter);
 
-        when(request.getRequestURI()).thenReturn("/mcp/tools");
         when(request.getHeader("X-Acting-User")).thenReturn("alice");
 
         filter.doFilterInternal(request, response, filterChain);
@@ -69,7 +68,6 @@ class McpAuthFilterTest {
         RateLimiter limiter = new RateLimiter(120);
         McpAuthFilter filter = new McpAuthFilter(props, objectMapper, limiter);
 
-        when(request.getRequestURI()).thenReturn("/mcp/tools");
         when(request.getHeader("Authorization")).thenReturn("Bearer secret-token");
         when(request.getHeader("X-Acting-User")).thenReturn("alice");
 
@@ -89,7 +87,6 @@ class McpAuthFilterTest {
         McpAuthFilter filter = new McpAuthFilter(props, objectMapper, limiter);
 
         StringWriter sw = new StringWriter();
-        when(request.getRequestURI()).thenReturn("/mcp/tools");
         when(request.getHeader("Authorization")).thenReturn("Bearer wrong-token");
         when(response.getWriter()).thenReturn(new PrintWriter(sw));
 
@@ -110,7 +107,6 @@ class McpAuthFilterTest {
         McpAuthFilter filter = new McpAuthFilter(props, objectMapper, limiter);
 
         StringWriter sw = new StringWriter();
-        when(request.getRequestURI()).thenReturn("/mcp/tools");
         when(request.getHeader("Authorization")).thenReturn(null);
         when(response.getWriter()).thenReturn(new PrintWriter(sw));
 

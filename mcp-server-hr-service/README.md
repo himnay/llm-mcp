@@ -43,6 +43,19 @@ Defined in `HrMcpTools` (registered via `MethodToolCallbackProvider` in `McpTool
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Singleton** | All Spring beans (`HRService`, `McpAuthFilter`, `RateLimiter`, properties) | One shared, stateless instance per container |
+| **Facade** | `HRService` | Single entry point hiding `EmployeeRepository` + `LeaveRecordRepository` coordination |
+| **Factory Method** | `@Bean` methods in `McpToolConfig`, `RateLimiterConfig` | Container builds and wires products (`ToolCallbackProvider`, `RateLimiter`) |
+| **Builder** | `MethodToolCallbackProvider.builder()` in `McpToolConfig` | Stepwise construction of the MCP tool provider |
+| **Proxy** | Spring Data JPA repositories, `@Transactional` AOP | Interface-backed dynamic proxies add persistence/transaction behaviour |
+| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` (`McpAuthFilter` → MVC) | Each filter handles or passes the request along |
+| **Command** | `@Tool` methods (`applyLeave`, `findReplacement`) wrapped as `ToolCallback` objects | Tool invocations reified as objects the MCP runtime can schedule/dispatch |
+
 ## Configuration
 
 | Property / Env Var                       | Default                                      | Description                                              |

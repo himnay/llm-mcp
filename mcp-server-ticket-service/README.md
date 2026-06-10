@@ -59,6 +59,20 @@ protocol **STATELESS**.
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **State** | `TicketStatus` enum (`canTransitionTo`, `allowedTransitions`) | Each status owns its legal transitions (OPEN → IN_PROGRESS → CLOSED, reopen); `TicketService.updateStatus` rejects illegal moves |
+| **Singleton** | All Spring beans (`TicketService`, `McpAuthFilter`, `RateLimiter`) | One shared, stateless instance per container |
+| **Facade** | `TicketService` | Single entry point hiding repository access and lifecycle rules |
+| **Factory Method** | `@Bean` methods in configuration classes | Container builds and wires collaborating beans |
+| **Builder** | Lombok `@Builder` on `Ticket` | Readable construction of multi-field entities |
+| **Proxy** | Spring Data JPA repositories, `@Transactional` AOP | Dynamic proxies add persistence/transaction behaviour |
+| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → controller, each link handles or passes on |
+| **Command** | `@McpPrompt` provider (`TicketPromptProvider`) registered as an invokable MCP primitive | Prompt generation reified as a dispatchable object |
+
 ## Configuration
 
 | Property / Env Var                       | Default                                      | Description                                              |

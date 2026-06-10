@@ -47,6 +47,19 @@ Defined in `DeploymentMcpTools` (registered via `MethodToolCallbackProvider` in 
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Singleton** | All Spring beans (`DeploymentService`, `McpAuthFilter`, `RateLimiter`) | One shared, stateless instance per container |
+| **Facade** | `DeploymentService` | Single entry point hiding repository access and scheduling rules |
+| **Factory Method** | `@Bean` methods in `McpToolConfig`, `SecurityConfig` | Container builds and wires collaborating beans |
+| **Builder** | Lombok `@Builder` on `Deployment`; `MethodToolCallbackProvider.builder()` | Readable construction of entities and the tool provider |
+| **Proxy** | Spring Data JPA repositories, `@Transactional` AOP | Dynamic proxies add persistence/transaction behaviour |
+| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
+| **Command** | `@Tool` methods (`createDeployment`, `cancelDeployment`, …) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime |
+
 ## Configuration
 
 | Property / Env Var                       | Default                                      | Description                                              |

@@ -9,6 +9,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -17,6 +22,7 @@ public class GitHubService {
 
     private final RestClient gitHubRestClient;
     private final GitHubProperties gitHubProperties;
+    private final ObjectMapper objectMapper;
 
     @Cacheable(value = "github", key = "'repo:' + #owner + '/' + #repo")
     public String getRepository(String owner, String repo) {
@@ -183,39 +189,23 @@ public class GitHubService {
     }
 
     public String createIssue(String owner, String repo, String title, String body, String labels) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("title", title);
+        if (body != null && !body.isBlank()) {
+            payload.put("body", body);
+        }
+        if (labels != null && !labels.isBlank()) {
+            payload.put("labels", Arrays.stream(labels.split(",")).map(String::trim).toList());
+        }
         try {
-            String requestBody = buildIssueRequestBody(title, body, labels);
             return gitHubRestClient.post()
                     .uri("/repos/{owner}/{repo}/issues", owner, repo)
                     .header("Content-Type", "application/json")
-                    .body(requestBody)
+                    .body(objectMapper.writeValueAsString(payload))
                     .retrieve()
                     .body(String.class);
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to create issue: " + ex.getMessage());
         }
-    }
-
-    private String buildIssueRequestBody(String title, String body, String labels) {
-        StringBuilder sb = new StringBuilder("{\"title\":\"").append(escapeJson(title)).append("\"");
-        if (body != null && !body.isBlank()) {
-            sb.append(",\"body\":\"").append(escapeJson(body)).append("\"");
-        }
-        if (labels != null && !labels.isBlank()) {
-            sb.append(",\"labels\":[");
-            String[] labelArr = labels.split(",");
-            for (int i = 0; i < labelArr.length; i++) {
-                if (i > 0) sb.append(",");
-                sb.append("\"").append(escapeJson(labelArr[i].trim())).append("\"");
-            }
-            sb.append("]");
-        }
-        sb.append("}");
-        return sb.toString();
-    }
-
-    private String escapeJson(String value) {
-        return value.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
     }
 }

@@ -53,6 +53,21 @@ Defined in `GitHubMcpTools` (registered via `MethodToolCallbackProvider` in `Mcp
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Template Method** | `ToolExecutionTemplate` (`executeRead` / `executeWrite`) | The invariant tool-execution skeleton — resolve acting user, enforce write gate, audit log, cap output — is defined once; each `@Tool` method supplies only the business call |
+| **Command** | `Supplier<String>` actions passed to `ToolExecutionTemplate`; `@Tool` methods wrapped as `ToolCallback` objects | The varying step is reified as an object the template executes |
+| **Proxy** | `@Cacheable` on `GitHubService` (Redis-backed AOP proxy); JPA-style dynamic proxying by Spring | Caching proxy intercepts calls and serves repeated GitHub queries from Redis |
+| **Facade** | `GitHubService` | Hides GitHub REST API details (URIs, headers, 202-retry for async stats, error translation) behind simple methods |
+| **Builder** | `RestClient.builder()`, `RedisCacheManager.builder()` in `GitHubClientConfig` | Stepwise construction of configured clients |
+| **Factory Method** | `@Bean` methods in `GitHubClientConfig`, `McpToolConfig` | Container builds and wires the REST client, cache manager, tool provider |
+| **Observer** | `@EventListener(ContextRefreshedEvent)` (`warnIfNoToken`) | Startup event subscription warns when no GitHub token is configured |
+| **Singleton** | All Spring beans | One shared, stateless instance per container |
+| **Template Method** (framework) | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
+
 ## Configuration
 
 | Property / Env Var                     | Default                          | Description                                              |

@@ -1,0 +1,24 @@
+# Test profile — in-memory H2 + dummy OpenAI key so tests run without
+# local PostgreSQL, an OPENAI_API_KEY, or any MCP server being up.
+spring:
+  datasource:
+    url: jdbc:h2:mem:chat_test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  ai:
+    openai:
+      api-key: test-key
+    mcp:
+      client:
+        enabled: false
+
+management:
+  tracing:
+    sampling:
+      probability: 0.0

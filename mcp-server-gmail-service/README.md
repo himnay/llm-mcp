@@ -53,6 +53,19 @@ Defined in `GmailMcpTools` (registered via `MethodToolCallbackProvider` in `McpT
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Facade** | `GmailService` | Hides Gmail REST API details (URIs, query params, error translation) behind simple methods |
+| **Builder** | `RestClient.builder()` in `GmailClientConfig` | Stepwise construction of the configured Gmail client |
+| **Factory Method** | `@Bean` methods in `GmailClientConfig`, `McpToolConfig` | Container builds and wires the REST client and tool provider |
+| **Observer** | `@EventListener(ContextRefreshedEvent)` (`warnIfNoToken`) | Startup event subscription warns when no Gmail access token is configured |
+| **Singleton** | All Spring beans | One shared, stateless instance per container |
+| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
+| **Command** | `@Tool` methods (`listEmails`, `sendEmail`, …) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime |
+
 ## Configuration
 
 | Property / Env Var                          | Default                                  | Description                                              |

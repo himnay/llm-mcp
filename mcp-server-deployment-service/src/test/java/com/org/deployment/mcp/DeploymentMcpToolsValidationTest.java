@@ -130,10 +130,9 @@ class DeploymentMcpToolsValidationTest {
     void cancelDeployment_allowsNamedUserWhenWriteGateEnabled() {
         securityProperties.setRequireUserForWrites(true);
         ActingUserContext.set("jane");
-        // no stub needed — we only care that NO IllegalStateException is thrown before the service call
-        // The service mock returns null by default, which is fine for this test scope
-        org.mockito.Mockito.when(deploymentService.cancelDeployment(1L)).thenReturn(null);
-        // should not throw IllegalStateException
+        org.mockito.Mockito.when(deploymentService.cancelDeployment(1L))
+                .thenReturn(com.org.deployment.model.Deployment.builder().id(1L).build());
+        // a named acting user must pass the write gate
         org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> tools.cancelDeployment(1L));
     }
 }

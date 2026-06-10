@@ -1,8 +1,8 @@
 # Spring AI MCP — Org Enterprise Assistant
 
 A multi-module Spring AI **Model Context Protocol (MCP)** demo. A central chat assistant (the MCP *client*) orchestrates
-four domain MCP *servers* (HR, Ticketing, Deployment, Notification), each backed by PostgreSQL and exposing both a REST
-API and MCP tools/prompts.
+seven domain MCP *servers* (HR, Ticketing, Deployment, Notification, Travel, GitHub, Gmail). The four core services are
+backed by PostgreSQL; Travel, GitHub and Gmail wrap external APIs (Amadeus, GitHub REST, Gmail REST).
 
 ```
                     ┌─────────────────────────────────┐
@@ -28,13 +28,19 @@ API and MCP tools/prompts.
 
 ## Modules
 
-| Directory                         | Port | Role       | Spring App Name        |
-|-----------------------------------|------|------------|------------------------|
-| `llm-mcp-client`                  | 8080 | MCP client | `ai-mcp-server`        |
-| `mcp-server-ticket-service`       | 8081 | MCP server | `ticket-service`       |
-| `mcp-server-deployment-service`   | 8082 | MCP server | `deployment-service`   |
-| `mcp-server-notification-service` | 8083 | MCP server | `notification-service` |
-| `mcp-server-hr-service`           | 8084 | MCP server | `mcp-hr-service`       |
+| Directory                         | Port  | Role       | MCP protocol | Spring App Name        |
+|-----------------------------------|-------|------------|--------------|------------------------|
+| `llm-mcp-client`                  | 8080  | MCP client | —            | `ai-mcp-server`        |
+| `mcp-server-ticket-service`       | 8081  | MCP server | STATELESS    | `ticket-service`       |
+| `mcp-server-deployment-service`   | 8082  | MCP server | STREAMABLE   | `deployment-service`   |
+| `mcp-server-notification-service` | 8083  | MCP server | STATELESS    | `notification-service` |
+| `mcp-server-hr-service`           | 8084  | MCP server | STATELESS    | `mcp-hr-service`       |
+| `mcp-server-github-service`       | 8085  | MCP server | STREAMABLE   | `github-service`       |
+| `mcp-server-gmail-service`        | 8086  | MCP server | STREAMABLE   | `gmail-service`        |
+| `mcp-server-travel-service`       | 8086* | MCP server | STATELESS    | `travel-service`       |
+
+> *⚠ `travel-service` and `gmail-service` both default to port **8086** — override `SERVER_PORT` for one of them when
+> running both at the same time.
 
 ---
 
@@ -85,6 +91,15 @@ cd mcp-server-hr-service && ./mvnw spring-boot:run           # :8084
 cd mcp-server-ticket-service && ./mvnw spring-boot:run       # :8081
 cd mcp-server-deployment-service && ./mvnw spring-boot:run   # :8082
 cd mcp-server-notification-service && ./mvnw spring-boot:run # :8083
+cd mcp-server-github-service && ./mvnw spring-boot:run       # :8085 (needs Redis + GITHUB_TOKEN)
+cd mcp-server-gmail-service && ./mvnw spring-boot:run        # :8086 (needs GMAIL_ACCESS_TOKEN)
+cd mcp-server-travel-service && SERVER_PORT=8087 ./mvnw spring-boot:run  # default 8086 clashes with gmail
+```
+
+### Running the tests
+
+```bash
+./mvnw test            # all modules — no Docker/PostgreSQL/Redis/API keys required (H2 test profiles)
 ```
 
 ### 3. Start MCP client
@@ -298,7 +313,7 @@ Sends and lists notifications across channels (INTERNAL, EMAIL, SLACK).
 
 ## Security & Operations (MCP Servers)
 
-All four servers share the same security model:
+All seven servers share the same security model:
 
 ### Bearer Token Authentication
 
@@ -352,11 +367,9 @@ Full setup in [OBSERVABILITY.md](OBSERVABILITY.md).
 **Distributed tracing:** Trace IDs propagate from the client through each MCP server tool call and are viewable in
 Grafana → Explore → Tempo.
 
-**Token usage:** OpenAI token consumption is **not yet tracked** as a Prometheus metric. To add it, wire a
-`ChatResponseMetadata` listener in `llm-mcp-client` that reads `response.getMetadata().getUsage()` and records
-prompt/completion tokens via a `MeterRegistry` counter tagged with the acting user. Per-server attribution is not
-directly available (tokens are consumed in a single OpenAI call at the client); you can approximate it by tracking which
-tools were called in each turn.
+**Token usage:** OpenAI token consumption is recorded by `ChatService.recordTokenUsage` as the Prometheus counter
+`ai.tokens` (tags: `type=prompt|completion`, `user=<acting user>`). Per-server attribution is not directly available
+(tokens are consumed in a single OpenAI call at the client); approximate it by tracking which tools were called per turn.
 
 ---
 
@@ -382,6 +395,56 @@ tools were called in each turn.
 | Prometheus metrics              | ✅      | Micrometer + Prometheus registry; application-tagged; scraped by Grafana dashboard                                                      |
 | Liveness/readiness probes       | ✅      | Enabled on HR and Deployment services; all services expose `/actuator/health`                                                           |
 | MCP prompts                     | ✅      | Ticket service exposes `analyze-tickets` prompt; client expands `/promptName` shorthand                                                 |
-| Token usage metering            | ❌      | Not yet implemented — see Observability section for how to add it                                                                       |
-| Circuit breaker / resilience    | ❌      | No Resilience4j or similar; client will surface MCP server failures directly to the caller                                              |
-| Persistent conversation storage | ❌      | Conversation history is in-memory only; restarts lose context                                                                           |
+| Token usage metering            | ✅      | `ChatService.recordTokenUsage` records prompt/completion tokens via Micrometer (`ai.tokens` counter, tagged by user)                    |
+| Circuit breaker / resilience    | ✅      | Resilience4j per-server circuit breakers wrap every MCP tool callback (`ResilientToolCallbackProvider`); OPEN circuit → structured fallback |
+| Persistent conversation storage | ✅      | `PostgresConversationStore` persists each exchange; history reloaded per turn, capped by `assistant.memory-window`                      |
+| Response caching                | ✅      | GitHub service caches API responses in Redis via `@Cacheable` with configurable TTL                                                    |
+| Infra-free tests                | ✅      | Test profiles use in-memory H2 (+ dummy OpenAI key, MCP client disabled) so `./mvnw test` passes without Docker/PostgreSQL              |
+
+---
+
+## Design Patterns (GoF)
+
+Each module README has a **Design Patterns (GoF)** section mapping patterns to the classes that implement them.
+The table below is the repo-wide catalog of all 23 Gang of Four patterns. Patterns are only *hand-implemented* where
+they earn their place; several are satisfied by Spring/framework machinery the code builds on, and a few are
+deliberately **not used** because forcing them into a stateless CRUD/tool codebase would add indirection without
+benefit (that, too, is a GoF guideline: prefer the simplest design that solves the problem).
+
+### Creational
+
+| Pattern | Status | Where |
+|---------|--------|-------|
+| Singleton | ✅ In use | Every Spring bean (services, filters, properties) — container-managed, no hand-rolled statics |
+| Factory Method | ✅ In use | `@Bean` methods in every `*Config` class; `DeliveryStrategyRegistry` (notification) hands out the right strategy per channel |
+| Builder | ✅ In use | Lombok `@Builder` entities; `RestClient.builder()`, `RedisCacheManager.builder()`, `ChatClient.builder()`, `MethodToolCallbackProvider.builder()` |
+| Abstract Factory | ⚙ Framework | Spring `BeanFactory`/`ApplicationContext` — families of related beans created without naming concrete classes |
+| Prototype | ✗ Not used | All beans are stateless singletons; per-request mutable objects are plain `new`/builder calls. Prototype-scoped beans would add no value |
+
+### Structural
+
+| Pattern | Status | Where |
+|---------|--------|-------|
+| Facade | ✅ In use | Every `*Service` class — e.g. `GitHubService` hides REST URIs/retries, `ChatService.handleMessage` hides the whole chat pipeline |
+| Decorator | ✅ In use | `TruncatingToolCallback`, `CircuitBreakerToolCallback` (client) wrap `ToolCallback`s to add truncation / circuit breaking |
+| Proxy | ✅ In use | `@Cacheable` Redis caching proxy (github), JPA repository proxies, `@Transactional` AOP; `ResilientToolCallbackProvider` is a protection proxy for downstream servers; `AmadeusTokenService` is a caching proxy for the OAuth2 endpoint (travel) |
+| Adapter | ✅ In use | `AmadeusFlightClient` + DTOs (travel) adapt the Amadeus wire format; `PostgresConversationStore` adapts JPA rows ↔ Spring AI `Message`s |
+| Bridge | ⚙ Framework | Micrometer `MeterRegistry` — one metering abstraction over interchangeable backends (Prometheus, OTLP) |
+| Flyweight | ⚙ Framework | Enum constants (`TicketStatus`, `NotificationChannel`, …) and Redis-cached GitHub responses share immutable instances |
+| Composite | ✗ Not used | No recursive part-whole structures in the domain (flat entities, flat tool lists) |
+
+### Behavioral
+
+| Pattern | Status | Where |
+|---------|--------|-------|
+| Strategy | ✅ In use | `ChannelDeliveryStrategy` + per-channel implementations (notification); selected at runtime via `DeliveryStrategyRegistry` |
+| Template Method | ✅ In use | `ToolExecutionTemplate` (github) defines the invariant tool-execution skeleton once; `OncePerRequestFilter.doFilterInternal` in every auth filter |
+| State | ✅ In use | `TicketStatus` enum owns its legal transitions; `TicketService.updateStatus` rejects illegal lifecycle moves |
+| Command | ✅ In use | `@Tool` methods reified as `ToolCallback` objects; `Supplier<String>` actions handed to `ToolExecutionTemplate` |
+| Chain of Responsibility | ✅ In use | Servlet `FilterChain`: auth → acting-user → rate-limit → handler in every module |
+| Observer | ✅ In use | `@EventListener(ContextRefreshedEvent)` startup checks (github/gmail); Micrometer counters/actuator events |
+| Mediator | ✅ In use | `ChatService` + `BoundedToolCallingManager` (client) coordinate model, memory, prompts and tools without coupling them to each other |
+| Memento | ✅ In use | `PostgresConversationStore` externalises, persists and restores conversation state per turn |
+| Iterator | ⚙ Framework | Java collections / Streams throughout |
+| Interpreter | ⚙ Framework | Spring AI `PromptTemplate` parses and evaluates the StringTemplate grammar in `prompts/system.st` |
+| Visitor | ✗ Not used | Domain models are flat and stable; no double-dispatch over heterogeneous object structures is needed |

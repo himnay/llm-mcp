@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/himansu/llm-mcp/**)",
+      "Bash(ls -la hr-service ai-assistant-mcp deployment-service)",
+      "Bash(docker compose *)",
+      "Bash(figlet -f standard \"MCP Client\")",
+      "Bash(figlet -f standard \"MCP Server\")",
+      "Bash(pip install *)",
+      "Bash(python3 -c \"import pyfiglet; print\\(pyfiglet.figlet_format\\('MCP Client', font='standard'\\)\\); print\\('==='\\); print\\(pyfiglet.figlet_format\\('MCP Server', font='standard'\\)\\)\")",
+      "Bash(python3 -m pip install pyfiglet -q)",
+      "Bash(python3 -m pip install pyfiglet -q --break-system-packages)",
+      "Bash(npx -v)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8084/actuator/health)",
+      "Bash(curl -s -o /dev/null -w \"health=%{http_code}\\\\n\" http://localhost:8084/actuator/health)",
+      "Bash(curl -s -m 5 http://localhost:8084/mcp -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}')",
+      "Bash(curl -s -o /dev/null -w \"sse=%{http_code}\\\\n\" -m 3 http://localhost:8084/sse)",
+      "Bash(docker exec *)",
+      "Bash(ps -o lstart=,command= -p 62193)",
+      "Bash(./mvnw -q -o compile)",
+      "Bash(./mvnw -q compile)",
+      "Bash(ls deployment-service/target/classes/com/org/deployment/mcp/)",
+      "Bash(ls notification-service/target/classes/com/org/notification/mcp/)",
+      "Bash(claude mcp *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(curl -s --max-time 25 https://repo.spring.io/milestone/org/springframework/ai/spring-ai-bom/maven-metadata.xml)",
+      "Bash(./mvnw -DskipTests compile)",
+      "Read(//tmp/**)",
+      "Bash(./mvnw -DskipTests clean compile)",
+      "Read(//Users/himansu/.m2/repository/org/springframework/ai/spring-ai-bom/**)",
+      "Read(//Users/himansu/.claude/projects/-Users-himansu-llm-mcp/memory/**)",
+      "Bash(ls MEMORY.md)"
+    ]
+  }
+}

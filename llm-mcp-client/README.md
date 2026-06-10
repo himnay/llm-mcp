@@ -70,6 +70,22 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Decorator** | `TruncatingToolCallback`, `CircuitBreakerToolCallback` (inside `ResilientToolCallbackProvider`) | Wrap a `ToolCallback` to add output truncation / circuit breaking without changing the wrapped tool |
+| **Proxy (protection)** | `ResilientToolCallbackProvider` | Stands in for downstream MCP servers; when a circuit is OPEN it short-circuits with a structured error instead of a doomed network call |
+| **Mediator** | `ChatService` (with `BoundedToolCallingManager`) | Coordinates prompt template, conversation memory, OpenAI model and MCP tools so none of them reference each other |
+| **Memento** | `PostgresConversationStore` + `ChatMessageEntity` | Conversation state is externalised, persisted and restored per turn (capped by `assistant.memory-window`) |
+| **Adapter** | `PostgresConversationStore` | Adapts JPA rows to Spring AI `Message` objects; `SyncMcpToolCallbackProvider` adapts MCP clients to `ToolCallback`s |
+| **Facade** | `ChatService.handleMessage` | One call hides prompt rendering, history load, model call, persistence and token metering |
+| **Factory Method** | `@Bean` methods in `AppConfig`, `ResilienceConfig` | Container builds `ChatClient`, circuit-breaker registry, resilient tool provider |
+| **Builder** | `ChatClient.builder(...)`, `SyncMcpToolCallbackProvider.builder()` | Stepwise construction of the chat pipeline |
+| **Chain of Responsibility** | `RequestContextFilter` → rate limiter → controller | Each link authenticates/limits or passes the request on |
+| **Interpreter** (framework) | `PromptTemplate` rendering `prompts/system.st` | StringTemplate grammar is parsed and evaluated to produce the system prompt |
+| **Singleton** | All Spring beans | One shared, stateless instance per container |
+
 ## Configuration
 
 | Property / Env Var                              | Default                                      | Description                                                       |

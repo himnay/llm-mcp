@@ -44,6 +44,20 @@ Defined in `FlightMcpTools` (registered via `MethodToolCallbackProvider` in `Mcp
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Adapter** | `AmadeusFlightClient` + `amadeus.model` DTOs | Adapts the Amadeus v2 flight-offers wire format to the domain types the tools consume |
+| **Proxy (caching)** | `AmadeusTokenService` | Stands in for the OAuth2 token endpoint; caches the token and refreshes 60 s before expiry under a lock |
+| **Facade** | `FlightSearchService` | Single entry point coordinating token acquisition, search, and result shaping |
+| **Factory Method** | `@Bean` methods in `RestClientConfig`, `McpToolConfig` | Container builds the qualified `RestClient`s and tool provider |
+| **Builder** | `RestClient.builder()` | Stepwise construction of configured HTTP clients |
+| **Singleton** | All Spring beans | One shared instance per container (token cache is deliberately shared) |
+| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
+| **Command** | `@Tool` methods in `FlightMcpTools` wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime |
+
 ## Configuration
 
 | Property / Env Var                          | Default                          | Description                                              |

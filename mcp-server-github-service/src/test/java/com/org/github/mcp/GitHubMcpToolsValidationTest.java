@@ -27,7 +27,7 @@ class GitHubMcpToolsValidationTest {
         securityProperties.setToken("");
         securityProperties.setDefaultUser("system");
         securityProperties.setRequireUserForWrites(false);
-        tools = new GitHubMcpTools(gitHubService, securityProperties);
+        tools = new GitHubMcpTools(gitHubService, new ToolExecutionTemplate(securityProperties));
         ActingUserContext.set("test-user");
     }
 

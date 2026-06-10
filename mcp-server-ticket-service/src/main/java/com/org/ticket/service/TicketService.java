@@ -47,6 +47,11 @@ public class TicketService {
 
     public Ticket updateStatus(Long id, TicketStatus status) {
         Ticket ticket = getTicket(id);
+        if (!ticket.getStatus().canTransitionTo(status)) {
+            throw new IllegalArgumentException(
+                    "Illegal status transition " + ticket.getStatus() + " → " + status
+                            + ". Allowed: " + ticket.getStatus().allowedTransitions());
+        }
         ticket.setStatus(status);
         ticket.setUpdatedAt(LocalDateTime.now());
         return ticketRepository.save(ticket);

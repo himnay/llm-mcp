@@ -1,5 +1,6 @@
 package com.org.notification.service;
 
+import com.org.notification.delivery.DeliveryStrategyRegistry;
 import com.org.notification.model.Notification;
 import com.org.notification.model.NotificationChannel;
 import com.org.notification.repository.NotificationRepository;
@@ -14,6 +15,7 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final DeliveryStrategyRegistry deliveryStrategies;
 
     public Notification sendNotification(NotificationChannel channel,
                                          String recipient,
@@ -26,7 +28,9 @@ public class NotificationService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        return notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        deliveryStrategies.strategyFor(channel).deliver(saved);
+        return saved;
     }
 
     public List<Notification> getNotifications() {

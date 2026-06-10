@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/himansu/llm-mcp/**)",
+      "Bash(ls *.gradle* settings* pom.xml)",
+      "Bash(java -version)",
+      "Bash(docker exec *)",
+      "Bash(OPENAI_API_KEY=sk-placeholder-not-real ./mvnw *)",
+      "Bash(./mvnw -q compile)",
+      "Bash(timeout 90 ./mvnw -q spring-boot:run)",
+      "Bash(./mvnw -q spring-boot:run)",
+      "Bash(lsof -nP -iTCP:5432 -sTCP:LISTEN)",
+      "Bash(git -C /Users/himansu/llm-mcp/llm-mcp-client status)",
+      "Bash(git -C /Users/himansu/llm-mcp/llm-mcp-client log --oneline -5)",
+      "Bash(git -C /Users/himansu/llm-mcp/llm-mcp-client rev-parse --show-toplevel)",
+      "Bash(git -C /Users/himansu/llm-mcp/llm-mcp-client remote -v)",
+      "Bash(git *)"
+    ]
+  }
+}

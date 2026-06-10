@@ -42,6 +42,21 @@ Defined in `NotificationTools` (registered via `MethodToolCallbackProvider` in `
 
 ---
 
+## Design Patterns (GoF)
+
+| Pattern | Where | Role |
+|---------|-------|------|
+| **Strategy** | `ChannelDeliveryStrategy` + `InternalDeliveryStrategy` / `EmailDeliveryStrategy` / `SlackDeliveryStrategy` | One delivery algorithm per channel; `NotificationService` is closed to modification when channels are added |
+| **Factory (registry)** | `DeliveryStrategyRegistry` | Spring injects every strategy bean; registry indexes by channel and fails fast at startup if one is missing |
+| **Singleton** | All Spring beans | One shared, stateless instance per container |
+| **Facade** | `NotificationService` | Persists the notification, then dispatches via the right strategy |
+| **Factory Method** | `@Bean` methods in `McpToolConfig` | Container builds the MCP `ToolCallbackProvider` |
+| **Builder** | Lombok `@Builder` on `Notification` | Readable construction of multi-field entities |
+| **Proxy** | Spring Data JPA repositories | Dynamic proxies add persistence behaviour |
+| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
+| **Command** | `@Tool` methods (`getNotifications`, `sendNotification`) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime |
+
 ## Configuration
 
 | Property / Env Var                       | Default                                      | Description                                              |
