@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18
+    image: pgvector/pgvector:pg18
     container_name: llm-postgres
     environment:
       POSTGRES_DB: spring_ai
@@ -13,6 +13,24 @@ services:
     restart: unless-stopped
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d spring_ai" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:latest
+    container_name: llm-mcp-redis
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,3 +53,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:

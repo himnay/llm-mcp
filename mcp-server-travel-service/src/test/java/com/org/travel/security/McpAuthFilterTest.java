@@ -2,6 +2,7 @@ package com.org.travel.security;
 
 import com.org.travel.config.SecurityProperties;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -25,6 +26,7 @@ class McpAuthFilterTest {
         filter = new McpAuthFilter(props, new ObjectMapper(), new RateLimiter(120));
     }
 
+    @DisplayName("Allows health endpoint requests without an auth token")
     @Test
     void allowsHealthWithoutToken() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest("GET", "/actuator/health");
@@ -34,6 +36,7 @@ class McpAuthFilterTest {
         assertThat(res.getStatus()).isEqualTo(200);
     }
 
+    @DisplayName("Rejects with 401 when the Authorization header is missing")
     @Test
     void rejects401WhenTokenMissing() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest("POST", "/mcp");
@@ -42,6 +45,7 @@ class McpAuthFilterTest {
         assertThat(res.getStatus()).isEqualTo(401);
     }
 
+    @DisplayName("Rejects with 401 when the bearer token does not match")
     @Test
     void rejects401WhenTokenWrong() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest("POST", "/mcp");
@@ -51,6 +55,7 @@ class McpAuthFilterTest {
         assertThat(res.getStatus()).isEqualTo(401);
     }
 
+    @DisplayName("Allows the request through when the bearer token matches")
     @Test
     void allowsRequestWithCorrectToken() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest("POST", "/mcp");
@@ -61,6 +66,7 @@ class McpAuthFilterTest {
         assertThat(res.getStatus()).isEqualTo(200);
     }
 
+    @DisplayName("Skips authentication entirely when the configured token is blank")
     @Test
     void authDisabledWhenTokenBlank() throws Exception {
         props.setToken("");
@@ -71,6 +77,7 @@ class McpAuthFilterTest {
         assertThat(res.getStatus()).isEqualTo(200);
     }
 
+    @DisplayName("Sets the acting user context from the X-Acting-User header")
     @Test
     void setsActingUserFromHeader() throws Exception {
         props.setToken("");

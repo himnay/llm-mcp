@@ -4,7 +4,8 @@ final class OutputSizeCapUtil {
     static final int DEFAULT_MAX_CHARS = 8_000;
     private static final String TRUNCATION_SUFFIX = "…[truncated]";
 
-    private OutputSizeCapUtil() {}
+    private OutputSizeCapUtil() {
+    }
 
     static String cap(String text) {
         return cap(text, DEFAULT_MAX_CHARS);

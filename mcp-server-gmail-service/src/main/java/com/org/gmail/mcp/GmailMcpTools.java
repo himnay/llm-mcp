@@ -1,12 +1,16 @@
 package com.org.gmail.mcp;
 
 import com.org.gmail.security.ActingUserContext;
+import com.org.gmail.security.RateLimiter;
 import com.org.gmail.security.SecurityProperties;
 import com.org.gmail.service.GmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Component
@@ -15,6 +19,10 @@ class GmailMcpTools {
 
     private final GmailService gmailService;
     private final SecurityProperties securityProperties;
+    private final RateLimiter rateLimiter;
+
+    @Value("${mcp.output.max-chars:8000}")
+    private int maxOutputChars;
 
     // ── validation helpers ────────────────────────────────────────────────────
 
@@ -40,20 +48,24 @@ class GmailMcpTools {
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }
+        if (!rateLimiter.tryAcquireWrite(actingUser)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Write rate limit exceeded (10 writes/min) for user " + actingUser);
+        }
     }
 
     // ── READ tools ────────────────────────────────────────────────────────────
 
     @Tool(name = "listEmails",
-          description = "List emails from Gmail. Provide optional labelIds (e.g. INBOX, SENT, SPAM, TRASH or custom label ID) "
-                  + "and optional maxResults (default: 20, max: 100). Returns message IDs and thread IDs.")
+            description = "List emails from Gmail. Provide optional labelIds (e.g. INBOX, SENT, SPAM, TRASH or custom label ID) "
+                    + "and optional maxResults (default: 20, max: 100). Returns message IDs and thread IDs.")
     public String listEmails(String labelIds, Integer maxResults) {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         int size = (maxResults != null && maxResults > 0 && maxResults <= 100) ? maxResults : 20;
         try {
             String result = gmailService.listEmails(labelIds, size);
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL listEmails | user={} labelIds={} maxResults={} latencyMs={}",
                     actingUser, labelIds, size, elapsedMs(start));
             return capped;
@@ -65,15 +77,15 @@ class GmailMcpTools {
     }
 
     @Tool(name = "getEmail",
-          description = "Get the full content of an email by its message ID. Provide messageId and optional format "
-                  + "(full, metadata, minimal, raw). Default format is 'full' which includes headers and body.")
+            description = "Get the full content of an email by its message ID. Provide messageId and optional format "
+                    + "(full, metadata, minimal, raw). Default format is 'full' which includes headers and body.")
     public String getEmail(String messageId, String format) {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         requireNonBlank(messageId, "messageId");
         try {
             String result = gmailService.getEmail(messageId, format);
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL getEmail | user={} messageId={} format={} latencyMs={}",
                     actingUser, messageId, format, elapsedMs(start));
             return capped;
@@ -85,8 +97,8 @@ class GmailMcpTools {
     }
 
     @Tool(name = "searchEmails",
-          description = "Search emails using Gmail query syntax. Examples: 'from:boss@example.com', 'subject:invoice', "
-                  + "'is:unread', 'after:2024/01/01', 'has:attachment'. Provide query and optional maxResults.")
+            description = "Search emails using Gmail query syntax. Examples: 'from:boss@example.com', 'subject:invoice', "
+                    + "'is:unread', 'after:2024/01/01', 'has:attachment'. Provide query and optional maxResults.")
     public String searchEmails(String query, Integer maxResults) {
         String actingUser = resolveUser();
         long start = System.nanoTime();
@@ -94,7 +106,7 @@ class GmailMcpTools {
         int size = (maxResults != null && maxResults > 0 && maxResults <= 100) ? maxResults : 20;
         try {
             String result = gmailService.searchEmails(query, size);
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL searchEmails | user={} query={} maxResults={} latencyMs={}",
                     actingUser, query, size, elapsedMs(start));
             return capped;
@@ -106,15 +118,15 @@ class GmailMcpTools {
     }
 
     @Tool(name = "getEmailThread",
-          description = "Get a full email conversation thread by thread ID. Returns all messages in the thread "
-                  + "in chronological order with full headers and body.")
+            description = "Get a full email conversation thread by thread ID. Returns all messages in the thread "
+                    + "in chronological order with full headers and body.")
     public String getEmailThread(String threadId) {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         requireNonBlank(threadId, "threadId");
         try {
             String result = gmailService.getEmailThread(threadId);
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL getEmailThread | user={} threadId={} latencyMs={}",
                     actingUser, threadId, elapsedMs(start));
             return capped;
@@ -126,14 +138,14 @@ class GmailMcpTools {
     }
 
     @Tool(name = "getGmailProfile",
-          description = "Get the Gmail profile of the authenticated user. Returns email address, total messages count, "
-                  + "total threads count, and history ID.")
+            description = "Get the Gmail profile of the authenticated user. Returns email address, total messages count, "
+                    + "total threads count, and history ID.")
     public String getGmailProfile() {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         try {
             String result = gmailService.getProfile();
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL getGmailProfile | user={} latencyMs={}", actingUser, elapsedMs(start));
             return capped;
         } catch (Exception ex) {
@@ -144,14 +156,14 @@ class GmailMcpTools {
     }
 
     @Tool(name = "listLabels",
-          description = "List all Gmail labels (folders) for the authenticated user. Returns system labels like INBOX, SENT, "
-                  + "TRASH, SPAM and any custom labels with their IDs, names, and message counts.")
+            description = "List all Gmail labels (folders) for the authenticated user. Returns system labels like INBOX, SENT, "
+                    + "TRASH, SPAM and any custom labels with their IDs, names, and message counts.")
     public String listLabels() {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         try {
             String result = gmailService.listLabels();
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL listLabels | user={} latencyMs={}", actingUser, elapsedMs(start));
             return capped;
         } catch (Exception ex) {
@@ -162,8 +174,8 @@ class GmailMcpTools {
     }
 
     @Tool(name = "getEmailsByLabel",
-          description = "Get emails filtered by a specific Gmail label ID. Use listLabels first to get label IDs. "
-                  + "Provide labelId and optional maxResults.")
+            description = "Get emails filtered by a specific Gmail label ID. Use listLabels first to get label IDs. "
+                    + "Provide labelId and optional maxResults.")
     public String getEmailsByLabel(String labelId, Integer maxResults) {
         String actingUser = resolveUser();
         long start = System.nanoTime();
@@ -171,7 +183,7 @@ class GmailMcpTools {
         int size = (maxResults != null && maxResults > 0 && maxResults <= 100) ? maxResults : 20;
         try {
             String result = gmailService.getEmailsByLabel(labelId, size);
-            String capped = OutputSizeCapUtil.cap(result);
+            String capped = OutputSizeCapUtil.cap(result, maxOutputChars);
             log.info("TOOL getEmailsByLabel | user={} labelId={} maxResults={} latencyMs={}",
                     actingUser, labelId, size, elapsedMs(start));
             return capped;
@@ -185,7 +197,7 @@ class GmailMcpTools {
     // ── WRITE tools ───────────────────────────────────────────────────────────
 
     @Tool(name = "markAsRead",
-          description = "Mark an email as read by removing the UNREAD label. Provide the messageId.")
+            description = "Mark an email as read by removing the UNREAD label. Provide the messageId.")
     public String markAsRead(String messageId) {
         String actingUser = resolveUser();
         enforceWriteGate(actingUser);
@@ -204,7 +216,7 @@ class GmailMcpTools {
     }
 
     @Tool(name = "markAsUnread",
-          description = "Mark an email as unread by adding the UNREAD label. Provide the messageId.")
+            description = "Mark an email as unread by adding the UNREAD label. Provide the messageId.")
     public String markAsUnread(String messageId) {
         String actingUser = resolveUser();
         enforceWriteGate(actingUser);
@@ -223,7 +235,7 @@ class GmailMcpTools {
     }
 
     @Tool(name = "createDraft",
-          description = "Create a Gmail draft email. Provide to (recipient email address), subject, and body (plain text).")
+            description = "Create a Gmail draft email. Provide to (recipient email address), subject, and body (plain text).")
     public String createDraft(String to, String subject, String body) {
         String actingUser = resolveUser();
         enforceWriteGate(actingUser);
@@ -244,8 +256,8 @@ class GmailMcpTools {
     }
 
     @Tool(name = "sendEmail",
-          description = "Send an email via Gmail. Provide to (recipient email), subject, and body (plain text). "
-                  + "This immediately sends the email — use createDraft if you want to review first.")
+            description = "Send an email via Gmail. Provide to (recipient email), subject, and body (plain text). "
+                    + "This immediately sends the email — use createDraft if you want to review first.")
     public String sendEmail(String to, String subject, String body) {
         String actingUser = resolveUser();
         enforceWriteGate(actingUser);
@@ -266,7 +278,7 @@ class GmailMcpTools {
     }
 
     @Tool(name = "deleteEmail",
-          description = "Move an email to Trash. Provide the messageId. The email can be permanently deleted from Trash later.")
+            description = "Move an email to Trash. Provide the messageId. The email can be permanently deleted from Trash later.")
     public String deleteEmail(String messageId) {
         String actingUser = resolveUser();
         enforceWriteGate(actingUser);

@@ -30,7 +30,9 @@ public enum TicketStatus {
 
     public abstract Set<TicketStatus> allowedTransitions();
 
-    /** A no-op transition (same status) is always permitted. */
+    /**
+     * A no-op transition (same status) is always permitted.
+     */
     public boolean canTransitionTo(TicketStatus target) {
         return this == target || allowedTransitions().contains(target);
     }

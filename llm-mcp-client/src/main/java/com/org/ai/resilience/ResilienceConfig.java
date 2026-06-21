@@ -3,6 +3,8 @@ package com.org.ai.resilience;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +40,20 @@ public class ResilienceConfig {
         // Publish circuit breaker state, failure rate, call stats to Prometheus
         TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(registry).bindTo(meterRegistry);
 
+        return registry;
+    }
+
+    @Bean
+    public RetryRegistry retryRegistry() {
+        RetryConfig config = RetryConfig.custom()
+                .maxAttempts(2)
+                .waitDuration(Duration.ofMillis(300))
+                .retryExceptions(java.io.IOException.class, RuntimeException.class)
+                .ignoreExceptions(io.github.resilience4j.circuitbreaker.CallNotPermittedException.class)
+                .build();
+
+        RetryRegistry registry = RetryRegistry.of(config);
+        MCP_SERVERS.forEach(registry::retry);
         return registry;
     }
 }

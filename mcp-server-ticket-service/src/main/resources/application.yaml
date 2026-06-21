@@ -1,6 +1,15 @@
 server:
   port: ${SERVER_PORT:8081}
 
+mcp:
+  output:
+    max-chars: ${MCP_OUTPUT_MAX_CHARS:8000}
+  security:
+    token: ${MCP_AUTH_TOKEN:}
+    default-user: system
+    require-user-for-writes: false
+    rate-limit-per-minute: 120
+
 spring:
   application:
     name: ticket-service
@@ -20,13 +29,6 @@ spring:
         enabled: true
         protocol: STATELESS
 
-mcp:
-  security:
-    token: ${MCP_AUTH_TOKEN:}
-    default-user: system
-    require-user-for-writes: false
-    rate-limit-per-minute: 120
-
 management:
   endpoints:
     web:
@@ -34,7 +36,19 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
+      show-components: always
+  info:
+    git:
+      mode: full
+    build:
+      enabled: true
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
   metrics:
     tags:
       application: ${spring.application.name}

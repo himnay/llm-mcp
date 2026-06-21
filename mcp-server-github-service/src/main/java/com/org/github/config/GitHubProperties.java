@@ -6,12 +6,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "github")
 public class GitHubProperties {
-    /** Personal access token or fine-grained token for GitHub API auth */
+    /**
+     * Personal access token or fine-grained token for GitHub API auth
+     */
     private String token = "";
-    /** GitHub API base URL */
+    /**
+     * GitHub API base URL
+     */
     private String apiBaseUrl = "https://api.github.com";
-    /** Default page size for list operations */
+    /**
+     * Default page size for list operations
+     */
     private int defaultPageSize = 30;
-    /** How long (seconds) to cache GitHub API responses */
+    /**
+     * How long (seconds) to cache GitHub API responses
+     */
     private int cacheTtlSeconds = 120;
 }

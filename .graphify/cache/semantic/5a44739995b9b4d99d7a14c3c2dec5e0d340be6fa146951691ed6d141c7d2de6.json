@@ -1,1 +1,54 @@
-{"nodes":[{"id":"ticket_service_application_yaml","label":"Ticket Service application.yaml","file_type":"code","source_file":"mcp-server-ticket-service/src/main/resources/application.yaml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"ticket_service","label":"ticket-service","file_type":"code","source_file":"mcp-server-ticket-service/src/main/resources/application.yaml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null}],"edges":[{"source":"ticket_service_application_yaml","target":"ticket_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"mcp-server-ticket-service/src/main/resources/application.yaml","source_location":null,"weight":1}],"hyperedges":[{"id":"mcp_security_pattern","label":"Shared MCP token-auth/rate-limit security pattern across services","nodes":["ticket_service_application_yaml","travel_service_application_yaml"],"relation":"form","confidence":"INFERRED","confidence_score":0.8,"source_file":"mcp-server-ticket-service/src/main/resources/application.yaml"}]}
+{
+  "nodes": [
+    {
+      "id": "ticket_service_application_yaml",
+      "label": "Ticket Service application.yaml",
+      "file_type": "code",
+      "source_file": "mcp-server-ticket-service/src/main/resources/application.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "ticket_service",
+      "label": "ticket-service",
+      "file_type": "code",
+      "source_file": "mcp-server-ticket-service/src/main/resources/application.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "ticket_service_application_yaml",
+      "target": "ticket_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "mcp-server-ticket-service/src/main/resources/application.yaml",
+      "source_location": null,
+      "weight": 1
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "mcp_security_pattern",
+      "label": "Shared MCP token-auth/rate-limit security pattern across services",
+      "nodes": [
+        "ticket_service_application_yaml",
+        "travel_service_application_yaml"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mcp-server-ticket-service/src/main/resources/application.yaml"
+    }
+  ]
+}

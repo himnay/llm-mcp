@@ -1,1 +1,39 @@
-{"nodes":[{"id":"hr_docker_compose","label":"mcp-server-hr-service docker-compose.yml","file_type":"code","source_file":"mcp-server-hr-service/docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null}],"edges":[{"source":"hr_docker_compose","target":"hr_service","relation":"implements","confidence":"EXTRACTED","confidence_score":1,"source_file":"mcp-server-hr-service/docker-compose.yml","source_location":null,"weight":1},{"source":"hr_docker_compose","target":"deployment_docker_compose","relation":"semantically_similar_to","confidence":"INFERRED","confidence_score":0.9,"source_file":"mcp-server-hr-service/docker-compose.yml","source_location":null,"weight":1}],"hyperedges":[]}
+{
+  "nodes": [
+    {
+      "id": "hr_docker_compose",
+      "label": "mcp-server-hr-service docker-compose.yml",
+      "file_type": "code",
+      "source_file": "mcp-server-hr-service/docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "hr_docker_compose",
+      "target": "hr_service",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "mcp-server-hr-service/docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "hr_docker_compose",
+      "target": "deployment_docker_compose",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mcp-server-hr-service/docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    }
+  ],
+  "hyperedges": []
+}

@@ -1,1 +1,126 @@
-{"nodes":[{"id":"controller_chatcontroller","label":"ChatController.java","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L1"},{"id":"controller_chatcontroller_chatcontroller","label":"ChatController","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L13"},{"id":"controller_chatcontroller_chatcontroller_chat","label":".chat()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L20"}],"edges":[{"source":"controller_chatcontroller","target":"chatrequest","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L3","weight":1},{"source":"controller_chatcontroller","target":"chatresponse","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L4","weight":1},{"source":"controller_chatcontroller","target":"chatservice","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L5","weight":1},{"source":"controller_chatcontroller","target":"valid","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L6","weight":1},{"source":"controller_chatcontroller","target":"requiredargsconstructor","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L7","weight":1},{"source":"controller_chatcontroller","target":"postmapping","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L8","weight":1},{"source":"controller_chatcontroller","target":"requestbody","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L9","weight":1},{"source":"controller_chatcontroller","target":"requestmapping","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L10","weight":1},{"source":"controller_chatcontroller","target":"restcontroller","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L11","weight":1},{"source":"controller_chatcontroller","target":"controller_chatcontroller_chatcontroller","relation":"contains","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L13","weight":1},{"source":"controller_chatcontroller_chatcontroller","target":"controller_chatcontroller_chatcontroller_chat","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java","source_location":"L20","weight":1}]}
+{
+  "nodes": [
+    {
+      "id": "controller_chatcontroller",
+      "label": "ChatController.java",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "controller_chatcontroller_chatcontroller",
+      "label": "ChatController",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L13"
+    },
+    {
+      "id": "controller_chatcontroller_chatcontroller_chat",
+      "label": ".chat()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L20"
+    }
+  ],
+  "edges": [
+    {
+      "source": "controller_chatcontroller",
+      "target": "chatrequest",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L3",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "chatresponse",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L4",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "chatservice",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L5",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "valid",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L6",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "requiredargsconstructor",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L7",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "postmapping",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L8",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "requestbody",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L9",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "requestmapping",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L10",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "restcontroller",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L11",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller",
+      "target": "controller_chatcontroller_chatcontroller",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L13",
+      "weight": 1
+    },
+    {
+      "source": "controller_chatcontroller_chatcontroller",
+      "target": "controller_chatcontroller_chatcontroller_chat",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/controller/ChatController.java",
+      "source_location": "L20",
+      "weight": 1
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package com.org.travel;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -13,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 })
 class TravelServiceApplicationTests {
 
+    @DisplayName("Spring application context loads successfully")
     @Test
     void contextLoads() {
     }

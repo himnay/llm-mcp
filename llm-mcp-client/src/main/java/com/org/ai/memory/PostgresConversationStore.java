@@ -24,9 +24,9 @@ public class PostgresConversationStore {
         return repository.findByConversationId(conversationId, PageRequest.of(0, limit))
                 .stream()
                 .map(e -> switch (e.getMessageType()) {
-                    case "USER"      -> (Message) new UserMessage(e.getContent());
+                    case "USER" -> (Message) new UserMessage(e.getContent());
                     case "ASSISTANT" -> new AssistantMessage(e.getContent());
-                    default          -> null;
+                    default -> null;
                 })
                 .filter(Objects::nonNull)
                 .toList();

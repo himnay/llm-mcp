@@ -3,13 +3,17 @@ package com.org.notification.mcp;
 import com.org.notification.model.Notification;
 import com.org.notification.model.NotificationChannel;
 import com.org.notification.security.ActingUserContext;
+import com.org.notification.security.RateLimiter;
 import com.org.notification.security.SecurityProperties;
 import com.org.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -33,6 +37,10 @@ class NotificationTools {
 
     private final NotificationService notificationService;
     private final SecurityProperties securityProperties;
+    private final RateLimiter rateLimiter;
+
+    @Value("${mcp.output.max-chars:8000}")
+    private int maxOutputChars;
 
     // ─────────────────────────────── READ tools ──────────────────────────────
 
@@ -50,13 +58,16 @@ class NotificationTools {
 
     // ─────────────────────────────── helpers ─────────────────────────────────
 
-    @Tool(name = "getNotifications", description = "Get all notifications")
+    @Tool(name = "getNotifications",
+            description = "List all notifications across all channels and recipients. "
+                    + "Returns id, channel (INTERNAL/EMAIL/SLACK), recipient team, message, sentAt, and status. "
+                    + "Use this to check what notifications have been sent or are pending.")
     public String getNotifications() {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         try {
             List<Notification> result = notificationService.getNotifications();
-            String capped = OutputSizeCapUtil.cap(result.toString());
+            String capped = OutputSizeCapUtil.cap(result.toString(), maxOutputChars);
             log.info("TOOL getNotifications | user={} resultCount={} latencyMs={}",
                     actingUser, result.size(), elapsedMs(start));
             return capped;
@@ -93,7 +104,7 @@ class NotificationTools {
             log.info("AUDIT sendNotification | user={} channel={} recipient={} newId={} "
                             + "outcome=SUCCESS latencyMs={}",
                     actingUser, channel, recipient, result.getId(), elapsedMs(start));
-            return OutputSizeCapUtil.cap(result.toString());
+            return OutputSizeCapUtil.cap(result.toString(), maxOutputChars);
         } catch (Exception ex) {
             log.error("AUDIT sendNotification | user={} channel={} recipient={} outcome=ERROR "
                             + "latencyMs={} error={}",
@@ -113,6 +124,10 @@ class NotificationTools {
             throw new IllegalStateException(
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
+        }
+        if (!rateLimiter.tryAcquireWrite(actingUser)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Write rate limit exceeded (10 writes/min) for user " + actingUser);
         }
     }
 }

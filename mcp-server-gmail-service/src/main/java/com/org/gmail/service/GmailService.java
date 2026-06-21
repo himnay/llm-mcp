@@ -1,9 +1,11 @@
 package com.org.gmail.service;
 
 import com.org.gmail.config.GmailProperties;
+import com.org.gmail.config.GmailTokenManager;
 import com.org.gmail.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -15,16 +17,43 @@ public class GmailService {
 
     private final RestClient gmailRestClient;
     private final GmailProperties gmailProperties;
+    private final GmailTokenManager tokenManager;
+
+    /**
+     * Returns the Authorization header value with the current valid token.
+     * On 401, callers should invoke {@link GmailTokenManager#refreshToken()} and retry once.
+     */
+    private String bearerToken() {
+        return "Bearer " + tokenManager.getValidToken();
+    }
+
+    /**
+     * Executes a RestClient call that supplies a String result.
+     * Retries once after refreshing the token if a 401 is returned.
+     */
+    private String executeWithTokenRefresh(java.util.function.Supplier<String> call) {
+        try {
+            return call.get();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                log.info("Received 401 from Gmail API — refreshing token and retrying");
+                tokenManager.refreshToken();
+                return call.get();
+            }
+            throw e;
+        }
+    }
 
     public String listEmails(String labelIds, int maxResults) {
         String userId = gmailProperties.getUserId();
         String labels = (labelIds != null && !labelIds.isBlank()) ? labelIds : "INBOX";
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/messages?labelIds={labelIds}&maxResults={maxResults}",
                             userId, labels, maxResults)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to list emails: " + ex.getMessage());
         }
@@ -34,10 +63,11 @@ public class GmailService {
         String userId = gmailProperties.getUserId();
         String resolvedFormat = (format != null && !format.isBlank()) ? format : "full";
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/messages/{messageId}?format={format}", userId, messageId, resolvedFormat)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Email message " + messageId + " not found");
         }
@@ -46,10 +76,11 @@ public class GmailService {
     public String searchEmails(String query, int maxResults) {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/messages?q={query}&maxResults={maxResults}", userId, query, maxResults)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Gmail search failed: " + ex.getMessage());
         }
@@ -58,10 +89,11 @@ public class GmailService {
     public String getEmailThread(String threadId) {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/threads/{threadId}?format=full", userId, threadId)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Thread " + threadId + " not found");
         }
@@ -70,10 +102,11 @@ public class GmailService {
     public String getProfile() {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/profile", userId)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to get profile: " + ex.getMessage());
         }
@@ -82,10 +115,11 @@ public class GmailService {
     public String listLabels() {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/labels", userId)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to list labels: " + ex.getMessage());
         }
@@ -94,12 +128,13 @@ public class GmailService {
     public String markAsRead(String messageId) {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.post()
+            return executeWithTokenRefresh(() -> gmailRestClient.post()
                     .uri("/users/{userId}/messages/{messageId}/modify", userId, messageId)
+                    .header("Authorization", bearerToken())
                     .header("Content-Type", "application/json")
                     .body("{\"removeLabelIds\":[\"UNREAD\"]}")
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Email message " + messageId + " not found");
         }
@@ -108,12 +143,13 @@ public class GmailService {
     public String markAsUnread(String messageId) {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.post()
+            return executeWithTokenRefresh(() -> gmailRestClient.post()
                     .uri("/users/{userId}/messages/{messageId}/modify", userId, messageId)
+                    .header("Authorization", bearerToken())
                     .header("Content-Type", "application/json")
                     .body("{\"addLabelIds\":[\"UNREAD\"]}")
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Email message " + messageId + " not found");
         }
@@ -124,12 +160,13 @@ public class GmailService {
         String rawEmail = buildRawEmail(to, subject, body);
         String requestBody = "{\"message\":{\"raw\":\"" + rawEmail + "\"}}";
         try {
-            return gmailRestClient.post()
+            return executeWithTokenRefresh(() -> gmailRestClient.post()
                     .uri("/users/{userId}/drafts", userId)
+                    .header("Authorization", bearerToken())
                     .header("Content-Type", "application/json")
                     .body(requestBody)
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to create draft: " + ex.getMessage());
         }
@@ -140,12 +177,13 @@ public class GmailService {
         String rawEmail = buildRawEmail(to, subject, body);
         String requestBody = "{\"raw\":\"" + rawEmail + "\"}";
         try {
-            return gmailRestClient.post()
+            return executeWithTokenRefresh(() -> gmailRestClient.post()
                     .uri("/users/{userId}/messages/send", userId)
+                    .header("Authorization", bearerToken())
                     .header("Content-Type", "application/json")
                     .body(requestBody)
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to send email: " + ex.getMessage());
         }
@@ -154,10 +192,11 @@ public class GmailService {
     public String deleteEmail(String messageId) {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.post()
+            return executeWithTokenRefresh(() -> gmailRestClient.post()
                     .uri("/users/{userId}/messages/{messageId}/trash", userId, messageId)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Email message " + messageId + " not found");
         }
@@ -166,11 +205,12 @@ public class GmailService {
     public String getEmailsByLabel(String labelId, int maxResults) {
         String userId = gmailProperties.getUserId();
         try {
-            return gmailRestClient.get()
+            return executeWithTokenRefresh(() -> gmailRestClient.get()
                     .uri("/users/{userId}/messages?labelIds={labelId}&maxResults={maxResults}",
                             userId, labelId, maxResults)
+                    .header("Authorization", bearerToken())
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
         } catch (HttpClientErrorException ex) {
             throw new IllegalArgumentException("Failed to get emails by label: " + ex.getMessage());
         }

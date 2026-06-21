@@ -2,6 +2,7 @@ package com.org.ticket.security;
 
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -34,6 +35,7 @@ class McpAuthFilterTokenTest {
         filter = new McpAuthFilter(props, new ObjectMapper(), rateLimiter);
     }
 
+    @DisplayName("Permits health endpoint requests without a token")
     @Test
     void permitsHealthWithoutToken() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
@@ -45,6 +47,7 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
+    @DisplayName("Permits info endpoint requests without a token")
     @Test
     void permitsInfoWithoutToken() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/info");
@@ -56,6 +59,7 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
+    @DisplayName("Permits all requests when no token is configured")
     @Test
     void permitsAllWhenTokenBlank() throws Exception {
         props.setToken("");
@@ -68,6 +72,7 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
+    @DisplayName("Rejects with 401 when a token is required but missing")
     @Test
     void rejects401WhenTokenConfiguredButMissing() throws Exception {
         props.setToken("secret-token");
@@ -80,6 +85,7 @@ class McpAuthFilterTokenTest {
         verifyNoInteractions(filterChain);
     }
 
+    @DisplayName("Rejects with 401 when the provided token does not match")
     @Test
     void rejects401WhenTokenMismatch() throws Exception {
         props.setToken("secret-token");
@@ -93,6 +99,7 @@ class McpAuthFilterTokenTest {
         verifyNoInteractions(filterChain);
     }
 
+    @DisplayName("Permits the request when the bearer token matches")
     @Test
     void permitsWhenTokenMatches() throws Exception {
         props.setToken("secret-token");
@@ -106,6 +113,7 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
+    @DisplayName("Passes the request through when acting user header is set")
     @Test
     void setsActingUserFromHeader() throws Exception {
         props.setToken("");

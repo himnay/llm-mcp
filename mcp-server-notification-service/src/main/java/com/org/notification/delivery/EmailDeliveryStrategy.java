@@ -5,7 +5,9 @@ import com.org.notification.model.NotificationChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-/** Delivers EMAIL notifications (demo implementation logs the dispatch; swap in SMTP here). */
+/**
+ * Delivers EMAIL notifications (demo implementation logs the dispatch; swap in SMTP here).
+ */
 @Slf4j
 @Component
 class EmailDeliveryStrategy implements ChannelDeliveryStrategy {

@@ -3,6 +3,7 @@ package com.org.gmail.security;
 import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -30,6 +31,7 @@ class McpAuthFilterTokenTest {
         filter = new McpAuthFilter(props, new ObjectMapper(), rateLimiter);
     }
 
+    @DisplayName("Permits health check requests without requiring a token")
     @Test
     void permitsHealthWithoutToken() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
@@ -39,6 +41,7 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
+    @DisplayName("Allows requests through when no token is configured")
     @Test
     void allowsRequestWhenNoTokenConfigured() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/mcp");
@@ -48,6 +51,7 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
+    @DisplayName("Rejects requests with an incorrect bearer token with 401")
     @Test
     void rejectsRequestWithWrongToken() throws Exception {
         props.setToken("correct-token");
@@ -58,6 +62,7 @@ class McpAuthFilterTokenTest {
         assertThat(response.getStatus()).isEqualTo(401);
     }
 
+    @DisplayName("Accepts requests with the correct bearer token")
     @Test
     void acceptsRequestWithCorrectToken() throws Exception {
         props.setToken("secret");

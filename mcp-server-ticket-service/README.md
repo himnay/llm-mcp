@@ -14,79 +14,79 @@ protocol **STATELESS**.
 
 ## REST API
 
-| Method | Path                   | Params                                          | Description              |
-|--------|------------------------|-------------------------------------------------|--------------------------|
-| `POST` | `/tickets`             | `title, description, priority, assignee`        | Create a ticket (WRITE)  |
-| `GET`  | `/tickets`             | —                                                | List all tickets         |
-| `GET`  | `/tickets/{id}`        | —                                                | Get a ticket by id       |
-| `PUT`  | `/tickets/{id}/status` | `status`                                         | Update a ticket's status (WRITE) |
-| `PUT`  | `/tickets/{id}/assign` | `assignee`                                       | Assign a ticket (WRITE)  |
+| Method | Path                   | Params                                   | Description                      |
+|--------|------------------------|------------------------------------------|----------------------------------|
+| `POST` | `/tickets`             | `title, description, priority, assignee` | Create a ticket (WRITE)          |
+| `GET`  | `/tickets`             | —                                        | List all tickets                 |
+| `GET`  | `/tickets/{id}`        | —                                        | Get a ticket by id               |
+| `PUT`  | `/tickets/{id}/status` | `status`                                 | Update a ticket's status (WRITE) |
+| `PUT`  | `/tickets/{id}/assign` | `assignee`                               | Assign a ticket (WRITE)          |
 
 `priority` ∈ `TicketPriority`, `status` ∈ `TicketStatus` (see `model/`).
 
 ## MCP Prompts
 
-| Name              | Description                                                                 |
-|-------------------|-----------------------------------------------------------------------------|
+| Name              | Description                                                                                                                                                                                                                    |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `analyze-tickets` | Builds an LLM prompt summarising the current ticket backlog (id, title, priority, status — capped via `OutputSizeCapUtil`) and asks for situation analysis, high-priority call-outs, operational risks and recommended actions |
 
 ---
 
 ## Best Practices Applied
 
-| Practice                       | Status | Notes                                                                                                          |
-|--------------------------------|--------|----------------------------------------------------------------------------------------------------------------|
-| Centralised error handling     | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body |
-| Meaningful 404s                | ✅      | `ResourceNotFoundException` → HTTP 404 for unknown ticket ids                                                  |
-| Input validation               | ✅      | Jakarta Bean Validation (`@NotBlank`, `@NotNull`, `@Positive`, `@Validated`) on every controller param → HTTP 400 |
-| Bearer token auth              | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset |
-| Acting-user propagation        | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`             |
-| Write-operation gating         | ✅      | `enforceWriteGate` in `TicketController` rejects `createTicket` / `updateStatus` / `assignTicket` from the default user when `mcp.security.require-user-for-writes=true` |
-| Rate limiting                  | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                        |
-| Audit logging                  | ✅      | `AUDIT <op> | user=… …args… newId=… outcome=SUCCESS|ERROR latencyMs=…` on every mutating endpoint               |
-| Output truncation              | ✅      | `OutputSizeCapUtil.cap` bounds the ticket summary embedded in the `analyze-tickets` prompt so a large backlog can't flood the LLM context |
-| Database migrations            | ✅      | Flyway with a dedicated history table (`flyway_schema_history_ticket`) so multiple services can share one DB safely |
-| MCP prompts                    | ✅      | `analyze-tickets` registered via `@McpPrompt` (`TicketPromptProvider`)                                          |
-| Externalised config            | ✅      | `SecurityProperties` (`@ConfigurationProperties`) — DB creds, tokens, limits all env-overridable               |
-| Structured logging             | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                        |
-| Distributed tracing            | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                       |
-| Prometheus metrics             | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`                                            |
-| Health/auth allow-list         | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                   |
-| Non-root container             | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                           |
-| MCP tool exposure              | ❌      | No `@Tool`-annotated methods registered — only reachable via REST and the `analyze-tickets` prompt (see note above) |
-| Liveness/readiness probes      | ❌      | `management.endpoint.health.probes.enabled` not set (unlike HR/Gmail/GitHub)                                   |
-| Circuit breaker / resilience   | ❌      | No Resilience4j — DB failures surface directly as REST/tool errors                                             |
+| Practice                     | Status | Notes                                                                                                                                                                    |
+|------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Centralised error handling   | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                         |
+| Meaningful 404s              | ✅      | `ResourceNotFoundException` → HTTP 404 for unknown ticket ids                                                                                                            |
+| Input validation             | ✅      | Jakarta Bean Validation (`@NotBlank`, `@NotNull`, `@Positive`, `@Validated`) on every controller param → HTTP 400                                                        |
+| Bearer token auth            | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset                                               |
+| Acting-user propagation      | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                       |
+| Write-operation gating       | ✅      | `enforceWriteGate` in `TicketController` rejects `createTicket` / `updateStatus` / `assignTicket` from the default user when `mcp.security.require-user-for-writes=true` |
+| Rate limiting                | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                  |
+| Audit logging                | ✅      | `AUDIT <op>                                                                                                                                                              | user=… …args… newId=… outcome=SUCCESS|ERROR latencyMs=…` on every mutating endpoint               |
+| Output truncation            | ✅      | `OutputSizeCapUtil.cap` bounds the ticket summary embedded in the `analyze-tickets` prompt so a large backlog can't flood the LLM context                                |
+| Database migrations          | ✅      | Flyway with a dedicated history table (`flyway_schema_history_ticket`) so multiple services can share one DB safely                                                      |
+| MCP prompts                  | ✅      | `analyze-tickets` registered via `@McpPrompt` (`TicketPromptProvider`)                                                                                                   |
+| Externalised config          | ✅      | `SecurityProperties` (`@ConfigurationProperties`) — DB creds, tokens, limits all env-overridable                                                                         |
+| Structured logging           | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                  |
+| Distributed tracing          | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                |
+| Prometheus metrics           | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`                                                                                                      |
+| Health/auth allow-list       | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                                                                             |
+| Non-root container           | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                                                                                     |
+| MCP tool exposure            | ❌      | No `@Tool`-annotated methods registered — only reachable via REST and the `analyze-tickets` prompt (see note above)                                                      |
+| Liveness/readiness probes    | ❌      | `management.endpoint.health.probes.enabled` not set (unlike HR/Gmail/GitHub)                                                                                             |
+| Circuit breaker / resilience | ❌      | No Resilience4j — DB failures surface directly as REST/tool errors                                                                                                       |
 
 ---
 
 ## Design Patterns (GoF)
 
-| Pattern | Where | Role |
-|---------|-------|------|
-| **State** | `TicketStatus` enum (`canTransitionTo`, `allowedTransitions`) | Each status owns its legal transitions (OPEN → IN_PROGRESS → CLOSED, reopen); `TicketService.updateStatus` rejects illegal moves |
-| **Singleton** | All Spring beans (`TicketService`, `McpAuthFilter`, `RateLimiter`) | One shared, stateless instance per container |
-| **Facade** | `TicketService` | Single entry point hiding repository access and lifecycle rules |
-| **Factory Method** | `@Bean` methods in configuration classes | Container builds and wires collaborating beans |
-| **Builder** | Lombok `@Builder` on `Ticket` | Readable construction of multi-field entities |
-| **Proxy** | Spring Data JPA repositories, `@Transactional` AOP | Dynamic proxies add persistence/transaction behaviour |
-| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
-| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → controller, each link handles or passes on |
-| **Command** | `@McpPrompt` provider (`TicketPromptProvider`) registered as an invokable MCP primitive | Prompt generation reified as a dispatchable object |
+| Pattern                     | Where                                                                                   | Role                                                                                                                             |
+|-----------------------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| **State**                   | `TicketStatus` enum (`canTransitionTo`, `allowedTransitions`)                           | Each status owns its legal transitions (OPEN → IN_PROGRESS → CLOSED, reopen); `TicketService.updateStatus` rejects illegal moves |
+| **Singleton**               | All Spring beans (`TicketService`, `McpAuthFilter`, `RateLimiter`)                      | One shared, stateless instance per container                                                                                     |
+| **Facade**                  | `TicketService`                                                                         | Single entry point hiding repository access and lifecycle rules                                                                  |
+| **Factory Method**          | `@Bean` methods in configuration classes                                                | Container builds and wires collaborating beans                                                                                   |
+| **Builder**                 | Lombok `@Builder` on `Ticket`                                                           | Readable construction of multi-field entities                                                                                    |
+| **Proxy**                   | Spring Data JPA repositories, `@Transactional` AOP                                      | Dynamic proxies add persistence/transaction behaviour                                                                            |
+| **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                            | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks                                                            |
+| **Chain of Responsibility** | Servlet `FilterChain`                                                                   | Auth → rate-limit → controller, each link handles or passes on                                                                   |
+| **Command**                 | `@McpPrompt` provider (`TicketPromptProvider`) registered as an invokable MCP primitive | Prompt generation reified as a dispatchable object                                                                               |
 
 ## Configuration
 
-| Property / Env Var                       | Default                                      | Description                                              |
-|--------------------------------------------|----------------------------------------------|----------------------------------------------------------|
-| `SERVER_PORT`                               | `8081`                                       | HTTP port                                                |
-| `DB_URL`                                    | `jdbc:postgresql://localhost:5432/spring_ai` | PostgreSQL JDBC URL                                      |
-| `DB_USERNAME`                               | `postgres`                                   | DB username                                              |
-| `DB_PASSWORD`                               | `postgres`                                   | DB password                                              |
-| `MCP_AUTH_TOKEN` (`mcp.security.token`)     | *(empty → insecure dev mode)*                | Shared bearer token required from MCP/REST clients       |
-| `mcp.security.default-user`                 | `system`                                     | Fallback acting user when `X-Acting-User` is absent      |
-| `mcp.security.require-user-for-writes`      | `false`                                      | Reject mutating endpoints from the default user when `true` |
-| `mcp.security.rate-limit-per-minute`        | `120`                                        | Per-user fixed-window request cap                        |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `http://localhost:4318`                      | OTLP traces endpoint (Tempo)                             |
-| `TRACING_SAMPLING`                          | `1.0`                                        | Trace sampling probability                               |
+| Property / Env Var                      | Default                                      | Description                                                 |
+|-----------------------------------------|----------------------------------------------|-------------------------------------------------------------|
+| `SERVER_PORT`                           | `8081`                                       | HTTP port                                                   |
+| `DB_URL`                                | `jdbc:postgresql://localhost:5432/spring_ai` | PostgreSQL JDBC URL                                         |
+| `DB_USERNAME`                           | `postgres`                                   | DB username                                                 |
+| `DB_PASSWORD`                           | `postgres`                                   | DB password                                                 |
+| `MCP_AUTH_TOKEN` (`mcp.security.token`) | *(empty → insecure dev mode)*                | Shared bearer token required from MCP/REST clients          |
+| `mcp.security.default-user`             | `system`                                     | Fallback acting user when `X-Acting-User` is absent         |
+| `mcp.security.require-user-for-writes`  | `false`                                      | Reject mutating endpoints from the default user when `true` |
+| `mcp.security.rate-limit-per-minute`    | `120`                                        | Per-user fixed-window request cap                           |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`           | `http://localhost:4318`                      | OTLP traces endpoint (Tempo)                                |
+| `TRACING_SAMPLING`                      | `1.0`                                        | Trace sampling probability                                  |
 
 ---
 

@@ -1,27 +1,27 @@
 # syntax=docker/dockerfile:1
 
-# ---- Build stage ----
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
-
-# Cache dependencies first (layer is reused unless pom.xml changes)
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 RUN ./mvnw -B dependency:go-offline
-
-# Build the application
 COPY src/ src/
 RUN ./mvnw -B clean package -DskipTests
 
-# ---- Runtime stage ----
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:25-jre AS extract
 WORKDIR /app
-
-# Run as a non-root user
-RUN groupadd --system spring && useradd --system --gid spring spring
-USER spring:spring
-
 COPY --from=build /workspace/target/*.jar app.jar
+RUN java -Djarmode=layertools -jar app.jar extract
 
+FROM eclipse-temurin:25-jre AS runtime
+WORKDIR /app
+RUN groupadd --system spring && useradd --system --gid spring spring
+COPY --from=extract /app/dependencies/ ./
+COPY --from=extract /app/spring-boot-loader/ ./
+COPY --from=extract /app/snapshot-dependencies/ ./
+COPY --from=extract /app/application/ ./
+USER spring:spring
 EXPOSE 8084
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8084/actuator/health || exit 1

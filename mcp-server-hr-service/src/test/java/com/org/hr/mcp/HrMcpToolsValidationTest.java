@@ -4,6 +4,7 @@ import com.org.hr.config.McpOutputProperties;
 import com.org.hr.config.SecurityProperties;
 import com.org.hr.service.HRService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,6 +38,7 @@ class HrMcpToolsValidationTest {
     // applyLeave — blank / null username
     // ------------------------------------------------------------------
 
+    @DisplayName("applyLeave throws IllegalArgumentException when username is blank")
     @Test
     void applyLeave_blankUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("", "2025-06-01"))
@@ -44,6 +46,7 @@ class HrMcpToolsValidationTest {
                 .hasMessageContaining("username");
     }
 
+    @DisplayName("applyLeave throws IllegalArgumentException when username is null")
     @Test
     void applyLeave_nullUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave(null, "2025-06-01"))
@@ -55,6 +58,7 @@ class HrMcpToolsValidationTest {
     // applyLeave — invalid date format
     // ------------------------------------------------------------------
 
+    @DisplayName("applyLeave throws IllegalArgumentException when date is not in yyyy-MM-dd format")
     @Test
     void applyLeave_badDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("alice", "not-a-date"))
@@ -62,6 +66,7 @@ class HrMcpToolsValidationTest {
                 .hasMessageContaining("yyyy-MM-dd");
     }
 
+    @DisplayName("applyLeave throws IllegalArgumentException when date is blank")
     @Test
     void applyLeave_blankDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("alice", "  "))
@@ -73,6 +78,7 @@ class HrMcpToolsValidationTest {
     // findReplacement — blank / null username
     // ------------------------------------------------------------------
 
+    @DisplayName("findReplacement throws IllegalArgumentException when username is blank")
     @Test
     void findReplacement_blankUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.findReplacement("", "2025-06-01"))
@@ -84,6 +90,7 @@ class HrMcpToolsValidationTest {
     // findReplacement — invalid date
     // ------------------------------------------------------------------
 
+    @DisplayName("findReplacement throws IllegalArgumentException when date is not in yyyy-MM-dd format")
     @Test
     void findReplacement_badDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.findReplacement("bob", "01/06/2025"))
@@ -95,6 +102,7 @@ class HrMcpToolsValidationTest {
     // applyLeave — requireUserForWrites + default user → IllegalState
     // ------------------------------------------------------------------
 
+    @DisplayName("applyLeave throws IllegalStateException when writes require a user but only the default user is available")
     @Test
     void applyLeave_requireUserForWritesAndDefaultUser_throwsIllegalState() {
         SecurityProperties sec = new SecurityProperties();
@@ -113,6 +121,7 @@ class HrMcpToolsValidationTest {
     // Happy path — valid input reaches service
     // ------------------------------------------------------------------
 
+    @DisplayName("applyLeave succeeds and reaches the service when input is valid")
     @Test
     void applyLeave_validInput_succeeds() {
         when(hrService.applyLeave(anyString(), any())).thenReturn(null);

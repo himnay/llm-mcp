@@ -5,7 +5,9 @@ import com.org.notification.model.NotificationChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-/** Delivers INTERNAL notifications (in-app inbox; demo implementation logs the dispatch). */
+/**
+ * Delivers INTERNAL notifications (in-app inbox; demo implementation logs the dispatch).
+ */
 @Slf4j
 @Component
 class InternalDeliveryStrategy implements ChannelDeliveryStrategy {

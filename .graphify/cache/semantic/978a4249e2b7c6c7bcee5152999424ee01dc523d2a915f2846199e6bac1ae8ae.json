@@ -1,1 +1,29 @@
-{"nodes":[{"id":"insomnia_collection","label":"llm-mcp-client Insomnia Collection","file_type":"document","source_file":"llm-mcp-client/insomnia-collection.yaml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":"Requests against the llm-mcp-client (Enterprise AI Assistant) — the MCP client orchestrating HR, Ticket, Deployment, Notification, GitHub, and Gmail MCP servers via natural-language chat"}],"edges":[{"source":"insomnia_collection","target":"llm_mcp_client","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"llm-mcp-client/insomnia-collection.yaml","source_location":null,"weight":1}],"hyperedges":[]}
+{
+  "nodes": [
+    {
+      "id": "insomnia_collection",
+      "label": "llm-mcp-client Insomnia Collection",
+      "file_type": "document",
+      "source_file": "llm-mcp-client/insomnia-collection.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Requests against the llm-mcp-client (Enterprise AI Assistant) — the MCP client orchestrating HR, Ticket, Deployment, Notification, GitHub, and Gmail MCP servers via natural-language chat"
+    }
+  ],
+  "edges": [
+    {
+      "source": "insomnia_collection",
+      "target": "llm_mcp_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "llm-mcp-client/insomnia-collection.yaml",
+      "source_location": null,
+      "weight": 1
+    }
+  ],
+  "hyperedges": []
+}

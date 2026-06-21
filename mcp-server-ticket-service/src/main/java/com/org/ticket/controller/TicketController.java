@@ -5,6 +5,7 @@ import com.org.ticket.model.Ticket;
 import com.org.ticket.model.TicketPriority;
 import com.org.ticket.model.TicketStatus;
 import com.org.ticket.security.ActingUserContext;
+import com.org.ticket.security.RateLimiter;
 import com.org.ticket.security.SecurityProperties;
 import com.org.ticket.service.TicketService;
 import jakarta.validation.constraints.NotBlank;
@@ -12,8 +13,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -37,6 +40,7 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final SecurityProperties securityProperties;
+    private final RateLimiter rateLimiter;
 
     private static long elapsedMs(long startNano) {
         return (System.nanoTime() - startNano) / 1_000_000L;
@@ -124,6 +128,10 @@ public class TicketController {
             throw new IllegalStateException(
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
+        }
+        if (!rateLimiter.tryAcquireWrite(actingUser)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Write rate limit exceeded (10 writes/min) for user " + actingUser);
         }
     }
 }

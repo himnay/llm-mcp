@@ -10,79 +10,86 @@ tools for the `llm-mcp-client` assistant, backed by the GitHub REST API. Runs on
 
 Defined in `GitHubMcpTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
 
-| Tool name             | Type   | Description                                                                |
-|-----------------------|--------|----------------------------------------------------------------------------|
-| `getRepository`       | READ   | Repository metadata — stars, forks, language, default branch, visibility   |
-| `getCommitHistory`    | READ   | Paginated commit log for a branch (sha, message, author, date)             |
-| `getCommitMetrics`    | READ   | Commit count / author / frequency stats over a `since`–`until` window      |
-| `listBranches`        | READ   | Branches for a repository                                                  |
-| `getPullRequests`     | READ   | Pull requests filtered by state (`open` / `closed` / `all`)                |
-| `getIssues`           | READ   | Issues filtered by state and (optionally) labels                           |
-| `getContributors`     | READ   | Top contributors for a repository                                          |
-| `getWorkflowRuns`     | READ   | GitHub Actions workflow runs, optionally scoped to one workflow id         |
-| `getReleases`         | READ   | Release listing for a repository                                           |
-| `searchRepositories`  | READ   | Repository search by query, sort and order                                 |
-| `getCodeFrequency`    | READ   | Weekly additions/deletions ("code frequency") stats                        |
-| `createIssue`         | WRITE  | Create an issue (title, body, labels) — gated by `require-user-for-writes` |
+| Tool name            | Type  | Description                                                                |
+|----------------------|-------|----------------------------------------------------------------------------|
+| `getRepository`      | READ  | Repository metadata — stars, forks, language, default branch, visibility   |
+| `getCommitHistory`   | READ  | Paginated commit log for a branch (sha, message, author, date)             |
+| `getCommitMetrics`   | READ  | Commit count / author / frequency stats over a `since`–`until` window      |
+| `listBranches`       | READ  | Branches for a repository                                                  |
+| `getPullRequests`    | READ  | Pull requests filtered by state (`open` / `closed` / `all`)                |
+| `getIssues`          | READ  | Issues filtered by state and (optionally) labels                           |
+| `getContributors`    | READ  | Top contributors for a repository                                          |
+| `getWorkflowRuns`    | READ  | GitHub Actions workflow runs, optionally scoped to one workflow id         |
+| `getReleases`        | READ  | Release listing for a repository                                           |
+| `searchRepositories` | READ  | Repository search by query, sort and order                                 |
+| `getCodeFrequency`   | READ  | Weekly additions/deletions ("code frequency") stats                        |
+| `createIssue`        | WRITE | Create an issue (title, body, labels) — gated by `require-user-for-writes` |
 
 ---
 
 ## Best Practices Applied
 
-| Practice                       | Status | Notes                                                                                                                                                                                          |
-|--------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Centralised error handling     | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                                               |
-| Meaningful 404s                | ✅      | `ResourceNotFoundException` thrown from `GitHubService` on `HttpClientErrorException.NotFound` from the GitHub API                                                                             |
-| Input validation               | ✅      | `requireNonBlank` guards on every tool (`owner`, `repo`, `since`, `until`, …) → `IllegalArgumentException` → HTTP 400                                                                          |
-| Bearer token auth              | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs a `WARN` and runs in insecure dev mode if unset                                                                   |
-| Acting-user propagation        | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                                             |
-| Write-operation gating         | ✅      | `enforceWriteGate` rejects mutating tools (`createIssue`) from the default user when `mcp.security.require-user-for-writes=true`                                                               |
-| Rate limiting                  | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                                        |
-| Audit logging                  | ✅      | Every tool call logs `TOOL <name>                                                                                                                                                              | user=… owner=… repo=… latencyMs=…` with outcome on success/error |
-| Output truncation              | ✅      | `OutputSizeCapUtil.cap` truncates GitHub API responses beyond `mcp.output.max-chars` (default 8 000)                                                                                           |
-| Externalised config            | ✅      | `GitHubProperties` / `SecurityProperties` (`@ConfigurationProperties`) — token, base URL, page size, security all env-overridable                                                              |
-| GitHub API hygiene             | ✅      | `RestClient` sends `Accept: application/vnd.github+json` and `X-GitHub-Api-Version` per GitHub's versioning guidance; warns at startup if no token is configured (lower anonymous rate limits) |
-| Structured logging             | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                                        |
-| Distributed tracing            | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                                      |
-| Prometheus metrics             | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`, visualised in the `github-service-overview` Grafana dashboard                                                             |
-| Liveness/readiness probes      | ✅      | `management.endpoint.health.probes.enabled: true`                                                                                                                                              |
-| Health/auth allow-list         | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting so orchestrators can probe the service                                                                            |
-| Non-root container             | ✅      | Multi-stage Dockerfile runs as a dedicated `spring:spring` system user on a `jre`-only runtime image                                                                                           |
-| Circuit breaker / resilience   | ❌      | No Resilience4j — GitHub API failures surface directly to the caller as tool errors                                                                                                            |
-| Caching                        | ❌      | Every tool call hits the live GitHub API; no response caching (consider for high-traffic read tools)                                                                                           |
+| Practice                     | Status | Notes                                                                                                                                                                                          |
+|------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Centralised error handling   | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                                               |
+| Meaningful 404s              | ✅      | `ResourceNotFoundException` thrown from `GitHubService` on `HttpClientErrorException.NotFound` from the GitHub API                                                                             |
+| Input validation             | ✅      | `requireNonBlank` guards on every tool (`owner`, `repo`, `since`, `until`, …) → `IllegalArgumentException` → HTTP 400                                                                          |
+| Bearer token auth            | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs a `WARN` and runs in insecure dev mode if unset                                                                   |
+| Acting-user propagation      | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                                             |
+| Write-operation gating       | ✅      | `enforceWriteGate` rejects mutating tools (`createIssue`) from the default user when `mcp.security.require-user-for-writes=true`                                                               |
+| Rate limiting                | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                                        |
+| Audit logging                | ✅      | Every tool call logs `TOOL <name>                                                                                                                                                              | user=… owner=… repo=… latencyMs=…` with outcome on success/error |
+| Output truncation            | ✅      | `OutputSizeCapUtil.cap` truncates GitHub API responses beyond `mcp.output.max-chars` (default 8 000)                                                                                           |
+| Externalised config          | ✅      | `GitHubProperties` / `SecurityProperties` (`@ConfigurationProperties`) — token, base URL, page size, security all env-overridable                                                              |
+| GitHub API hygiene           | ✅      | `RestClient` sends `Accept: application/vnd.github+json` and `X-GitHub-Api-Version` per GitHub's versioning guidance; warns at startup if no token is configured (lower anonymous rate limits) |
+| Structured logging           | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                                        |
+| Distributed tracing          | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                                      |
+| Prometheus metrics           | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`, visualised in the `github-service-overview` Grafana dashboard                                                             |
+| Liveness/readiness probes    | ✅      | `management.endpoint.health.probes.enabled: true`                                                                                                                                              |
+| Health/auth allow-list       | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting so orchestrators can probe the service                                                                            |
+| Non-root container           | ✅      | Multi-stage Dockerfile runs as a dedicated `spring:spring` system user on a `jre`-only runtime image                                                                                           |
+| Circuit breaker / resilience | ❌      | No Resilience4j — GitHub API failures surface directly to the caller as tool errors                                                                                                            |
+| Caching                      | ❌      | Every tool call hits the live GitHub API; no response caching (consider for high-traffic read tools)                                                                                           |
 
 ---
 
 ## Design Patterns (GoF)
 
-| Pattern | Where | Role |
-|---------|-------|------|
-| **Template Method** | `ToolExecutionTemplate` (`executeRead` / `executeWrite`) | The invariant tool-execution skeleton — resolve acting user, enforce write gate, audit log, cap output — is defined once; each `@Tool` method supplies only the business call |
-| **Command** | `Supplier<String>` actions passed to `ToolExecutionTemplate`; `@Tool` methods wrapped as `ToolCallback` objects | The varying step is reified as an object the template executes |
-| **Proxy** | `@Cacheable` on `GitHubService` (Redis-backed AOP proxy); JPA-style dynamic proxying by Spring | Caching proxy intercepts calls and serves repeated GitHub queries from Redis |
-| **Facade** | `GitHubService` | Hides GitHub REST API details (URIs, headers, 202-retry for async stats, error translation) behind simple methods |
-| **Builder** | `RestClient.builder()`, `RedisCacheManager.builder()` in `GitHubClientConfig` | Stepwise construction of configured clients |
-| **Factory Method** | `@Bean` methods in `GitHubClientConfig`, `McpToolConfig` | Container builds and wires the REST client, cache manager, tool provider |
-| **Observer** | `@EventListener(ContextRefreshedEvent)` (`warnIfNoToken`) | Startup event subscription warns when no GitHub token is configured |
-| **Singleton** | All Spring beans | One shared, stateless instance per container |
-| **Template Method** (framework) | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` hooks |
-| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
+| Pattern                         | Where                                                                                                           | Role                                                                                                                                                                          |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Template Method**             | `ToolExecutionTemplate` (`executeRead` / `executeWrite`)                                                        | The invariant tool-execution skeleton — resolve acting user, enforce write gate, audit log, cap output — is defined once; each `@Tool` method supplies only the business call |
+| **Command**                     | `Supplier<String>` actions passed to `ToolExecutionTemplate`; `@Tool` methods wrapped as `ToolCallback` objects | The varying step is reified as an object the template executes                                                                                                                |
+| **Proxy**                       | `@Cacheable` on `GitHubService` (Redis-backed AOP proxy); JPA-style dynamic proxying by Spring                  | Caching proxy intercepts calls and serves repeated GitHub queries from Redis                                                                                                  |
+| **Facade**                      | `GitHubService`                                                                                                 | Hides GitHub REST API details (URIs, headers, 202-retry for async stats, error translation) behind simple methods                                                             |
+| **Builder**                     | `RestClient.builder()`, `RedisCacheManager.builder()` in `GitHubClientConfig`                                   | Stepwise construction of configured clients                                                                                                                                   |
+| **Factory Method**              | `@Bean` methods in `GitHubClientConfig`, `McpToolConfig`                                                        | Container builds and wires the REST client, cache manager, tool provider                                                                                                      |
+| **Observer**                    | `@EventListener(ContextRefreshedEvent)` (`warnIfNoToken`)                                                       | Startup event subscription warns when no GitHub token is configured                                                                                                           |
+| **Singleton**                   | All Spring beans                                                                                                | One shared, stateless instance per container                                                                                                                                  |
+| **Template Method** (framework) | `McpAuthFilter extends OncePerRequestFilter`                                                                    | Framework skeleton calls `doFilterInternal` hooks                                                                                                                             |
+| **Chain of Responsibility**     | Servlet `FilterChain`                                                                                           | Auth → rate-limit → tools, each link handles or passes on                                                                                                                     |
 
 ## Configuration
 
-| Property / Env Var                     | Default                          | Description                                              |
+| Property / Env Var | Default | Description |
 |-------------------------------=----------|----------------------------------|----------------------------------------------------------|
-| `SERVER_PORT`                            | `8085`                           | HTTP port                                                |
-| `GITHUB_TOKEN` (`github.token`)          | *(empty → unauthenticated)*      | PAT/fine-grained token forwarded as `Authorization: Bearer` to `api.github.com` |
-| `github.api-base-url`                    | `https://api.github.com`         | GitHub REST API base URL                                 |
-| `github.default-page-size`               | `30`                             | `per_page` for paginated list endpoints                  |
-| `MCP_AUTH_TOKEN` (`mcp.security.token`)  | *(empty → insecure dev mode)*    | Shared bearer token required from MCP clients            |
-| `mcp.security.default-user`              | `system`                         | Fallback acting user when `X-Acting-User` is absent      |
-| `mcp.security.require-user-for-writes`   | `false`                          | Reject `createIssue` from the default user when `true`   |
-| `mcp.security.rate-limit-per-minute`     | `120`                            | Per-user fixed-window request cap                        |
-| `mcp.output.max-chars`                   | `8000` *(see `OutputSizeCapUtil`)* | Max characters returned per tool before truncation     |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`            | `http://localhost:4318`          | OTLP traces endpoint (Tempo)                             |
-| `TRACING_SAMPLING`                       | `1.0`                            | Trace sampling probability                               |
+| `SERVER_PORT`                            | `8085`                           | HTTP port |
+| `GITHUB_TOKEN` (`github.token`)          | *(empty → unauthenticated)*      | PAT/fine-grained token forwarded as
+`Authorization: Bearer` to `api.github.com` |
+| `github.api-base-url`                    | `https://api.github.com`         | GitHub REST API base URL |
+| `github.default-page-size`               | `30`                             | `per_page` for paginated list
+endpoints |
+| `MCP_AUTH_TOKEN` (`mcp.security.token`)  | *(empty → insecure dev mode)*    | Shared bearer token required from MCP
+clients |
+| `mcp.security.default-user`              | `system`                         | Fallback acting user when
+`X-Acting-User` is absent |
+| `mcp.security.require-user-for-writes`   | `false`                          | Reject `createIssue` from the default
+user when `true`   |
+| `mcp.security.rate-limit-per-minute`     | `120`                            | Per-user fixed-window request cap |
+| `mcp.output.max-chars`                   | `8000` *(see `OutputSizeCapUtil`)* | Max characters returned per tool
+before truncation |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`            | `http://localhost:4318`          | OTLP traces endpoint (
+Tempo)                             |
+| `TRACING_SAMPLING`                       | `1.0`                            | Trace sampling probability |
 
 ---
 

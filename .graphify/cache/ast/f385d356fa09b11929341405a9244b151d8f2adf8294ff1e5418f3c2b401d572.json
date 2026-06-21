@@ -1,1 +1,95 @@
-{"nodes":[{"id":"repository_ticketrepository","label":"TicketRepository.java","file_type":"code","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L1"},{"id":"repository_ticketrepository_ticketrepository","label":"TicketRepository","file_type":"code","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L6"},{"id":"jparepository","label":"JpaRepository","file_type":"code","source_file":"","source_location":""},{"id":"ticket","label":"Ticket","file_type":"code","source_file":"","source_location":""},{"id":"long","label":"Long","file_type":"code","source_file":"","source_location":""}],"edges":[{"source":"repository_ticketrepository","target":"ticket","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L3","weight":1},{"source":"repository_ticketrepository","target":"jparepository","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L4","weight":1},{"source":"repository_ticketrepository","target":"repository_ticketrepository_ticketrepository","relation":"contains","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L6","weight":1},{"source":"repository_ticketrepository_ticketrepository","target":"jparepository","relation":"inherits","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L6","weight":1},{"source":"repository_ticketrepository_ticketrepository","target":"ticket","relation":"inherits","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L6","weight":1},{"source":"repository_ticketrepository_ticketrepository","target":"long","relation":"inherits","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java","source_location":"L6","weight":1}]}
+{
+  "nodes": [
+    {
+      "id": "repository_ticketrepository",
+      "label": "TicketRepository.java",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "repository_ticketrepository_ticketrepository",
+      "label": "TicketRepository",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L6"
+    },
+    {
+      "id": "jparepository",
+      "label": "JpaRepository",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "ticket",
+      "label": "Ticket",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "long",
+      "label": "Long",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    }
+  ],
+  "edges": [
+    {
+      "source": "repository_ticketrepository",
+      "target": "ticket",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L3",
+      "weight": 1
+    },
+    {
+      "source": "repository_ticketrepository",
+      "target": "jparepository",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L4",
+      "weight": 1
+    },
+    {
+      "source": "repository_ticketrepository",
+      "target": "repository_ticketrepository_ticketrepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L6",
+      "weight": 1
+    },
+    {
+      "source": "repository_ticketrepository_ticketrepository",
+      "target": "jparepository",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L6",
+      "weight": 1
+    },
+    {
+      "source": "repository_ticketrepository_ticketrepository",
+      "target": "ticket",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L6",
+      "weight": 1
+    },
+    {
+      "source": "repository_ticketrepository_ticketrepository",
+      "target": "long",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/java/com/org/ticket/repository/TicketRepository.java",
+      "source_location": "L6",
+      "weight": 1
+    }
+  ]
+}

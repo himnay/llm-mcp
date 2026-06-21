@@ -9,71 +9,71 @@ MCP protocol **STREAMABLE** (the only server in this repo that does — others u
 
 Defined in `DeploymentMcpTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
 
-| Tool name              | Type  | Description                                                       |
-|------------------------|-------|--------------------------------------------------------------------|
-| `getDeployments`       | READ  | Get all deployments                                                |
-| `getDeployment`        | READ  | Get a deployment by its id                                         |
+| Tool name              | Type  | Description                                                                                                       |
+|------------------------|-------|-------------------------------------------------------------------------------------------------------------------|
+| `getDeployments`       | READ  | Get all deployments                                                                                               |
+| `getDeployment`        | READ  | Get a deployment by its id                                                                                        |
 | `createDeployment`     | WRITE | Schedule a deployment — `serviceName`, `environment` (`DEV`/`QA`/`PROD`), `scheduledTime` (ISO datetime), `owner` |
-| `assignOwner`          | WRITE | Assign a new owner to an existing deployment                       |
-| `rescheduleDeployment` | WRITE | Reschedule a deployment to a new ISO datetime (`yyyy-MM-ddTHH:mm:ss`) |
-| `cancelDeployment`     | WRITE | Cancel a deployment by id                                          |
+| `assignOwner`          | WRITE | Assign a new owner to an existing deployment                                                                      |
+| `rescheduleDeployment` | WRITE | Reschedule a deployment to a new ISO datetime (`yyyy-MM-ddTHH:mm:ss`)                                             |
+| `cancelDeployment`     | WRITE | Cancel a deployment by id                                                                                         |
 
 ---
 
 ## Best Practices Applied
 
-| Practice                       | Status | Notes                                                                                                          |
-|--------------------------------|--------|----------------------------------------------------------------------------------------------------------------|
-| Centralised error handling     | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body |
-| Meaningful 404s                | ✅      | `ResourceNotFoundException` → HTTP 404 for unknown deployment ids                                              |
-| Input validation               | ✅      | Blank/null + enum/datetime-format guards on every tool argument → `IllegalArgumentException` → HTTP 400        |
-| Bearer token auth              | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset |
-| Acting-user propagation        | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`             |
-| Write-operation gating         | ✅      | `enforceWriteGate` rejects `createDeployment` / `assignOwner` / `rescheduleDeployment` / `cancelDeployment` from the default user when `mcp.security.require-user-for-writes=true` |
-| Rate limiting                  | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                        |
-| Audit logging                  | ✅      | Every tool call logs `TOOL <name> | user=… …args… outcome=… latencyMs=…`                                        |
-| Output truncation              | ✅      | `OutputSizeCapUtil.cap` truncates tool responses beyond `mcp.output.max-chars`                                  |
-| Database migrations            | ✅      | Flyway with a dedicated history table (`flyway_schema_history_deployment`) so multiple services can share one DB safely |
-| Query timeouts                 | ✅      | `jpa.properties.jakarta.persistence.query.timeout: 5000` — bounds slow queries                                  |
-| Connection pool tuning         | ✅      | HikariCP `connection-timeout: 10000`                                                                           |
-| Externalised config            | ✅      | `SecurityProperties` (`@ConfigurationProperties`) — DB creds, tokens, limits all env-overridable               |
-| Structured logging             | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                        |
-| Distributed tracing            | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                       |
-| Prometheus metrics             | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`                                            |
-| Liveness/readiness probes      | ✅      | `management.endpoint.health.probes.enabled: true`                                                              |
-| Health/auth allow-list         | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                   |
-| Non-root container             | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                           |
-| Circuit breaker / resilience   | ❌      | No Resilience4j — DB failures surface directly as tool errors                                                  |
+| Practice                     | Status | Notes                                                                                                                                                                              |
+|------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Centralised error handling   | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                                   |
+| Meaningful 404s              | ✅      | `ResourceNotFoundException` → HTTP 404 for unknown deployment ids                                                                                                                  |
+| Input validation             | ✅      | Blank/null + enum/datetime-format guards on every tool argument → `IllegalArgumentException` → HTTP 400                                                                            |
+| Bearer token auth            | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset                                                         |
+| Acting-user propagation      | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                                 |
+| Write-operation gating       | ✅      | `enforceWriteGate` rejects `createDeployment` / `assignOwner` / `rescheduleDeployment` / `cancelDeployment` from the default user when `mcp.security.require-user-for-writes=true` |
+| Rate limiting                | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                            |
+| Audit logging                | ✅      | Every tool call logs `TOOL <name>                                                                                                                                                  | user=… …args… outcome=… latencyMs=…`                                        |
+| Output truncation            | ✅      | `OutputSizeCapUtil.cap` truncates tool responses beyond `mcp.output.max-chars`                                                                                                     |
+| Database migrations          | ✅      | Flyway with a dedicated history table (`flyway_schema_history_deployment`) so multiple services can share one DB safely                                                            |
+| Query timeouts               | ✅      | `jpa.properties.jakarta.persistence.query.timeout: 5000` — bounds slow queries                                                                                                     |
+| Connection pool tuning       | ✅      | HikariCP `connection-timeout: 10000`                                                                                                                                               |
+| Externalised config          | ✅      | `SecurityProperties` (`@ConfigurationProperties`) — DB creds, tokens, limits all env-overridable                                                                                   |
+| Structured logging           | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                            |
+| Distributed tracing          | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                          |
+| Prometheus metrics           | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`                                                                                                                |
+| Liveness/readiness probes    | ✅      | `management.endpoint.health.probes.enabled: true`                                                                                                                                  |
+| Health/auth allow-list       | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                                                                                       |
+| Non-root container           | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                                                                                               |
+| Circuit breaker / resilience | ❌      | No Resilience4j — DB failures surface directly as tool errors                                                                                                                      |
 
 ---
 
 ## Design Patterns (GoF)
 
-| Pattern | Where | Role |
-|---------|-------|------|
-| **Singleton** | All Spring beans (`DeploymentService`, `McpAuthFilter`, `RateLimiter`) | One shared, stateless instance per container |
-| **Facade** | `DeploymentService` | Single entry point hiding repository access and scheduling rules |
-| **Factory Method** | `@Bean` methods in `McpToolConfig`, `SecurityConfig` | Container builds and wires collaborating beans |
-| **Builder** | Lombok `@Builder` on `Deployment`; `MethodToolCallbackProvider.builder()` | Readable construction of entities and the tool provider |
-| **Proxy** | Spring Data JPA repositories, `@Transactional` AOP | Dynamic proxies add persistence/transaction behaviour |
-| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
-| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
-| **Command** | `@Tool` methods (`createDeployment`, `cancelDeployment`, …) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime |
+| Pattern                     | Where                                                                                         | Role                                                                  |
+|-----------------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| **Singleton**               | All Spring beans (`DeploymentService`, `McpAuthFilter`, `RateLimiter`)                        | One shared, stateless instance per container                          |
+| **Facade**                  | `DeploymentService`                                                                           | Single entry point hiding repository access and scheduling rules      |
+| **Factory Method**          | `@Bean` methods in `McpToolConfig`, `SecurityConfig`                                          | Container builds and wires collaborating beans                        |
+| **Builder**                 | Lombok `@Builder` on `Deployment`; `MethodToolCallbackProvider.builder()`                     | Readable construction of entities and the tool provider               |
+| **Proxy**                   | Spring Data JPA repositories, `@Transactional` AOP                                            | Dynamic proxies add persistence/transaction behaviour                 |
+| **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                                  | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks |
+| **Chain of Responsibility** | Servlet `FilterChain`                                                                         | Auth → rate-limit → tools, each link handles or passes on             |
+| **Command**                 | `@Tool` methods (`createDeployment`, `cancelDeployment`, …) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime                          |
 
 ## Configuration
 
-| Property / Env Var                       | Default                                      | Description                                              |
-|--------------------------------------------|----------------------------------------------|----------------------------------------------------------|
-| `SERVER_PORT`                               | `8082`                                       | HTTP port                                                |
-| `DB_URL`                                    | `jdbc:postgresql://localhost:5432/spring_ai` | PostgreSQL JDBC URL                                      |
-| `DB_USERNAME`                               | `postgres`                                   | DB username                                              |
-| `DB_PASSWORD`                               | `postgres`                                   | DB password                                              |
-| `MCP_AUTH_TOKEN` (`mcp.security.token`)     | *(empty → insecure dev mode)*                | Shared bearer token required from MCP clients            |
-| `mcp.security.default-user`                 | `system`                                     | Fallback acting user when `X-Acting-User` is absent      |
-| `mcp.security.require-user-for-writes`      | `false`                                      | Reject write tools from the default user when `true`     |
-| `mcp.security.rate-limit-per-minute`        | `120`                                        | Per-user fixed-window request cap                        |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `http://localhost:4318`                      | OTLP traces endpoint (Tempo)                             |
-| `TRACING_SAMPLING`                          | `1.0`                                        | Trace sampling probability                               |
+| Property / Env Var                      | Default                                      | Description                                          |
+|-----------------------------------------|----------------------------------------------|------------------------------------------------------|
+| `SERVER_PORT`                           | `8082`                                       | HTTP port                                            |
+| `DB_URL`                                | `jdbc:postgresql://localhost:5432/spring_ai` | PostgreSQL JDBC URL                                  |
+| `DB_USERNAME`                           | `postgres`                                   | DB username                                          |
+| `DB_PASSWORD`                           | `postgres`                                   | DB password                                          |
+| `MCP_AUTH_TOKEN` (`mcp.security.token`) | *(empty → insecure dev mode)*                | Shared bearer token required from MCP clients        |
+| `mcp.security.default-user`             | `system`                                     | Fallback acting user when `X-Acting-User` is absent  |
+| `mcp.security.require-user-for-writes`  | `false`                                      | Reject write tools from the default user when `true` |
+| `mcp.security.rate-limit-per-minute`    | `120`                                        | Per-user fixed-window request cap                    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`           | `http://localhost:4318`                      | OTLP traces endpoint (Tempo)                         |
+| `TRACING_SAMPLING`                      | `1.0`                                        | Trace sampling probability                           |
 
 ---
 

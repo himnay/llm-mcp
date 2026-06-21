@@ -1,24 +1,27 @@
 package com.org.ai.service;
 
 import com.org.ai.config.AssistantProperties;
-import com.org.ai.memory.PostgresConversationStore;
+import com.org.ai.mcp.SemanticToolSelector;
 import com.org.ai.web.RequestContext;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -26,48 +29,71 @@ import java.util.Map;
 public class ChatService {
 
     private final ChatClient chatClient;
-    private final ToolCallbackProvider mcpToolProvider;
+    private final SemanticToolSelector semanticToolSelector;
     private final PromptLoader promptLoader;
     private final AssistantProperties assistantProperties;
-    private final PostgresConversationStore conversationStore;
     private final MeterRegistry meterRegistry;
 
     @Value("classpath:prompts/system.st")
     private Resource systemPromptTemplate;
 
     public String handleMessage(String message) {
-        String conversationId  = RequestContext.user();
+        String conversationId = RequestContext.user();
         String processedPrompt = promptLoader.loadPrompt(message);
 
-        // Render the system prompt from the .st template
         String systemPrompt = new PromptTemplate(systemPromptTemplate).render(Map.of(
                 "assistantName", assistantProperties.getName(),
-                "currentUser",   conversationId,
-                "currentTime",   ZonedDateTime.now().toString()
+                "currentUser", conversationId,
+                "currentTime", ZonedDateTime.now().toString()
         ));
-
-        // Load previous turns from PostgreSQL (capped to memory window)
-        List<Message> history = conversationStore.loadMessages(
-                conversationId, assistantProperties.getMemoryWindow());
 
         ChatResponse aiResponse = chatClient
                 .prompt()
                 .system(systemPrompt)
-                .messages(history)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .user(processedPrompt)
-                .toolCallbacks(mcpToolProvider)
+                .toolCallbacks(semanticToolSelector.selectTools(processedPrompt))
                 .call()
                 .chatResponse();
 
         String content = aiResponse.getResult().getOutput().getText();
-
-        // Persist this exchange so future turns have context
-        conversationStore.saveExchange(conversationId, processedPrompt, content);
-
-        // Record OpenAI token consumption for Grafana
         recordTokenUsage(aiResponse, conversationId);
-
         return content;
+    }
+
+    public void streamChat(String conversationId, String message, SseEmitter emitter) {
+        String processedPrompt = promptLoader.loadPrompt(message);
+
+        String systemPrompt = new PromptTemplate(systemPromptTemplate).render(Map.of(
+                "assistantName", assistantProperties.getName(),
+                "currentUser", conversationId,
+                "currentTime", ZonedDateTime.now().toString()
+        ));
+
+        Executor executor = Executors.newVirtualThreadPerTaskExecutor();
+        executor.execute(() -> {
+            try {
+                chatClient.prompt()
+                        .system(systemPrompt)
+                        .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                        .user(processedPrompt)
+                        .toolCallbacks(semanticToolSelector.selectTools(processedPrompt))
+                        .stream()
+                        .content()
+                        .doOnNext(token -> {
+                            try {
+                                emitter.send(SseEmitter.event().name("token").data(token));
+                            } catch (IOException e) {
+                                emitter.completeWithError(e);
+                            }
+                        })
+                        .doOnComplete(emitter::complete)
+                        .doOnError(emitter::completeWithError)
+                        .subscribe();
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        });
     }
 
     private void recordTokenUsage(ChatResponse response, String user) {
@@ -75,10 +101,10 @@ public class ChatService {
             Usage usage = response.getMetadata().getUsage();
             if (usage == null) return;
 
-            double promptTokens     = usage.getPromptTokens()     != null ? usage.getPromptTokens()     : 0;
+            double promptTokens = usage.getPromptTokens() != null ? usage.getPromptTokens() : 0;
             double completionTokens = usage.getCompletionTokens() != null ? usage.getCompletionTokens() : 0;
 
-            meterRegistry.counter("ai.tokens", "type", "prompt",     "user", user).increment(promptTokens);
+            meterRegistry.counter("ai.tokens", "type", "prompt", "user", user).increment(promptTokens);
             meterRegistry.counter("ai.tokens", "type", "completion", "user", user).increment(completionTokens);
 
             log.info("token-usage user={} prompt={} completion={} total={}",

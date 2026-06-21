@@ -349,93 +349,301 @@
         }
       ]
     },
-
-    { "type": "row", "title": "OpenAI Token Usage", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 } },
+    {
+      "type": "row",
+      "title": "OpenAI Token Usage",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      }
+    },
     {
       "type": "timeseries",
       "title": "Token Consumption Rate (tokens/s)",
       "description": "Prompt and completion tokens consumed per second by the MCP client when calling OpenAI.",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 25 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 25
+      },
       "fieldConfig": {
-        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2 } },
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "prompt"     }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue"  } }] },
-          { "matcher": { "id": "byName", "options": "completion" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "prompt"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "completion"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
         ]
       },
       "targets": [
-        { "refId": "A", "expr": "sum by (type) (rate(ai_tokens_total{application=\"ai-mcp-server\"}[5m]))", "legendFormat": "{{type}}" }
+        {
+          "refId": "A",
+          "expr": "sum by (type) (rate(ai_tokens_total{application=\"ai-mcp-server\"}[5m]))",
+          "legendFormat": "{{type}}"
+        }
       ]
     },
     {
       "type": "stat",
       "title": "Cumulative Tokens (prompt / completion)",
       "description": "Total tokens consumed since the service started.",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 25 },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area", "textMode": "value_and_name" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 25
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "value_and_name"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 100000 }, { "color": "red", "value": 500000 }] }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 100000
+              },
+              {
+                "color": "red",
+                "value": 500000
+              }
+            ]
+          }
         }
       },
       "targets": [
-        { "refId": "A", "expr": "sum by (type) (ai_tokens_total{application=\"ai-mcp-server\"})", "legendFormat": "{{type}}" }
+        {
+          "refId": "A",
+          "expr": "sum by (type) (ai_tokens_total{application=\"ai-mcp-server\"})",
+          "legendFormat": "{{type}}"
+        }
       ]
     },
-
-    { "type": "row", "title": "MCP Circuit Breakers", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 } },
+    {
+      "type": "row",
+      "title": "MCP Circuit Breakers",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      }
+    },
     {
       "type": "stat",
       "title": "Circuit Breaker State (per MCP server)",
       "description": "CLOSED (green) = healthy. OPEN (red) = too many failures, calls rejected. HALF-OPEN (yellow) = probing for recovery.",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 34 },
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "textMode": "value_and_name" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 34
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
       "fieldConfig": {
         "defaults": {
-          "mappings": [{ "type": "value", "options": {
-            "0": { "text": "CLOSED",     "color": "green"  },
-            "1": { "text": "OPEN",       "color": "red"    },
-            "2": { "text": "HALF-OPEN",  "color": "yellow" },
-            "3": { "text": "DISABLED",   "color": "grey"   },
-            "4": { "text": "FORCED-OPEN","color": "orange" }
-          }}],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "CLOSED",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "OPEN",
+                  "color": "red"
+                },
+                "2": {
+                  "text": "HALF-OPEN",
+                  "color": "yellow"
+                },
+                "3": {
+                  "text": "DISABLED",
+                  "color": "grey"
+                },
+                "4": {
+                  "text": "FORCED-OPEN",
+                  "color": "orange"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
         }
       },
       "targets": [
-        { "refId": "A", "expr": "resilience4j_circuitbreaker_state{application=\"ai-mcp-server\", name=~\"mcp-.*\"}", "legendFormat": "{{name}}" }
+        {
+          "refId": "A",
+          "expr": "resilience4j_circuitbreaker_state{application=\"ai-mcp-server\", name=~\"mcp-.*\"}",
+          "legendFormat": "{{name}}"
+        }
       ]
     },
     {
       "type": "timeseries",
       "title": "Circuit Breaker Failure Rate (%)",
       "description": "Percentage of failed calls. Exceeding 50% trips the breaker to OPEN.",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 34 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 34
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent", "min": 0, "max": 100,
-          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2 },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 30 }, { "color": "red", "value": 50 }] }
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          }
         }
       },
       "targets": [
-        { "refId": "A", "expr": "resilience4j_circuitbreaker_failure_rate{application=\"ai-mcp-server\", name=~\"mcp-.*\"}", "legendFormat": "{{name}}" }
+        {
+          "refId": "A",
+          "expr": "resilience4j_circuitbreaker_failure_rate{application=\"ai-mcp-server\", name=~\"mcp-.*\"}",
+          "legendFormat": "{{name}}"
+        }
       ]
     },
     {
       "type": "timeseries",
       "title": "Circuit Breaker Call Outcomes (calls/s)",
       "description": "Rate of successful, failed, and not-permitted (circuit open) calls per server.",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 },
-      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        }
+      },
       "targets": [
-        { "refId": "A", "expr": "sum by (name, kind) (rate(resilience4j_circuitbreaker_calls_total{application=\"ai-mcp-server\", name=~\"mcp-.*\"}[1m]))", "legendFormat": "{{name}} / {{kind}}" }
+        {
+          "refId": "A",
+          "expr": "sum by (name, kind) (rate(resilience4j_circuitbreaker_calls_total{application=\"ai-mcp-server\", name=~\"mcp-.*\"}[1m]))",
+          "legendFormat": "{{name}} / {{kind}}"
+        }
       ]
     }
   ]

@@ -1,1 +1,159 @@
-{"nodes":[{"id":"web_requestcontext","label":"RequestContext.java","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L1"},{"id":"web_requestcontext_requestcontext","label":"RequestContext","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L9"},{"id":"web_requestcontext_requestcontext_requestcontext","label":".RequestContext()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L13"},{"id":"web_requestcontext_requestcontext_set","label":".set()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L16"},{"id":"web_requestcontext_requestcontext_update","label":".update()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L23"},{"id":"web_requestcontext_requestcontext_user","label":".user()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L29"},{"id":"web_requestcontext_requestcontext_conversationid","label":".conversationId()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L34"},{"id":"web_requestcontext_requestcontext_allowwritetools","label":".allowWriteTools()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L39"},{"id":"web_requestcontext_requestcontext_clear","label":".clear()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L44"}],"edges":[{"source":"web_requestcontext","target":"web_requestcontext_requestcontext","relation":"contains","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L9","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_requestcontext","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L13","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_set","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L16","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_update","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L23","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_user","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L29","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_conversationid","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L34","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_allowwritetools","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L39","weight":1},{"source":"web_requestcontext_requestcontext","target":"web_requestcontext_requestcontext_clear","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L44","weight":1},{"source":"web_requestcontext_requestcontext_update","target":"web_requestcontext_requestcontext_user","relation":"calls","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L25","weight":1},{"source":"web_requestcontext_requestcontext_update","target":"web_requestcontext_requestcontext_set","relation":"calls","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java","source_location":"L26","weight":1}]}
+{
+  "nodes": [
+    {
+      "id": "web_requestcontext",
+      "label": "RequestContext.java",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "web_requestcontext_requestcontext",
+      "label": "RequestContext",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L9"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_requestcontext",
+      "label": ".RequestContext()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L13"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_set",
+      "label": ".set()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L16"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_update",
+      "label": ".update()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L23"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_user",
+      "label": ".user()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L29"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_conversationid",
+      "label": ".conversationId()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L34"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_allowwritetools",
+      "label": ".allowWriteTools()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L39"
+    },
+    {
+      "id": "web_requestcontext_requestcontext_clear",
+      "label": ".clear()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L44"
+    }
+  ],
+  "edges": [
+    {
+      "source": "web_requestcontext",
+      "target": "web_requestcontext_requestcontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L9",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_requestcontext",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L13",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_set",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L16",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_update",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L23",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_user",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L29",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_conversationid",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L34",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_allowwritetools",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L39",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext",
+      "target": "web_requestcontext_requestcontext_clear",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L44",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext_update",
+      "target": "web_requestcontext_requestcontext_user",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L25",
+      "weight": 1
+    },
+    {
+      "source": "web_requestcontext_requestcontext_update",
+      "target": "web_requestcontext_requestcontext_set",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/web/RequestContext.java",
+      "source_location": "L26",
+      "weight": 1
+    }
+  ]
+}

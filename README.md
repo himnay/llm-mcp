@@ -50,14 +50,31 @@ All modules share the same stack:
 
 | Concern       | Technology                                                                    |
 |---------------|-------------------------------------------------------------------------------|
-| Language      | Java 21                                                                       |
-| Framework     | Spring Boot 4.0.3                                                             |
+| Language      | Java 25                                                                       |
+| Framework     | Spring Boot 4.1.0                                                             |
 | Web           | Spring MVC                                                                    |
-| AI / MCP      | Spring AI 2.0.0-M8 (MCP server + client)                                      |
+| AI / MCP      | Spring AI 2.0.0 (MCP server + client)                                         |
 | Persistence   | Spring Data JPA + PostgreSQL + Flyway                                         |
 | Validation    | Jakarta Bean Validation                                                       |
 | Observability | Spring Boot Actuator + Micrometer + Prometheus + OTLP Tracing → Grafana Tempo |
 | Build         | Maven (each module has its own `./mvnw` wrapper)                              |
+
+> **Migration note:** all eight modules (the seven MCP servers plus `llm-mcp-client`) now build on
+> Java 25 with the Spring AI 2.0.0 BOM, inherited transitively from `super-pom` / `llm-bom` (shared
+> across `llm-chat`, `llm-gateway`, `llm-mcp`, `llm-rag`) — no module overrides `java.version`,
+> `maven.compiler.release`, or `spring-ai.version`. Every module's multi-stage `Dockerfile` was
+> bumped from `eclipse-temurin:21-jdk`/`21-jre` to `eclipse-temurin:25-jdk`/`25-jre` to match
+> (build/extract/runtime stage structure unchanged). `mvn -o compile` succeeds for all eight modules
+> under a JDK 25 toolchain; `mvn -o test` passes for `llm-mcp-client`, `mcp-server-hr-service`,
+> `mcp-server-ticket-service`, `mcp-server-notification-service`, and `mcp-server-travel-service` —
+> `mcp-server-deployment-service`, `mcp-server-github-service`, and `mcp-server-gmail-service` have
+> pre-existing test/source drift unrelated to this migration (each module's `*McpTools`/
+> `ToolExecutionTemplate` constructor already takes a `RateLimiter` parameter that its corresponding
+> test predates). `llm-mcp-client` additionally needed `springdoc-openapi-starter-webmvc-ui` bumped
+> from `2.8.9` to `3.0.3` — the older version referenced a Spring Data class that moved package in
+> Spring Boot 4.1, which crashed startup with `NoClassDefFoundError` before any DB/Redis connection
+> was even attempted; see `llm-mcp-client/README.md` for details. With that fix, `llm-mcp-client`
+> boots cleanly up to (and only stops at) the expected missing-Postgres-connection failure.
 
 ---
 
@@ -147,7 +164,7 @@ calls to the downstream MCP servers over Streamable HTTP.
 | Property                          | Default                   | Description                                               |
 |-----------------------------------|---------------------------|-----------------------------------------------------------|
 | `assistant.name`                  | `Enterprise AI Assistant` | Display name / persona                                    |
-| `assistant.default-user`          | `himansu.nayak`                | Acting user when no authenticated principal is present    |
+| `assistant.default-user`          | `himansu.nayak`           | Acting user when no authenticated principal is present    |
 | `assistant.mcp-auth-token`        | *(env: MCP_AUTH_TOKEN)*   | Token forwarded to MCP servers as `Bearer` header         |
 | `assistant.memory-window`         | `20`                      | Number of conversation turns kept in context              |
 | `assistant.max-tool-iterations`   | `5`                       | Max tool-call rounds per chat turn before forcing a reply |
@@ -369,37 +386,38 @@ Grafana → Explore → Tempo.
 
 **Token usage:** OpenAI token consumption is recorded by `ChatService.recordTokenUsage` as the Prometheus counter
 `ai.tokens` (tags: `type=prompt|completion`, `user=<acting user>`). Per-server attribution is not directly available
-(tokens are consumed in a single OpenAI call at the client); approximate it by tracking which tools were called per turn.
+(tokens are consumed in a single OpenAI call at the client); approximate it by tracking which tools were called per
+turn.
 
 ---
 
 ## Best Practices Applied
 
-| Practice                        | Status | Notes                                                                                                                                   |
-|---------------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| Centralised error handling      | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) in every module — consistent `{status, error, message, details, timestamp}` envelope |
-| Meaningful 404s                 | ✅      | `ResourceNotFoundException` → HTTP 404 on all domain lookups                                                                            |
-| Input validation                | ✅      | Jakarta constraints (`@NotBlank`, `@NotNull`, `@Positive`, `@Valid`) on all controllers; violations → HTTP 400                          |
-| Bearer token auth               | ✅      | `McpAuthFilter` in all servers; insecure-dev-mode warning when unset                                                                    |
-| Acting-user propagation         | ✅      | `X-Acting-User` header forwarded from client to server; stored in `ActingUserContext` thread-local                                      |
-| Rate limiting                   | ✅      | Per-user fixed-window (120 req/min on servers, 30 req/min on client)                                                                    |
-| Audit logging                   | ✅      | Structured `AUDIT` log lines on every tool invocation (hr, ticket, deployment; notification has filter, verify logging)                 |
-| Output truncation               | ✅      | `mcp.output.max-chars: 8000` on servers; `assistant.max-tool-result-chars: 8000` on client                                              |
-| Memory window                   | ✅      | `assistant.memory-window: 20` — caps conversation context sent to OpenAI                                                                |
-| Max tool iterations             | ✅      | `assistant.max-tool-iterations: 5` — prevents infinite tool-call loops                                                                  |
-| Write-tool classification       | ✅      | `assistant.write-tool-keywords` list allows the client to identify and guard write operations                                           |
-| Externalised config             | ✅      | All ports, credentials, and tokens are environment-variable-overridable with safe local defaults                                        |
-| Typed configuration             | ✅      | `@ConfigurationProperties` beans (`AssistantProperties`, `SecurityProperties`) — no hardcoded values                                    |
-| Structured logging              | ✅      | `logback-spring.xml` with application-tagged console pattern in every module                                                            |
-| Distributed tracing             | ✅      | Micrometer Tracing → OTLP → Grafana Tempo; trace IDs propagate client → server                                                          |
-| Prometheus metrics              | ✅      | Micrometer + Prometheus registry; application-tagged; scraped by Grafana dashboard                                                      |
-| Liveness/readiness probes       | ✅      | Enabled on HR and Deployment services; all services expose `/actuator/health`                                                           |
-| MCP prompts                     | ✅      | Ticket service exposes `analyze-tickets` prompt; client expands `/promptName` shorthand                                                 |
-| Token usage metering            | ✅      | `ChatService.recordTokenUsage` records prompt/completion tokens via Micrometer (`ai.tokens` counter, tagged by user)                    |
+| Practice                        | Status | Notes                                                                                                                                       |
+|---------------------------------|--------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| Centralised error handling      | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) in every module — consistent `{status, error, message, details, timestamp}` envelope     |
+| Meaningful 404s                 | ✅      | `ResourceNotFoundException` → HTTP 404 on all domain lookups                                                                                |
+| Input validation                | ✅      | Jakarta constraints (`@NotBlank`, `@NotNull`, `@Positive`, `@Valid`) on all controllers; violations → HTTP 400                              |
+| Bearer token auth               | ✅      | `McpAuthFilter` in all servers; insecure-dev-mode warning when unset                                                                        |
+| Acting-user propagation         | ✅      | `X-Acting-User` header forwarded from client to server; stored in `ActingUserContext` thread-local                                          |
+| Rate limiting                   | ✅      | Per-user fixed-window (120 req/min on servers, 30 req/min on client)                                                                        |
+| Audit logging                   | ✅      | Structured `AUDIT` log lines on every tool invocation (hr, ticket, deployment; notification has filter, verify logging)                     |
+| Output truncation               | ✅      | `mcp.output.max-chars: 8000` on servers; `assistant.max-tool-result-chars: 8000` on client                                                  |
+| Memory window                   | ✅      | `assistant.memory-window: 20` — caps conversation context sent to OpenAI                                                                    |
+| Max tool iterations             | ✅      | `assistant.max-tool-iterations: 5` — prevents infinite tool-call loops                                                                      |
+| Write-tool classification       | ✅      | `assistant.write-tool-keywords` list allows the client to identify and guard write operations                                               |
+| Externalised config             | ✅      | All ports, credentials, and tokens are environment-variable-overridable with safe local defaults                                            |
+| Typed configuration             | ✅      | `@ConfigurationProperties` beans (`AssistantProperties`, `SecurityProperties`) — no hardcoded values                                        |
+| Structured logging              | ✅      | `logback-spring.xml` with application-tagged console pattern in every module                                                                |
+| Distributed tracing             | ✅      | Micrometer Tracing → OTLP → Grafana Tempo; trace IDs propagate client → server                                                              |
+| Prometheus metrics              | ✅      | Micrometer + Prometheus registry; application-tagged; scraped by Grafana dashboard                                                          |
+| Liveness/readiness probes       | ✅      | Enabled on HR and Deployment services; all services expose `/actuator/health`                                                               |
+| MCP prompts                     | ✅      | Ticket service exposes `analyze-tickets` prompt; client expands `/promptName` shorthand                                                     |
+| Token usage metering            | ✅      | `ChatService.recordTokenUsage` records prompt/completion tokens via Micrometer (`ai.tokens` counter, tagged by user)                        |
 | Circuit breaker / resilience    | ✅      | Resilience4j per-server circuit breakers wrap every MCP tool callback (`ResilientToolCallbackProvider`); OPEN circuit → structured fallback |
-| Persistent conversation storage | ✅      | `PostgresConversationStore` persists each exchange; history reloaded per turn, capped by `assistant.memory-window`                      |
-| Response caching                | ✅      | GitHub service caches API responses in Redis via `@Cacheable` with configurable TTL                                                    |
-| Infra-free tests                | ✅      | Test profiles use in-memory H2 (+ dummy OpenAI key, MCP client disabled) so `./mvnw test` passes without Docker/PostgreSQL              |
+| Persistent conversation storage | ✅      | `PostgresConversationStore` persists each exchange; history reloaded per turn, capped by `assistant.memory-window`                          |
+| Response caching                | ✅      | GitHub service caches API responses in Redis via `@Cacheable` with configurable TTL                                                         |
+| Infra-free tests                | ✅      | Test profiles use in-memory H2 (+ dummy OpenAI key, MCP client disabled) so `./mvnw test` passes without Docker/PostgreSQL                  |
 
 ---
 
@@ -413,38 +431,568 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 
 ### Creational
 
-| Pattern | Status | Where |
-|---------|--------|-------|
-| Singleton | ✅ In use | Every Spring bean (services, filters, properties) — container-managed, no hand-rolled statics |
-| Factory Method | ✅ In use | `@Bean` methods in every `*Config` class; `DeliveryStrategyRegistry` (notification) hands out the right strategy per channel |
-| Builder | ✅ In use | Lombok `@Builder` entities; `RestClient.builder()`, `RedisCacheManager.builder()`, `ChatClient.builder()`, `MethodToolCallbackProvider.builder()` |
-| Abstract Factory | ⚙ Framework | Spring `BeanFactory`/`ApplicationContext` — families of related beans created without naming concrete classes |
-| Prototype | ✗ Not used | All beans are stateless singletons; per-request mutable objects are plain `new`/builder calls. Prototype-scoped beans would add no value |
+| Pattern          | Status      | Where                                                                                                                                             |
+|------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| Singleton        | ✅ In use    | Every Spring bean (services, filters, properties) — container-managed, no hand-rolled statics                                                     |
+| Factory Method   | ✅ In use    | `@Bean` methods in every `*Config` class; `DeliveryStrategyRegistry` (notification) hands out the right strategy per channel                      |
+| Builder          | ✅ In use    | Lombok `@Builder` entities; `RestClient.builder()`, `RedisCacheManager.builder()`, `ChatClient.builder()`, `MethodToolCallbackProvider.builder()` |
+| Abstract Factory | ⚙ Framework | Spring `BeanFactory`/`ApplicationContext` — families of related beans created without naming concrete classes                                     |
+| Prototype        | ✗ Not used  | All beans are stateless singletons; per-request mutable objects are plain `new`/builder calls. Prototype-scoped beans would add no value          |
 
 ### Structural
 
-| Pattern | Status | Where |
-|---------|--------|-------|
-| Facade | ✅ In use | Every `*Service` class — e.g. `GitHubService` hides REST URIs/retries, `ChatService.handleMessage` hides the whole chat pipeline |
-| Decorator | ✅ In use | `TruncatingToolCallback`, `CircuitBreakerToolCallback` (client) wrap `ToolCallback`s to add truncation / circuit breaking |
-| Proxy | ✅ In use | `@Cacheable` Redis caching proxy (github), JPA repository proxies, `@Transactional` AOP; `ResilientToolCallbackProvider` is a protection proxy for downstream servers; `AmadeusTokenService` is a caching proxy for the OAuth2 endpoint (travel) |
-| Adapter | ✅ In use | `AmadeusFlightClient` + DTOs (travel) adapt the Amadeus wire format; `PostgresConversationStore` adapts JPA rows ↔ Spring AI `Message`s |
-| Bridge | ⚙ Framework | Micrometer `MeterRegistry` — one metering abstraction over interchangeable backends (Prometheus, OTLP) |
-| Flyweight | ⚙ Framework | Enum constants (`TicketStatus`, `NotificationChannel`, …) and Redis-cached GitHub responses share immutable instances |
-| Composite | ✗ Not used | No recursive part-whole structures in the domain (flat entities, flat tool lists) |
+| Pattern   | Status      | Where                                                                                                                                                                                                                                            |
+|-----------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Facade    | ✅ In use    | Every `*Service` class — e.g. `GitHubService` hides REST URIs/retries, `ChatService.handleMessage` hides the whole chat pipeline                                                                                                                 |
+| Decorator | ✅ In use    | `TruncatingToolCallback`, `CircuitBreakerToolCallback` (client) wrap `ToolCallback`s to add truncation / circuit breaking                                                                                                                        |
+| Proxy     | ✅ In use    | `@Cacheable` Redis caching proxy (github), JPA repository proxies, `@Transactional` AOP; `ResilientToolCallbackProvider` is a protection proxy for downstream servers; `AmadeusTokenService` is a caching proxy for the OAuth2 endpoint (travel) |
+| Adapter   | ✅ In use    | `AmadeusFlightClient` + DTOs (travel) adapt the Amadeus wire format; `PostgresConversationStore` adapts JPA rows ↔ Spring AI `Message`s                                                                                                          |
+| Bridge    | ⚙ Framework | Micrometer `MeterRegistry` — one metering abstraction over interchangeable backends (Prometheus, OTLP)                                                                                                                                           |
+| Flyweight | ⚙ Framework | Enum constants (`TicketStatus`, `NotificationChannel`, …) and Redis-cached GitHub responses share immutable instances                                                                                                                            |
+| Composite | ✗ Not used  | No recursive part-whole structures in the domain (flat entities, flat tool lists)                                                                                                                                                                |
 
 ### Behavioral
 
-| Pattern | Status | Where |
-|---------|--------|-------|
-| Strategy | ✅ In use | `ChannelDeliveryStrategy` + per-channel implementations (notification); selected at runtime via `DeliveryStrategyRegistry` |
-| Template Method | ✅ In use | `ToolExecutionTemplate` (github) defines the invariant tool-execution skeleton once; `OncePerRequestFilter.doFilterInternal` in every auth filter |
-| State | ✅ In use | `TicketStatus` enum owns its legal transitions; `TicketService.updateStatus` rejects illegal lifecycle moves |
-| Command | ✅ In use | `@Tool` methods reified as `ToolCallback` objects; `Supplier<String>` actions handed to `ToolExecutionTemplate` |
-| Chain of Responsibility | ✅ In use | Servlet `FilterChain`: auth → acting-user → rate-limit → handler in every module |
-| Observer | ✅ In use | `@EventListener(ContextRefreshedEvent)` startup checks (github/gmail); Micrometer counters/actuator events |
-| Mediator | ✅ In use | `ChatService` + `BoundedToolCallingManager` (client) coordinate model, memory, prompts and tools without coupling them to each other |
-| Memento | ✅ In use | `PostgresConversationStore` externalises, persists and restores conversation state per turn |
-| Iterator | ⚙ Framework | Java collections / Streams throughout |
-| Interpreter | ⚙ Framework | Spring AI `PromptTemplate` parses and evaluates the StringTemplate grammar in `prompts/system.st` |
-| Visitor | ✗ Not used | Domain models are flat and stable; no double-dispatch over heterogeneous object structures is needed |
+| Pattern                 | Status      | Where                                                                                                                                             |
+|-------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| Strategy                | ✅ In use    | `ChannelDeliveryStrategy` + per-channel implementations (notification); selected at runtime via `DeliveryStrategyRegistry`                        |
+| Template Method         | ✅ In use    | `ToolExecutionTemplate` (github) defines the invariant tool-execution skeleton once; `OncePerRequestFilter.doFilterInternal` in every auth filter |
+| State                   | ✅ In use    | `TicketStatus` enum owns its legal transitions; `TicketService.updateStatus` rejects illegal lifecycle moves                                      |
+| Command                 | ✅ In use    | `@Tool` methods reified as `ToolCallback` objects; `Supplier<String>` actions handed to `ToolExecutionTemplate`                                   |
+| Chain of Responsibility | ✅ In use    | Servlet `FilterChain`: auth → acting-user → rate-limit → handler in every module                                                                  |
+| Observer                | ✅ In use    | `@EventListener(ContextRefreshedEvent)` startup checks (github/gmail); Micrometer counters/actuator events                                        |
+| Mediator                | ✅ In use    | `ChatService` + `BoundedToolCallingManager` (client) coordinate model, memory, prompts and tools without coupling them to each other              |
+| Memento                 | ✅ In use    | `PostgresConversationStore` externalises, persists and restores conversation state per turn                                                       |
+| Iterator                | ⚙ Framework | Java collections / Streams throughout                                                                                                             |
+| Interpreter             | ⚙ Framework | Spring AI `PromptTemplate` parses and evaluates the StringTemplate grammar in `prompts/system.st`                                                 |
+| Visitor                 | ✗ Not used  | Domain models are flat and stable; no double-dispatch over heterogeneous object structures is needed                                              |
+
+---
+
+## Technology Deep Dive
+
+This section explains every significant library, framework, database, and infrastructure component used in this
+project — what each technology is, and exactly how this codebase uses it.
+
+---
+
+### Java 25
+
+**What it is:** The latest release of the Java platform (GA June 2025, Azul Zulu build). Builds on the virtual threads (
+Project Loom), record classes, pattern matching, and sealed types introduced in Java 21.
+
+**How it's used here:** Every module targets Java 25 (`<java.version>25</java.version>` in the `super-pom`). The project
+makes use of modern language features throughout: `switch` expressions with pattern matching in
+`PostgresConversationStore` (mapping message types to `UserMessage`/`AssistantMessage`), `Map.ofEntries` for concise
+immutable maps in `ResilientToolCallbackProvider`, `List.of` and stream pipelines everywhere. Virtual threads are
+available on the Java 25 runtime and ready to enable via Spring Boot's `spring.threads.virtual.enabled=true`.
+
+---
+
+### Spring Boot 4.1.0
+
+**What it is:** The opinionated, auto-configured application framework that bootstraps a Spring application with
+embedded Tomcat, sensible defaults, and a rich starter ecosystem. Version 4.x requires Java 17+ and aligns with Jakarta
+EE 10 (the `javax.*` → `jakarta.*` namespace migration is complete).
+
+**How it's used here:** All eight modules declare `spring-boot-starter-parent` version 4.1.0 as their parent POM. This
+single declaration pulls in: dependency-management (no version clashes), the Maven wrapper configuration, the default
+compiler settings, and the plugin management for the Spring Boot Maven plugin. Each module uses Spring Boot's
+`@SpringBootApplication` to start, relies on auto-configuration to wire JPA, Flyway, data sources, MVC, and
+observability, and exposes health/metrics via `spring-boot-starter-actuator`.
+
+---
+
+### Spring MVC (spring-boot-starter-web / spring-boot-starter-webmvc)
+
+**What it is:** Spring's servlet-based HTTP framework. It maps incoming HTTP requests to `@RestController` methods,
+handles content negotiation, runs `@ExceptionHandler` advice, and plugs into the servlet filter chain.
+
+**How it's used here:** Every module exposes a REST API through Spring MVC controllers (e.g. `ChatController`,
+`HrController`, `TicketController`). The filter chain is the security backbone:
+`McpAuthFilter extends OncePerRequestFilter` runs on every request, enforcing bearer-token authentication, extracting
+the `X-Acting-User` header into a `ThreadLocal`, and applying per-user rate limiting — all before the request reaches
+any controller. The `@RestControllerAdvice`-annotated `GlobalExceptionHandler` in every module translates domain
+exceptions (`ResourceNotFoundException`, `IllegalArgumentException`, validation failures) into a consistent JSON error
+envelope with `status`, `error`, `message`, `details`, and `timestamp`.
+
+---
+
+### Spring AI 2.0.0
+
+**What it is:** Anthropic's and the Spring team's framework for building AI-powered applications on the JVM. It provides
+abstractions over LLM providers (OpenAI, Anthropic, etc.), a `ChatClient` fluent API, tool/function calling, prompt
+templating, and — crucially for this project — the full Model Context Protocol (MCP) implementation for both servers and
+clients.
+
+**How it's used here:** This is the core AI layer of the whole system.
+
+- **MCP servers** (`spring-ai-starter-mcp-server-webmvc`): HR, ticket, deployment, notification, GitHub, Gmail, and
+  travel services each register their `@Tool`-annotated methods with `MethodToolCallbackProvider`. Spring AI's
+  auto-configuration detects every bean of type `ToolCallbackProvider` and exposes the collected tools over HTTP as an
+  MCP endpoint. The `McpToolConfig` bean in each service (e.g. `mcp-server-hr-service`'s `McpToolConfig`) builds the
+  provider:
+
+  ```java
+  // McpToolConfig (HR server — same pattern in all servers)
+  @Bean
+  ToolCallbackProvider hrTools(HrMcpTools hrMcpTools) {
+      return MethodToolCallbackProvider.builder()
+              .toolObjects(hrMcpTools)
+              .build();
+  }
+  ```
+
+  `MethodToolCallbackProvider` reflects over the supplied object, finds every `@Tool`-annotated method, and produces one
+  `ToolCallback` per method. The tool name, natural-language description, and JSON Schema for the parameters come from
+  the `@Tool` / `@ToolParam` annotations and are the exact strings the LLM reads when choosing which tool to call.
+
+  ```java
+  // HrMcpTools — representative @Tool method
+  @Tool(
+      name = "applyLeave",
+      description = "Apply leave for a user on a specific ISO-8601 date (yyyy-MM-dd)"
+  )
+  public String applyLeave(
+          @ToolParam(description = "The user name") String username,
+          @ToolParam(description = "The date to apply leave on (yyyy-MM-dd)") String date) { … }
+  ```
+
+  The MCP server is activated in `application.yaml` with a single property pair:
+
+  ```yaml
+  spring.ai.mcp.server.enabled: true
+  spring.ai.mcp.server.protocol: STATELESS   # or STREAMABLE
+  ```
+
+- **MCP client** (`spring-ai-starter-mcp-client`): The `llm-mcp-client` module declares one or more downstream
+  connections in `application.yaml`:
+
+  ```yaml
+  spring.ai.mcp.client:
+    enabled: true
+    initialized: false          # Spring AI must NOT auto-initialize; AppConfig does it per-client
+    toolcallback.enabled: false # AppConfig builds the provider manually via SyncMcpToolCallbackProvider
+    streamable-http:
+      connections:
+        github:
+          url: http://localhost:8085
+  ```
+
+  The `initialized: false` and `toolcallback.enabled: false` flags are important: they prevent Spring AI's
+  auto-configuration from initializing clients eagerly (which would crash startup if a server is down) and from
+  registering a `ToolCallbackProvider` bean before `AppConfig` can wrap it with resilience logic.
+  `AppConfig.resilientToolCallbackProvider` iterates the auto-configured `List<McpSyncClient>`, calls
+  `client.initialize()` on each one individually (skipping unreachable servers with a warning), then wraps the live
+  clients in a `SyncMcpToolCallbackProvider` and hands that delegate to `ResilientToolCallbackProvider`.
+
+- **`SyncMcpToolCallbackProvider`**: Adapts a `List<McpSyncClient>` to a flat `ToolCallback[]`. When the `ChatClient`
+  calls `getToolCallbacks()`, each client is queried for its MCP tool list (`client.listTools()`) and each entry becomes
+  a `ToolCallback` that, when invoked, calls `client.callTool(name, args)` over HTTP.
+
+- **`ChatClient`**: The fluent builder API in `ChatService.handleMessage` chains `.system(systemPrompt)`,
+  `.advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))`, `.user(processedPrompt)`,
+  `.toolCallbacks(semanticToolSelector.selectTools(processedPrompt))`, then `.call().chatResponse()` to drive a full
+  agentic loop against OpenAI.
+
+- **`PromptTemplate`**: Used to render the `prompts/system.st` StringTemplate file at runtime, injecting
+  `assistantName`, `currentUser`, and `currentTime` before each request.
+
+- **`@Tool` / `@ToolParam`**: Annotations on `HrMcpTools`, `DeploymentMcpTools`, etc. define the function name,
+  description, and parameter descriptions that the LLM sees when deciding which tool to call.
+
+- **Advisor chain**: `ChatClient` is built with a three-advisor chain (in order of execution): `SafeGuardAdvisor` →
+  `MessageChatMemoryAdvisor` → `SimpleLoggerAdvisor`. The order is intentional — SafeGuard runs first (lowest `order` =
+  `Integer.MIN_VALUE`) so malicious prompts are rejected before touching memory or the model.
+
+---
+
+### Model Context Protocol (MCP)
+
+**What it is:** An open standard (originally from Anthropic) that defines how AI assistants discover and call external "
+tools" hosted in separate processes. An MCP *client* (the assistant) connects over HTTP to MCP *servers* (domain
+services), retrieves their tool catalogue, and dispatches function calls. Two transport variants exist:
+
+- **STATELESS**: Each HTTP request is fully self-contained. The server retains no session between tool calls. Suitable
+  for simple, independent CRUD tools. Lower complexity and resource usage.
+- **STREAMABLE**: The connection is upgraded to a persistent streaming channel (Server-Sent Events or HTTP/2 streaming),
+  allowing the server to push incremental results back as they become available. Required for long-running operations or
+  tools that return progressively updated data.
+
+**How it's used here:** This project is built entirely around MCP. The `llm-mcp-client` is the single MCP client; the
+other seven modules are all MCP servers. The transport protocol at the client level is always Streamable HTTP (
+configured under `spring.ai.mcp.client.streamable-http.connections`), while individual servers declare their own mode:
+
+- `STATELESS`: HR (`8084`), ticket (`8081`), notification (`8083`), travel — simple CRUD tools with immediate responses
+- `STREAMABLE`: deployment (`8082`), GitHub (`8085`), Gmail (`8086`) — potentially long-running queries or large
+  paginated results
+
+The client carries a `Bearer` token and an `X-Acting-User` header on every MCP request (injected by
+`McpClientSecurityConfig`) so servers can authenticate callers and attribute actions to the correct user.
+
+**Per-server circuit breaker pattern:** `ResilienceConfig` pre-creates one named `CircuitBreaker` and one named `Retry`
+instance per MCP server (`mcp-hr`, `mcp-ticket`, `mcp-deployment`, `mcp-notification`, `mcp-github`, `mcp-gmail`).
+`ResilientToolCallbackProvider` maps each tool name to its owning server via a static `TOOL_SERVER` map, then wraps each
+`ToolCallback` in a `ResilientToolCallback` that applies
+`Retry.decorateCallable(retry, CircuitBreaker.decorateCallable(cb, action))`. The retry fires first (transient errors
+are retried twice with a 300 ms wait before the circuit breaker records a failure), so only persistent errors count
+against the circuit. When a circuit opens, the tool immediately returns
+`{"error":"<server> is temporarily unavailable (circuit open). Please try again later."}` — a structured message the LLM
+can relay to the user rather than hanging or throwing an uncaught exception.
+
+**`ToolCallbackProvider` aggregation:** `SyncMcpToolCallbackProvider` merges all available MCP clients into one flat
+`ToolCallback[]`. The `ResilientToolCallbackProvider` decorator then wraps each entry. `SemanticToolSelector` further
+filters this array down to only the `top-K` most query-relevant tools before each LLM call, preventing context explosion
+when dozens of tools are registered across all servers.
+
+---
+
+### OpenAI API (GPT models)
+
+**What it is:** The REST API provided by OpenAI that gives access to large language models (GPT-4o, GPT-4-turbo, etc.)
+capable of natural language understanding, generation, and structured function/tool calling.
+
+**How it's used here:** The `llm-mcp-client` uses `spring-ai-starter-model-openai`, configured with `OPENAI_API_KEY`.
+Spring AI's OpenAI auto-configuration creates a `ChatModel` bean that `AppConfig` wraps into a `ChatClient`. All
+natural-language reasoning — understanding the user's intent, deciding which MCP tool(s) to call, summarising results,
+formatting Markdown responses — is performed by the OpenAI model. Token consumption (prompt tokens and completion
+tokens) is recorded after each response in `ChatService.recordTokenUsage` as the Prometheus counter `ai.tokens` tagged
+by user and type.
+
+---
+
+### Spring Data JPA + Hibernate
+
+**What it is:** Spring Data JPA provides repository interfaces (`JpaRepository`) that generate CRUD SQL at runtime.
+Hibernate is the JPA provider that translates `@Entity` classes and JPQL queries into SQL and manages the persistence
+context.
+
+**How it's used here:** The four database-backed services (HR, ticket, deployment, notification) define `@Entity` models
+and `JpaRepository` interfaces for all persistence. The MCP client also uses JPA for `ChatMessageEntity` and
+`ChatMessageRepository` to persist conversation history. Spring Boot auto-configures the `EntityManagerFactory` and
+transaction manager from the datasource properties. `ddl-auto: validate` in production ensures Hibernate checks the
+schema against entities at startup without modifying it (Flyway handles DDL). `open-in-view: false` prevents
+lazy-loading through the web layer.
+
+---
+
+### PostgreSQL 18
+
+**What it is:** A powerful, open-source relational database known for its standards compliance, JSON support, and
+reliability. Version 18 (used via the `postgres:18` Docker image) brings performance improvements and minor SQL
+extensions over 17.
+
+**How it's used here:** A single PostgreSQL instance (database `spring_ai`, port 5432) is shared by all four stateful
+services and the MCP client. Each service gets its own schema namespace through Flyway's per-service history table (e.g.
+`flyway_schema_history_hr`, `flyway_schema_history_ticket`), so migrations never conflict. Tables include `employee`,
+`leave_record` (HR), `ticket` (ticketing), `deployment` (deployment), `notification` (notification), and
+`chat_message` (client conversation history). HikariCP connection pooling is used with a 10-second connection timeout.
+
+---
+
+### Flyway
+
+**What it is:** A database migration tool that applies versioned SQL scripts (`V1__...sql`, `V2__...sql`) to a database
+in order, recording which migrations have been applied in a history table. It guarantees reproducible schema evolution
+across environments.
+
+**How it's used here:** Every module with a datasource uses Flyway. SQL migration scripts live in
+`src/main/resources/db/migration/`. Because all services share one PostgreSQL instance, each service configures a
+distinct `flyway.table` (e.g. `flyway_schema_history_hr`) so their migration histories are independent.
+`baseline-on-migrate: true` allows Flyway to be applied to a pre-existing database without errors.
+`spring-boot-starter-flyway` plus `flyway-database-postgresql` are on the classpath of each relevant module.
+
+---
+
+### HikariCP
+
+**What it is:** The fastest and most widely used JDBC connection pool for the JVM. It maintains a ready pool of database
+connections, eliminating the latency of creating a new connection per request.
+
+**How it's used here:** Spring Boot auto-configures HikariCP as the default connection pool. Each service's
+`application.yaml` sets `hikari.connection-timeout: 10000` (10 seconds). The datasource URL, username, and password are
+all externalised via environment variables (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`), so the same Docker image works in
+dev, staging, and production without code changes.
+
+---
+
+### Spring Cache + Redis 7
+
+**What it is:** Spring Cache is an abstraction layer for caching method return values using annotations like
+`@Cacheable`. Redis is an in-memory data store used here as the cache backend. Redis 7 (Alpine image) supports strings,
+hashes, sorted sets, and pub/sub with very low latency.
+
+**How it's used here:** The GitHub service uses `@EnableCaching` and a `RedisCacheManager` configured in
+`GitHubClientConfig`. Every `GitHubService` method is annotated with `@Cacheable(value = "github", key = "...")` with a
+cache key that encodes the API call parameters (e.g. `'repo:' + #owner + '/' + #repo`). Responses are cached in Redis as
+plain strings (using `StringRedisSerializer`) with a configurable TTL (`github.cache-ttl-seconds`). This prevents
+hammering the GitHub API on repeated queries and avoids rate-limit errors on unauthenticated endpoints. The Redis host
+and port are externalised via `REDIS_HOST` / `REDIS_PORT` environment variables.
+
+---
+
+### Resilience4j 2.3.0
+
+**What it is:** A lightweight fault-tolerance library for Java, offering circuit breakers, rate limiters, bulkheads, and
+retries. A *circuit breaker* monitors call failure rates; if too many calls fail, it "opens" the circuit and rejects
+further calls immediately (returning a fallback) until a cooldown period elapses.
+
+**How it's used here:** `ResilienceConfig` pre-creates one named `CircuitBreaker` per MCP server (`mcp-hr`,
+`mcp-ticket`, `mcp-deployment`, `mcp-notification`, `mcp-github`, `mcp-gmail`). The configuration: 10-call sliding
+window, opens at 50% failure rate or 80% slow calls (threshold: 5 s), stays open for 30 s, then allows 3 probe calls in
+half-open state. `ResilientToolCallbackProvider` wraps every `ToolCallback` in a `CircuitBreakerToolCallback`. When a
+server's circuit is open, the tool immediately returns a structured JSON error (
+`{"error":"... is temporarily unavailable (circuit open) ..."}`) so the LLM can explain the outage to the user
+gracefully rather than hanging. Circuit breaker metrics (state, failure rate, call counts) are published to Prometheus
+via `TaggedCircuitBreakerMetrics`.
+
+---
+
+### Micrometer + Prometheus
+
+**What it is:** Micrometer is a metrics instrumentation facade (analogous to SLF4J for logging) that lets you record
+counters, timers, and gauges once and publish them to any backend. Prometheus is a time-series monitoring system that
+scrapes metrics endpoints at regular intervals and stores them for querying with PromQL.
+
+**How it's used here:** Every module includes `micrometer-registry-prometheus`, which exposes a `/actuator/prometheus`
+endpoint. Spring Boot auto-configures HTTP request metrics, JVM heap/GC/thread metrics, and datasource pool metrics.
+Additional application-level metrics are added manually: `ChatService.recordTokenUsage` increments `ai.tokens` (tagged
+by type and user), and `TaggedCircuitBreakerMetrics` publishes circuit breaker state and failure rates. All metrics are
+tagged with `application: ${spring.application.name}` via `management.metrics.tags.application`, so queries can filter
+by service. `prometheus.yml` in the `observability/` directory scrapes all eight services from the Docker network via
+`host.docker.internal`.
+
+---
+
+### Micrometer Tracing + OpenTelemetry + Grafana Tempo
+
+**What it is:** Distributed tracing assigns a unique trace ID to each request and propagates it across service
+boundaries, enabling you to see the full call graph — from the user's HTTP request through every downstream tool call.
+OpenTelemetry (OTel) is the vendor-neutral standard for telemetry data. Grafana Tempo is a high-scale, cost-effective
+distributed tracing backend that stores and queries traces.
+
+**How it's used here:** Each module includes `micrometer-tracing-bridge-otel` and `opentelemetry-exporter-otlp`. The
+exporter is configured to send traces to `${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces` (defaulting to
+`http://localhost:4318`). Sampling probability is configurable via `TRACING_SAMPLING` (default 1.0 = 100% in dev). When
+the client calls an MCP server, Micrometer Tracing automatically propagates the `traceparent` header so that each
+server's spans appear as children of the client span. Traces are stored in Grafana Tempo (`tempo.yml` listens on OTLP
+HTTP port 4318 and gRPC port 4317, stores locally at `/tmp/tempo/blocks`). Grafana's Explore view connects to Tempo for
+trace visualization.
+
+---
+
+### Grafana
+
+**What it is:** An open-source observability and analytics platform for building dashboards from metrics, logs, and
+traces. It connects to data sources (Prometheus, Tempo, Loki, etc.) and renders panels, alerts, and annotations.
+
+**How it's used here:** Grafana (port 3000, credentials `admin/admin`) is provisioned automatically from the
+`observability/grafana/provisioning/` directory mounted in Docker. It has Prometheus and Tempo pre-configured as
+datasources. A custom dashboard *"Org MCP — Client & Servers Overview"* auto-loads on startup. The dashboard has a
+multi-select `Service` variable and panels for: service up/down status, HTTP request rate, p95 latency, 5xx error rate,
+JVM heap usage, CPU load, thread counts, database connection pool usage, and GC pause time.
+
+---
+
+### Lombok
+
+**What it is:** A Java annotation processor that generates boilerplate code (getters, setters, constructors, builders,
+`equals`/`hashCode`, `toString`, logging) at compile time so it never appears in source files.
+
+**How it's used here:** Lombok is used pervasively across all modules. Key annotations in use: `@Slf4j` (injects a `log`
+field backed by SLF4J), `@RequiredArgsConstructor` (generates a constructor for all `final` fields — the standard Spring
+constructor-injection pattern), `@Builder` (on entity classes and `@ConfigurationProperties` beans), `@Data` / `@Value`
+on DTOs and response types. Lombok is declared `optional` in Maven and excluded from the final JAR.
+
+---
+
+### Jakarta Bean Validation (Hibernate Validator)
+
+**What it is:** The Java standard for declarative constraint validation. You annotate model fields with constraints (
+`@NotBlank`, `@NotNull`, `@Positive`, `@Size`, etc.) and the framework validates them automatically at controller
+boundaries.
+
+**How it's used here:** `spring-boot-starter-validation` is on every module's classpath. Request DTOs and MCP tool
+parameters are annotated with Jakarta constraints. Spring MVC applies `@Valid` at controller method parameters;
+violations trigger a `MethodArgumentNotValidException`, which `GlobalExceptionHandler` catches and translates into an
+HTTP 400 with a `details` field listing each failing field and message. This ensures invalid inputs never reach the
+service layer.
+
+---
+
+### Spring Boot Actuator
+
+**What it is:** A Spring Boot module that adds production-ready operational endpoints to any application: health checks,
+info, metrics, environment inspection, logger level management, and more.
+
+**How it's used here:** All modules expose `health`, `info`, `metrics`, and `prometheus` actuator endpoints. The MCP
+client additionally exposes `loggers` and `env`. Health endpoints include component details (datasource connectivity,
+MCP client ping via `McpClientHealthIndicator`). The `info` endpoint surfaces git commit metadata (branch, SHA, time)
+via the `git-commit-id-maven-plugin` and the Spring Boot build-info plugin. HR and deployment services enable
+Kubernetes-style liveness/readiness probes (`management.endpoint.health.probes.enabled: true`). All actuator endpoints
+except `health` and `info` are exempt from MCP bearer-token auth.
+
+---
+
+### Spring Boot DevTools
+
+**What it is:** A development-only Spring Boot module that enables automatic application restarts on classpath changes,
+live reload for templates, and relaxed property overrides to speed up the inner development loop.
+
+**How it's used here:** Included as an `optional`, `runtime`-scope dependency in all modules. It activates only when
+running via `./mvnw spring-boot:run` or from an IDE in development mode and is excluded from production JARs.
+
+---
+
+### H2 (In-Memory Database for Tests)
+
+**What it is:** A lightweight, pure-Java relational database that can run entirely in memory. It is JPA- and
+JDBC-compatible and requires no installation.
+
+**How it's used here:** Modules with a PostgreSQL datasource include H2 in `test` scope. Test profiles (activated by
+`src/test/resources/application.yaml`) switch the datasource to H2, set `ddl-auto: create-drop` so the schema is rebuilt
+from entities, and disable Spring AI's MCP client auto-initialization. This means `./mvnw test` requires no running
+Docker containers, PostgreSQL, or Redis — all eight test suites pass in a fully isolated environment.
+
+---
+
+### Spring RestClient
+
+**What it is:** Spring Framework 6.1's new synchronous HTTP client, a modern replacement for `RestTemplate`. It offers a
+fluent builder API with URI templating, default headers, response extraction, and error handling.
+
+**How it's used here:** Used in all three API-wrapper services:
+
+- **GitHub service**: `GitHubClientConfig` builds a `RestClient` with base URL `https://api.github.com`, default
+  `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`, and (when configured)
+  `Authorization: Bearer <token>` headers. Every `GitHubService` method calls this client.
+- **Gmail service**: A `RestClient` pre-configured with the Gmail REST API base URL and the `GMAIL_ACCESS_TOKEN` as a
+  bearer header.
+- **Travel service**: Two `RestClient` instances — one for Amadeus flight-offers calls (configured in
+  `RestClientConfig`), another used by `AmadeusTokenService` to POST to the OAuth2 token endpoint.
+
+---
+
+### Amadeus Flight API
+
+**What it is:** The Amadeus for Developers REST API providing real-time flight availability and pricing data. Access
+requires a client ID and secret; authentication uses the OAuth2 Client Credentials flow, returning a short-lived bearer
+token.
+
+**How it's used here:** `AmadeusTokenService` handles OAuth2 token lifecycle: it requests a token from
+`/v1/security/oauth2/token`, caches it in memory, and automatically refreshes 60 seconds before expiry using a
+`ReentrantLock` for thread safety (double-checked locking pattern). `AmadeusFlightClient` calls the
+`/v2/shopping/flight-offers` endpoint with IATA origin/destination codes, departure date, passenger count, and
+max-results limit. The travel service exposes this as MCP tools (`searchFlights`) that the AI assistant can invoke when
+a user asks about flights.
+
+---
+
+### GitHub REST API
+
+**What it is:** GitHub's REST API (v3) for programmatic access to repositories, commits, branches, pull requests,
+issues, actions workflows, contributors, releases, and more. Authenticated requests get 5,000 requests/hour vs 60/hour
+unauthenticated.
+
+**How it's used here:** `GitHubService` wraps every GitHub REST endpoint as a Spring `@Cacheable` method. The
+`GitHubClientConfig` configures a `RestClient` with the `GITHUB_TOKEN` bearer token and the required
+`X-GitHub-Api-Version: 2022-11-28` header. All responses are returned as raw JSON strings and cached in Redis. The
+service handles GitHub's asynchronous stats endpoints (HTTP 202 "not ready yet") with a retry loop. `GitHubMcpTools`
+exposes twelve tools (repositories, commits, metrics, branches, PRs, issues, contributors, workflow runs, releases,
+search, code frequency, create issue) to the AI assistant.
+
+---
+
+### Gmail REST API
+
+**What it is:** Google's Gmail API for reading, searching, labelling, drafting, sending, and deleting emails
+programmatically via REST. Authentication uses OAuth2 bearer tokens.
+
+**How it's used here:** `GmailService` calls the Gmail REST API using a `RestClient` pre-configured with the
+`GMAIL_ACCESS_TOKEN`. The token is injected at startup from the `GMAIL_ACCESS_TOKEN` environment variable.
+`GmailMcpTools` registers twelve tools with the MCP server: list emails, get email, search emails, get thread, get
+profile, list labels, get by label, mark read/unread, create draft, send email, and delete email. Like the GitHub
+service, this uses STREAMABLE MCP protocol.
+
+---
+
+### MCP Inspector
+
+**What it is:** The official Model Context Protocol debugging tool. It is a browser-based UI that can connect to any MCP
+server, enumerate its tools and prompts, and fire test calls to see raw inputs and outputs.
+
+**How it's used here:** `docker-compose.yml` includes an `mcp-inspector` service running the
+`@modelcontextprotocol/inspector` package via `npx` on a `node:22-alpine` image. It binds to port 6274 (web UI) and
+6277 (proxy). The `extra_hosts: host.docker.internal` mapping allows the Inspector proxy inside Docker to reach MCP
+servers running on the host machine. `DANGEROUSLY_OMIT_AUTH: true` skips the proxy's own auth layer in local dev.
+Visiting `http://localhost:6274` in a browser lets you explore any running MCP server's tool catalogue and manually
+invoke tools during development and debugging.
+
+---
+
+### Maven (Multi-Module Build)
+
+**What it is:** Apache Maven is the Java ecosystem's standard build tool. It manages dependencies via a central
+repository, enforces reproducible builds through a POM (Project Object Model), and runs lifecycle phases (compile, test,
+package, install, deploy).
+
+**How it's used here:** The root `pom.xml` is an aggregator-only POM (`<packaging>pom</packaging>`) listing all eight
+modules. Each module has its own `pom.xml` with `spring-boot-starter-parent` as its parent (not the root), keeping
+module versions independent. Each module ships its own Maven Wrapper (`./mvnw`), so no system Maven installation is
+needed. Additional Maven plugins used across modules:
+
+- `spring-boot-maven-plugin` with the `build-info` goal (populates `/actuator/info` with build metadata)
+- `git-commit-id-maven-plugin` (generates `git.properties` surfaced through `/actuator/info`)
+- `maven-compiler-plugin` with Lombok and Spring Boot configuration processor as annotation processor paths
+- `jacoco-maven-plugin` (travel-service enforces ≥70% instruction coverage)
+
+---
+
+### Logback + logback-spring.xml
+
+**What it is:** Logback is the default logging framework for Spring Boot. `logback-spring.xml` is the Spring-aware
+configuration file that can use Spring profiles and property placeholders. SLF4J is the logging facade; Lombok's
+`@Slf4j` injects the SLF4J logger.
+
+**How it's used here:** Every module has a `src/main/resources/logback-spring.xml` that configures a console appender
+with a pattern including the application name tag (enabling log aggregation by service in tools like Loki or ELK). The
+travel service also includes `logstash-logback-encoder` (`net.logstash.logback:logstash-logback-encoder:8.0`) for
+JSON-structured log output. Audit log lines are written at `INFO` level with a structured format:
+`[AUDIT] tool=applyLeave actingUser=... username=... date=... outcome=success latencyMs=12`.
+
+---
+
+### Docker Compose
+
+**What it is:** A tool for defining and running multi-container Docker applications from a single `docker-compose.yml`
+file. It manages service startup order, networking, volume mounts, and environment variable injection.
+
+**How it's used here:** The root `docker-compose.yml` provisions all infrastructure dependencies:
+
+| Service          | Image                    | Purpose                            |
+|------------------|--------------------------|------------------------------------|
+| `postgres`       | `postgres:18`            | Shared relational database         |
+| `redis`          | `redis:7-alpine`         | GitHub API response cache          |
+| `tempo`          | `grafana/tempo:latest`   | Distributed trace storage (OTLP)   |
+| `prometheus`     | `prom/prometheus:latest` | Metrics scraping and storage       |
+| `grafana`        | `grafana/grafana:latest` | Dashboards and trace visualization |
+| `github-service` | local build              | GitHub MCP server                  |
+| `gmail-service`  | local build              | Gmail MCP server                   |
+| `travel-service` | local build              | Amadeus flight MCP server          |
+| `mcp-inspector`  | `node:22-alpine`         | MCP debugging UI                   |
+
+Health-check conditions (`service_healthy`) on PostgreSQL and Redis ensure dependent services wait for readiness before
+starting. The four core Spring Boot services (HR, ticket, deployment, notification) are commented out in favour of
+running them locally via `./mvnw spring-boot:run` during development.
+
+---
+
+### git-commit-id-maven-plugin
+
+**What it is:** A Maven plugin that reads Git metadata (branch, commit SHA, commit time, dirty flag) at build time and
+writes it to a `git.properties` file bundled in the JAR.
+
+**How it's used here:** Configured in all modules' `pom.xml` to run in the `initialize` phase and generate
+`git.properties` at `${project.build.outputDirectory}/git.properties`. Spring Boot Actuator's `info` endpoint reads this
+file (when `management.info.git.mode: full` is set) and exposes the full commit details at `/actuator/info`. This lets
+operators instantly see which exact code revision is running in any environment without logging into servers.

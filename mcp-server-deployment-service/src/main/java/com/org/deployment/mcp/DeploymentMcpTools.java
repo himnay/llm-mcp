@@ -3,12 +3,16 @@ package com.org.deployment.mcp;
 import com.org.deployment.model.Deployment;
 import com.org.deployment.model.DeploymentEnvironment;
 import com.org.deployment.security.ActingUserContext;
+import com.org.deployment.security.RateLimiter;
 import com.org.deployment.security.SecurityProperties;
 import com.org.deployment.service.DeploymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -33,6 +37,10 @@ class DeploymentMcpTools {
 
     private final DeploymentService deploymentService;
     private final SecurityProperties securityProperties;
+    private final RateLimiter rateLimiter;
+
+    @Value("${mcp.output.max-chars:8000}")
+    private int maxOutputChars;
 
     // ─────────────────────────────── READ tools ──────────────────────────────
 
@@ -47,7 +55,7 @@ class DeploymentMcpTools {
             return DeploymentEnvironment.valueOf(environment.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException(
-                    "Invalid environment '" + environment + "'. Allowed values: DEV, QA, PROD");
+                    "Invalid environment '" + environment + "'. Allowed values: DEV, QA, STAGING, PROD");
         }
     }
 
@@ -90,14 +98,17 @@ class DeploymentMcpTools {
         return (System.nanoTime() - startNano) / 1_000_000L;
     }
 
-    @Tool(name = "getDeployments", description = "Get all deployments")
+    @Tool(name = "getDeployments",
+            description = "List all deployment records across all environments and services. "
+                    + "Returns id, serviceName, environment (DEV/QA/STAGING/PROD), status, scheduledTime, and owner for each deployment. "
+                    + "Use this to get an overview of what is deployed or scheduled.")
     public String getDeployments() {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         try {
             List<Deployment> result = deploymentService.getDeployments();
             String payload = result.toString();
-            String capped = OutputSizeCapUtil.cap(payload);
+            String capped = OutputSizeCapUtil.cap(payload, maxOutputChars);
             log.info("TOOL getDeployments | user={} resultCount={} latencyMs={}",
                     actingUser, result.size(), elapsedMs(start));
             return capped;
@@ -110,7 +121,10 @@ class DeploymentMcpTools {
 
     // ─────────────────────────────── helpers ─────────────────────────────────
 
-    @Tool(name = "getDeployment", description = "Get a deployment by its id")
+    @Tool(name = "getDeployment",
+            description = "Retrieve the full details of a single deployment by its numeric id. "
+                    + "Returns serviceName, environment, status, scheduledTime, owner, and any notes. "
+                    + "Use getDeployments first if you don't know the id.")
     public String getDeployment(Long id) {
         String actingUser = resolveUser();
         long start = System.nanoTime();
@@ -134,7 +148,7 @@ class DeploymentMcpTools {
 
     @Tool(
             name = "createDeployment",
-            description = "Create a new deployment. Provide serviceName, environment (DEV, QA, PROD), "
+            description = "Create a new deployment. Provide serviceName, environment (DEV, QA, STAGING, PROD), "
                     + "scheduledTime (ISO format yyyy-MM-ddTHH:mm:ss or with offset) and owner"
     )
     public String createDeployment(String serviceName,
@@ -267,6 +281,10 @@ class DeploymentMcpTools {
             throw new IllegalStateException(
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
+        }
+        if (!rateLimiter.tryAcquireWrite(actingUser)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Write rate limit exceeded (10 writes/min) for user " + actingUser);
         }
     }
 }

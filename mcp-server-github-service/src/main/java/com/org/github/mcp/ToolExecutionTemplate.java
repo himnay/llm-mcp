@@ -1,10 +1,15 @@
 package com.org.github.mcp;
 
 import com.org.github.security.ActingUserContext;
+import com.org.github.security.RateLimiter;
 import com.org.github.security.SecurityProperties;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.function.Supplier;
 
@@ -21,15 +26,34 @@ import java.util.function.Supplier;
 class ToolExecutionTemplate {
 
     private final SecurityProperties securityProperties;
+    private final RateLimiter rateLimiter;
 
-    /** Read tools: no write gate; result is capped to protect the LLM context window. */
+    @Value("${mcp.output.max-chars:8000}")
+    private int maxOutputChars;
+
+    private static long elapsedMs(long startNano) {
+        return (System.nanoTime() - startNano) / 1_000_000L;
+    }
+
+    /**
+     * Read tools: no write gate; result is capped to protect the LLM context window.
+     */
+    @CircuitBreaker(name = "github-api", fallbackMethod = "githubFallback")
     String executeRead(String toolName, String args, Supplier<String> action) {
         return execute(toolName, args, false, true, action);
     }
 
-    /** Write tools: write gate enforced; logged at AUDIT level; result returned uncapped. */
+    /**
+     * Write tools: write gate enforced; logged at AUDIT level; result returned uncapped.
+     */
+    @CircuitBreaker(name = "github-api", fallbackMethod = "githubFallback")
     String executeWrite(String toolName, String args, Supplier<String> action) {
         return execute(toolName, args, true, false, action);
+    }
+
+    String githubFallback(String toolName, String args, Supplier<String> action, Throwable t) {
+        log.warn("GitHub API circuit breaker open for tool={} — returning fallback. cause={}", toolName, t.getMessage());
+        return "GitHub API is temporarily unavailable. Please try again later.";
     }
 
     private String execute(String toolName, String args, boolean write, boolean capOutput,
@@ -43,7 +67,7 @@ class ToolExecutionTemplate {
         try {
             String result = action.get();
             if (capOutput) {
-                result = OutputSizeCapUtil.cap(result);
+                result = OutputSizeCapUtil.cap(result, maxOutputChars);
             }
             log.info("{} {} | user={} {} outcome=SUCCESS latencyMs={}",
                     logTag, toolName, actingUser, args, elapsedMs(start));
@@ -67,9 +91,9 @@ class ToolExecutionTemplate {
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }
-    }
-
-    private static long elapsedMs(long startNano) {
-        return (System.nanoTime() - startNano) / 1_000_000L;
+        if (!rateLimiter.tryAcquireWrite(actingUser)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Write rate limit exceeded (10 writes/min) for user " + actingUser);
+        }
     }
 }

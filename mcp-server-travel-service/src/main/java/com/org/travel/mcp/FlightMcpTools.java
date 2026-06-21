@@ -29,9 +29,48 @@ import java.time.format.DateTimeParseException;
 @RequiredArgsConstructor
 class FlightMcpTools {
 
+    private static final java.util.Map<String, String> AIRPORT_LOOKUP = new java.util.LinkedHashMap<>() {{
+        put("dublin", "DUB — Dublin Airport, Ireland");
+        put("munich", "MUC — Munich Airport, Germany");
+        put("london heathrow", "LHR — London Heathrow, United Kingdom");
+        put("london gatwick", "LGW — London Gatwick, United Kingdom");
+        put("amsterdam", "AMS — Amsterdam Schiphol, Netherlands");
+        put("paris cdg", "CDG — Paris Charles de Gaulle, France");
+        put("paris orly", "ORY — Paris Orly, France");
+        put("frankfurt", "FRA — Frankfurt Airport, Germany");
+        put("berlin", "BER — Berlin Brandenburg, Germany");
+        put("madrid", "MAD — Madrid Barajas, Spain");
+        put("barcelona", "BCN — Barcelona El Prat, Spain");
+        put("rome", "FCO — Rome Fiumicino, Italy");
+        put("milan", "MXP — Milan Malpensa, Italy");
+        put("new york jfk", "JFK — John F. Kennedy International, USA");
+        put("new york newark", "EWR — Newark Liberty International, USA");
+        put("los angeles", "LAX — Los Angeles International, USA");
+        put("chicago", "ORD — Chicago O'Hare International, USA");
+        put("miami", "MIA — Miami International, USA");
+        put("dubai", "DXB — Dubai International, UAE");
+        put("singapore", "SIN — Singapore Changi, Singapore");
+        put("sydney", "SYD — Sydney Kingsford Smith, Australia");
+        put("tokyo", "NRT — Tokyo Narita, Japan");
+        put("hong kong", "HKG — Hong Kong International, China");
+        put("toronto", "YYZ — Toronto Pearson, Canada");
+    }};
     private final FlightSearchService flightSearchService;
     private final SecurityProperties securityProperties;
     private final McpOutputProperties mcpOutputProperties;
+
+    private static void validateDate(String date) {
+        try {
+            LocalDate.parse(date);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid date format '" + date + "' — expected yyyy-MM-dd", ex);
+        }
+    }
+
+    private static long elapsedMs(long startNano) {
+        return (System.nanoTime() - startNano) / 1_000_000L;
+    }
 
     @Tool(
             name = "searchFlights",
@@ -120,45 +159,5 @@ class FlightMcpTools {
 
         log.info("[AUDIT] tool=getAirportInfo actingUser={} query={}", ActingUserContext.get(), cityOrAirport);
         return result;
-    }
-
-    private static final java.util.Map<String, String> AIRPORT_LOOKUP = new java.util.LinkedHashMap<>() {{
-        put("dublin", "DUB — Dublin Airport, Ireland");
-        put("munich", "MUC — Munich Airport, Germany");
-        put("london heathrow", "LHR — London Heathrow, United Kingdom");
-        put("london gatwick", "LGW — London Gatwick, United Kingdom");
-        put("amsterdam", "AMS — Amsterdam Schiphol, Netherlands");
-        put("paris cdg", "CDG — Paris Charles de Gaulle, France");
-        put("paris orly", "ORY — Paris Orly, France");
-        put("frankfurt", "FRA — Frankfurt Airport, Germany");
-        put("berlin", "BER — Berlin Brandenburg, Germany");
-        put("madrid", "MAD — Madrid Barajas, Spain");
-        put("barcelona", "BCN — Barcelona El Prat, Spain");
-        put("rome", "FCO — Rome Fiumicino, Italy");
-        put("milan", "MXP — Milan Malpensa, Italy");
-        put("new york jfk", "JFK — John F. Kennedy International, USA");
-        put("new york newark", "EWR — Newark Liberty International, USA");
-        put("los angeles", "LAX — Los Angeles International, USA");
-        put("chicago", "ORD — Chicago O'Hare International, USA");
-        put("miami", "MIA — Miami International, USA");
-        put("dubai", "DXB — Dubai International, UAE");
-        put("singapore", "SIN — Singapore Changi, Singapore");
-        put("sydney", "SYD — Sydney Kingsford Smith, Australia");
-        put("tokyo", "NRT — Tokyo Narita, Japan");
-        put("hong kong", "HKG — Hong Kong International, China");
-        put("toronto", "YYZ — Toronto Pearson, Canada");
-    }};
-
-    private static void validateDate(String date) {
-        try {
-            LocalDate.parse(date);
-        } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
-                    "Invalid date format '" + date + "' — expected yyyy-MM-dd", ex);
-        }
-    }
-
-    private static long elapsedMs(long startNano) {
-        return (System.nanoTime() - startNano) / 1_000_000L;
     }
 }

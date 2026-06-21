@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!--
-        Aggregator-only POM — does not act as a parent.
-        Each module keeps its own spring-boot-starter-parent.
-        Run from this directory:
-            ./mvnw clean package -DskipTests          # build all
-            ./mvnw clean package -pl llm-travel       # build one module
-            ./mvnw clean package -pl llm-travel,mcp-server-hr-service  # build subset
-    -->
+    <parent>
+        <groupId>com.org.llm</groupId>
+        <artifactId>super-pom</artifactId>
+        <version>1.0.0</version>
+    </parent>
 
     <groupId>com.org</groupId>
     <artifactId>llm-mcp</artifactId>

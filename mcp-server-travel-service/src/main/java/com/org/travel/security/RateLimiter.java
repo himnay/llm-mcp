@@ -8,24 +8,38 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RateLimiter {
 
     private static final long WINDOW_MS = 60_000L;
+    private static final int WRITE_LIMIT_PER_MINUTE = 10;
 
     private final int maxPerMinute;
     private final ConcurrentHashMap<String, long[]> counters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, long[]> writeCounters = new ConcurrentHashMap<>();
 
     public RateLimiter(int maxPerMinute) {
         this.maxPerMinute = maxPerMinute;
     }
 
     public boolean tryAcquire(String key) {
+        return acquire(key, counters, maxPerMinute);
+    }
+
+    /**
+     * Stricter rate limit for write/mutation operations.
+     * Enforces a hard limit of {@value WRITE_LIMIT_PER_MINUTE} writes per minute per user.
+     */
+    public boolean tryAcquireWrite(String key) {
+        return acquire(key, writeCounters, WRITE_LIMIT_PER_MINUTE);
+    }
+
+    private boolean acquire(String key, ConcurrentHashMap<String, long[]> counterMap, int limit) {
         long now = System.currentTimeMillis();
-        long[] entry = counters.compute(key, (k, existing) -> {
+        long[] entry = counterMap.compute(key, (k, existing) -> {
             if (existing == null || (now - existing[1]) >= WINDOW_MS) {
                 return new long[]{1L, now};
             }
             existing[0]++;
             return existing;
         });
-        return entry[0] <= maxPerMinute;
+        return entry[0] <= limit;
     }
 
     int currentCount(String key) {

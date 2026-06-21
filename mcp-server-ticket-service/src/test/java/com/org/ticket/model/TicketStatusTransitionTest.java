@@ -1,30 +1,37 @@
 package com.org.ticket.model;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Unit tests for the enum-based State pattern in {@link TicketStatus}. */
+/**
+ * Unit tests for the enum-based State pattern in {@link TicketStatus}.
+ */
 class TicketStatusTransitionTest {
 
+    @DisplayName("Allows OPEN tickets to move to IN_PROGRESS or CLOSED")
     @Test
     void openCanMoveToInProgressAndClosed() {
         assertThat(TicketStatus.OPEN.canTransitionTo(TicketStatus.IN_PROGRESS)).isTrue();
         assertThat(TicketStatus.OPEN.canTransitionTo(TicketStatus.CLOSED)).isTrue();
     }
 
+    @DisplayName("Allows IN_PROGRESS tickets to move to CLOSED or back to OPEN")
     @Test
     void inProgressCanMoveToClosedOrBackToOpen() {
         assertThat(TicketStatus.IN_PROGRESS.canTransitionTo(TicketStatus.CLOSED)).isTrue();
         assertThat(TicketStatus.IN_PROGRESS.canTransitionTo(TicketStatus.OPEN)).isTrue();
     }
 
+    @DisplayName("Allows CLOSED tickets to only transition back to OPEN")
     @Test
     void closedCanOnlyBeReopened() {
         assertThat(TicketStatus.CLOSED.canTransitionTo(TicketStatus.OPEN)).isTrue();
         assertThat(TicketStatus.CLOSED.canTransitionTo(TicketStatus.IN_PROGRESS)).isFalse();
     }
 
+    @DisplayName("Allows every status to transition to itself")
     @Test
     void sameStatusIsAlwaysAllowed() {
         for (TicketStatus status : TicketStatus.values()) {

@@ -1,1 +1,129 @@
-{"nodes":[{"id":"repository_leaverecordrepository","label":"LeaveRecordRepository.java","file_type":"code","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L1"},{"id":"repository_leaverecordrepository_leaverecordrepository","label":"LeaveRecordRepository","file_type":"code","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L9"},{"id":"jparepository","label":"JpaRepository","file_type":"code","source_file":"","source_location":""},{"id":"leaverecord","label":"LeaveRecord","file_type":"code","source_file":"","source_location":""},{"id":"long","label":"Long","file_type":"code","source_file":"","source_location":""},{"id":"repository_leaverecordrepository_leaverecordrepository_findbyusernameandleavedate","label":".findByUsernameAndLeaveDate()","file_type":"code","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L10"}],"edges":[{"source":"repository_leaverecordrepository","target":"leaverecord","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L3","weight":1},{"source":"repository_leaverecordrepository","target":"jparepository","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L4","weight":1},{"source":"repository_leaverecordrepository","target":"localdate","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L6","weight":1},{"source":"repository_leaverecordrepository","target":"optional","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L7","weight":1},{"source":"repository_leaverecordrepository","target":"repository_leaverecordrepository_leaverecordrepository","relation":"contains","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L9","weight":1},{"source":"repository_leaverecordrepository_leaverecordrepository","target":"jparepository","relation":"inherits","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L9","weight":1},{"source":"repository_leaverecordrepository_leaverecordrepository","target":"leaverecord","relation":"inherits","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L9","weight":1},{"source":"repository_leaverecordrepository_leaverecordrepository","target":"long","relation":"inherits","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L9","weight":1},{"source":"repository_leaverecordrepository_leaverecordrepository","target":"repository_leaverecordrepository_leaverecordrepository_findbyusernameandleavedate","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java","source_location":"L10","weight":1}]}
+{
+  "nodes": [
+    {
+      "id": "repository_leaverecordrepository",
+      "label": "LeaveRecordRepository.java",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "repository_leaverecordrepository_leaverecordrepository",
+      "label": "LeaveRecordRepository",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L9"
+    },
+    {
+      "id": "jparepository",
+      "label": "JpaRepository",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "leaverecord",
+      "label": "LeaveRecord",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "long",
+      "label": "Long",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "repository_leaverecordrepository_leaverecordrepository_findbyusernameandleavedate",
+      "label": ".findByUsernameAndLeaveDate()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L10"
+    }
+  ],
+  "edges": [
+    {
+      "source": "repository_leaverecordrepository",
+      "target": "leaverecord",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L3",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository",
+      "target": "jparepository",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L4",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository",
+      "target": "localdate",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L6",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository",
+      "target": "optional",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L7",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository",
+      "target": "repository_leaverecordrepository_leaverecordrepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L9",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository_leaverecordrepository",
+      "target": "jparepository",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L9",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository_leaverecordrepository",
+      "target": "leaverecord",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L9",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository_leaverecordrepository",
+      "target": "long",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L9",
+      "weight": 1
+    },
+    {
+      "source": "repository_leaverecordrepository_leaverecordrepository",
+      "target": "repository_leaverecordrepository_leaverecordrepository_findbyusernameandleavedate",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-hr-service/src/main/java/com/org/hr/repository/LeaveRecordRepository.java",
+      "source_location": "L10",
+      "weight": 1
+    }
+  ]
+}

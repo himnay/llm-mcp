@@ -1,10 +1,12 @@
 package com.org.deployment.mcp;
 
 import com.org.deployment.security.ActingUserContext;
+import com.org.deployment.security.RateLimiter;
 import com.org.deployment.security.SecurityProperties;
 import com.org.deployment.service.DeploymentService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -30,7 +32,7 @@ class DeploymentMcpToolsValidationTest {
         securityProperties.setToken("");
         securityProperties.setDefaultUser("system");
         securityProperties.setRequireUserForWrites(false);
-        tools = new DeploymentMcpTools(deploymentService, securityProperties);
+        tools = new DeploymentMcpTools(deploymentService, securityProperties, new RateLimiter(120));
         ActingUserContext.set("test-user");
     }
 
@@ -42,6 +44,7 @@ class DeploymentMcpToolsValidationTest {
     // ── createDeployment validation ───────────────────────────────────────────
 
     @Test
+    @DisplayName("Rejects deployment creation with a blank service name")
     void createDeployment_rejectsBlankServiceName() {
         assertThatThrownBy(() -> tools.createDeployment("", "DEV", "2025-06-01T10:00:00", "owner"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -49,6 +52,7 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Rejects deployment creation with a null environment")
     void createDeployment_rejectsNullEnvironment() {
         assertThatThrownBy(() -> tools.createDeployment("svc", null, "2025-06-01T10:00:00", "owner"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -56,13 +60,15 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Rejects deployment creation with an unrecognized environment value")
     void createDeployment_rejectsInvalidEnvironment() {
-        assertThatThrownBy(() -> tools.createDeployment("svc", "STAGING", "2025-06-01T10:00:00", "owner"))
+        assertThatThrownBy(() -> tools.createDeployment("svc", "PRODUCTION", "2025-06-01T10:00:00", "owner"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("STAGING");
+                .hasMessageContaining("PRODUCTION");
     }
 
     @Test
+    @DisplayName("Rejects deployment creation with an unparseable date string")
     void createDeployment_rejectsInvalidDateFormat() {
         assertThatThrownBy(() -> tools.createDeployment("svc", "DEV", "not-a-date", "owner"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -70,6 +76,7 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Rejects deployment creation with a blank owner")
     void createDeployment_rejectsBlankOwner() {
         assertThatThrownBy(() -> tools.createDeployment("svc", "DEV", "2025-06-01T10:00:00", "   "))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -79,6 +86,7 @@ class DeploymentMcpToolsValidationTest {
     // ── getDeployment validation ──────────────────────────────────────────────
 
     @Test
+    @DisplayName("Rejects fetching a deployment with a null id")
     void getDeployment_rejectsNullId() {
         assertThatThrownBy(() -> tools.getDeployment(null))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -86,6 +94,7 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Rejects fetching a deployment with a zero id")
     void getDeployment_rejectsZeroId() {
         assertThatThrownBy(() -> tools.getDeployment(0L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -93,6 +102,7 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Rejects fetching a deployment with a negative id")
     void getDeployment_rejectsNegativeId() {
         assertThatThrownBy(() -> tools.getDeployment(-5L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -102,6 +112,7 @@ class DeploymentMcpToolsValidationTest {
     // ── rescheduleDeployment validation ──────────────────────────────────────
 
     @Test
+    @DisplayName("Rejects rescheduling with an unparseable date string")
     void rescheduleDeployment_rejectsInvalidDate() {
         assertThatThrownBy(() -> tools.rescheduleDeployment(1L, "bad-date"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -109,6 +120,7 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Rejects rescheduling with a blank date string")
     void rescheduleDeployment_rejectsBlankDate() {
         assertThatThrownBy(() -> tools.rescheduleDeployment(1L, ""))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -118,6 +130,7 @@ class DeploymentMcpToolsValidationTest {
     // ── write gate ────────────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Rejects cancellation by the default user when the write gate is enabled")
     void cancelDeployment_rejectsDefaultUserWhenWriteGateEnabled() {
         securityProperties.setRequireUserForWrites(true);
         ActingUserContext.set("system"); // same as defaultUser
@@ -127,6 +140,7 @@ class DeploymentMcpToolsValidationTest {
     }
 
     @Test
+    @DisplayName("Allows cancellation by a named acting user when the write gate is enabled")
     void cancelDeployment_allowsNamedUserWhenWriteGateEnabled() {
         securityProperties.setRequireUserForWrites(true);
         ActingUserContext.set("jane");

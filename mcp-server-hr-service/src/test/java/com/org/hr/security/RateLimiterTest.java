@@ -1,5 +1,6 @@
 package com.org.hr.security;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RateLimiterTest {
 
+    @DisplayName("Allows requests up to the limit then blocks further requests")
     @Test
     void allowsUpToLimitThenBlocks() {
         RateLimiter limiter = new RateLimiter(3);
@@ -20,6 +22,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("alice")).isFalse();
     }
 
+    @DisplayName("Tracks separate request counters per user")
     @Test
     void differentUsersHaveSeparateCounters() {
         RateLimiter limiter = new RateLimiter(2);
@@ -34,6 +37,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("carol")).isFalse();
     }
 
+    @DisplayName("Allows exactly one request when the limit is one")
     @Test
     void limitOfOneAllowsExactlyOneRequest() {
         RateLimiter limiter = new RateLimiter(1);

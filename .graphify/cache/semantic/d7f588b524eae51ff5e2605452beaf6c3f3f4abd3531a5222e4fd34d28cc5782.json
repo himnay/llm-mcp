@@ -1,1 +1,39 @@
-{"nodes":[{"id":"github_application_yaml","label":"mcp-server-github-service application.yaml","file_type":"code","source_file":"mcp-server-github-service/src/main/resources/application.yaml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null}],"edges":[{"source":"github_application_yaml","target":"github_service","relation":"implements","confidence":"EXTRACTED","confidence_score":1,"source_file":"mcp-server-github-service/src/main/resources/application.yaml","source_location":null,"weight":1},{"source":"github_application_yaml","target":"gmail_application_yaml","relation":"semantically_similar_to","confidence":"INFERRED","confidence_score":0.8,"source_file":"mcp-server-github-service/src/main/resources/application.yaml","source_location":null,"weight":1}],"hyperedges":[]}
+{
+  "nodes": [
+    {
+      "id": "github_application_yaml",
+      "label": "mcp-server-github-service application.yaml",
+      "file_type": "code",
+      "source_file": "mcp-server-github-service/src/main/resources/application.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "github_application_yaml",
+      "target": "github_service",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "mcp-server-github-service/src/main/resources/application.yaml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "github_application_yaml",
+      "target": "gmail_application_yaml",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mcp-server-github-service/src/main/resources/application.yaml",
+      "source_location": null,
+      "weight": 1
+    }
+  ],
+  "hyperedges": []
+}

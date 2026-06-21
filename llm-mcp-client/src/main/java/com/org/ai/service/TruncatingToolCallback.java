@@ -12,7 +12,7 @@ import org.springframework.ai.tool.metadata.ToolMetadata;
  */
 public class TruncatingToolCallback implements ToolCallback {
 
-    private static final String MARKER = "…[truncated]";
+    private static final String MARKER_PREFIX = "\n[TRUNCATED: output exceeded ";
 
     private final ToolCallback delegate;
     private final int maxChars;
@@ -44,7 +44,9 @@ public class TruncatingToolCallback implements ToolCallback {
 
     private String truncate(String result) {
         if (result != null && maxChars > 0 && result.length() > maxChars) {
-            return result.substring(0, maxChars) + MARKER;
+            int omitted = result.length() - maxChars;
+            return result.substring(0, maxChars)
+                    + MARKER_PREFIX + maxChars + " chars. " + omitted + " chars omitted.]";
         }
         return result;
     }

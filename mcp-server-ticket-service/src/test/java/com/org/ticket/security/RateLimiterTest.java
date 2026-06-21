@@ -1,5 +1,6 @@
 package com.org.ticket.security;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RateLimiterTest {
 
+    @DisplayName("Allows requests up to the configured limit")
     @Test
     void allowsUpToLimit() {
         RateLimiter limiter = new RateLimiter(3);
@@ -17,6 +19,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("alice")).isTrue();
     }
 
+    @DisplayName("Blocks requests once the limit is exceeded")
     @Test
     void blocksAboveLimit() {
         RateLimiter limiter = new RateLimiter(2);
@@ -25,6 +28,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("bob")).isFalse();
     }
 
+    @DisplayName("Tracks rate limit windows independently per user")
     @Test
     void differentUsersHaveIndependentWindows() {
         RateLimiter limiter = new RateLimiter(1);
@@ -34,6 +38,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("dave")).isTrue();
     }
 
+    @DisplayName("Blocks every request when the limit is zero")
     @Test
     void zeroLimitBlocksEveryone() {
         RateLimiter limiter = new RateLimiter(0);

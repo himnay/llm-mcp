@@ -1,10 +1,12 @@
 package com.org.gmail.mcp;
 
 import com.org.gmail.security.ActingUserContext;
+import com.org.gmail.security.RateLimiter;
 import com.org.gmail.security.SecurityProperties;
 import com.org.gmail.service.GmailService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -27,7 +29,7 @@ class GmailMcpToolsValidationTest {
         securityProperties.setToken("");
         securityProperties.setDefaultUser("system");
         securityProperties.setRequireUserForWrites(false);
-        tools = new GmailMcpTools(gmailService, securityProperties);
+        tools = new GmailMcpTools(gmailService, securityProperties, new RateLimiter(120));
         ActingUserContext.set("test-user");
     }
 
@@ -36,6 +38,7 @@ class GmailMcpToolsValidationTest {
         ActingUserContext.clear();
     }
 
+    @DisplayName("Rejects getEmail call when messageId is blank")
     @Test
     void getEmail_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.getEmail("", "full"))
@@ -43,6 +46,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("messageId");
     }
 
+    @DisplayName("Rejects searchEmails call when query is blank")
     @Test
     void searchEmails_rejectsBlankQuery() {
         assertThatThrownBy(() -> tools.searchEmails("", 10))
@@ -50,6 +54,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("query");
     }
 
+    @DisplayName("Rejects getEmailThread call when threadId is blank")
     @Test
     void getEmailThread_rejectsBlankThreadId() {
         assertThatThrownBy(() -> tools.getEmailThread(""))
@@ -57,6 +62,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("threadId");
     }
 
+    @DisplayName("Rejects sendEmail call when recipient 'to' address is blank")
     @Test
     void sendEmail_rejectsBlankTo() {
         assertThatThrownBy(() -> tools.sendEmail("", "subject", "body"))
@@ -64,6 +70,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("to");
     }
 
+    @DisplayName("Rejects createDraft call when subject is blank")
     @Test
     void createDraft_rejectsBlankSubject() {
         assertThatThrownBy(() -> tools.createDraft("to@example.com", "", "body"))
@@ -71,6 +78,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("subject");
     }
 
+    @DisplayName("Rejects deleteEmail call when messageId is blank")
     @Test
     void deleteEmail_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.deleteEmail(""))
@@ -78,6 +86,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("messageId");
     }
 
+    @DisplayName("Rejects markAsRead call when messageId is blank")
     @Test
     void markAsRead_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.markAsRead(""))
@@ -85,6 +94,7 @@ class GmailMcpToolsValidationTest {
                 .hasMessageContaining("messageId");
     }
 
+    @DisplayName("Rejects getEmailsByLabel call when labelId is blank")
     @Test
     void getEmailsByLabel_rejectsBlankLabelId() {
         assertThatThrownBy(() -> tools.getEmailsByLabel("", 10))

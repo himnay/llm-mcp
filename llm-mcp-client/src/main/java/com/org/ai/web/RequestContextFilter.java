@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * Establishes {@link RequestContext} for each request: resolves the acting user
@@ -41,6 +43,14 @@ public class RequestContextFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+        // Propagate or generate X-Request-ID
+        String requestId = request.getHeader("X-Request-ID");
+        if (requestId == null || requestId.isBlank()) {
+            requestId = UUID.randomUUID().toString();
+        }
+        MDC.put("requestId", requestId);
+        response.setHeader("X-Request-ID", requestId);
+
         String headerUser = request.getHeader("X-User-Id");
         String user = StringUtils.hasText(headerUser) ? headerUser.trim() : properties.getDefaultUser();
         String path = request.getRequestURI();
@@ -55,6 +65,7 @@ public class RequestContextFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         } finally {
             RequestContext.clear();
+            MDC.clear();
         }
     }
 }

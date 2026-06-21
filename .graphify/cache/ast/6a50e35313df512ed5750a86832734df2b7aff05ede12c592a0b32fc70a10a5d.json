@@ -1,1 +1,179 @@
-{"nodes":[{"id":"service_truncatingtoolcallback","label":"TruncatingToolCallback.java","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L1"},{"id":"service_truncatingtoolcallback_truncatingtoolcallback","label":"TruncatingToolCallback","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L13"},{"id":"toolcallback","label":"ToolCallback","file_type":"code","source_file":"","source_location":""},{"id":"service_truncatingtoolcallback_truncatingtoolcallback_truncatingtoolcallback","label":".TruncatingToolCallback()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L20"},{"id":"service_truncatingtoolcallback_truncatingtoolcallback_gettooldefinition","label":".getToolDefinition()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L25"},{"id":"service_truncatingtoolcallback_truncatingtoolcallback_gettoolmetadata","label":".getToolMetadata()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L30"},{"id":"service_truncatingtoolcallback_truncatingtoolcallback_call","label":".call()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L35"},{"id":"service_truncatingtoolcallback_truncatingtoolcallback_truncate","label":".truncate()","file_type":"code","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L45"}],"edges":[{"source":"service_truncatingtoolcallback","target":"toolcontext","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L3","weight":1},{"source":"service_truncatingtoolcallback","target":"toolcallback","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L4","weight":1},{"source":"service_truncatingtoolcallback","target":"tooldefinition","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L5","weight":1},{"source":"service_truncatingtoolcallback","target":"toolmetadata","relation":"imports","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L6","weight":1},{"source":"service_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback","relation":"contains","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L13","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"toolcallback","relation":"implements","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L13","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback_truncatingtoolcallback","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L20","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback_gettooldefinition","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L25","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback_gettoolmetadata","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L30","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback_call","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L35","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback_call","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L40","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback","target":"service_truncatingtoolcallback_truncatingtoolcallback_truncate","relation":"method","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L45","weight":1},{"source":"service_truncatingtoolcallback_truncatingtoolcallback_call","target":"service_truncatingtoolcallback_truncatingtoolcallback_truncate","relation":"calls","confidence":"EXTRACTED","source_file":"/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java","source_location":"L37","weight":1}]}
+{
+  "nodes": [
+    {
+      "id": "service_truncatingtoolcallback",
+      "label": "TruncatingToolCallback.java",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "label": "TruncatingToolCallback",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L13"
+    },
+    {
+      "id": "toolcallback",
+      "label": "ToolCallback",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "service_truncatingtoolcallback_truncatingtoolcallback_truncatingtoolcallback",
+      "label": ".TruncatingToolCallback()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L20"
+    },
+    {
+      "id": "service_truncatingtoolcallback_truncatingtoolcallback_gettooldefinition",
+      "label": ".getToolDefinition()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L25"
+    },
+    {
+      "id": "service_truncatingtoolcallback_truncatingtoolcallback_gettoolmetadata",
+      "label": ".getToolMetadata()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L30"
+    },
+    {
+      "id": "service_truncatingtoolcallback_truncatingtoolcallback_call",
+      "label": ".call()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L35"
+    },
+    {
+      "id": "service_truncatingtoolcallback_truncatingtoolcallback_truncate",
+      "label": ".truncate()",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L45"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service_truncatingtoolcallback",
+      "target": "toolcontext",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L3",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback",
+      "target": "toolcallback",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L4",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback",
+      "target": "tooldefinition",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L5",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback",
+      "target": "toolmetadata",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L6",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L13",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "toolcallback",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L13",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_truncatingtoolcallback",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L20",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_gettooldefinition",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L25",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_gettoolmetadata",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L30",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_call",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L35",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_call",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L40",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_truncate",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L45",
+      "weight": 1
+    },
+    {
+      "source": "service_truncatingtoolcallback_truncatingtoolcallback_call",
+      "target": "service_truncatingtoolcallback_truncatingtoolcallback_truncate",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/himansu/llm-mcp/llm-mcp-client/src/main/java/com/org/ai/service/TruncatingToolCallback.java",
+      "source_location": "L37",
+      "weight": 1
+    }
+  ]
+}

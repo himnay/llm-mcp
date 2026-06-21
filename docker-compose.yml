@@ -63,60 +63,101 @@ services:
     depends_on:
       - prometheus
       - tempo
-#  hr-service:
-#    build:
-#      context: ./mcp-server-hr-service
-#    container_name: hr-service
-#    environment:
-#      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-#      DB_USERNAME: postgres
-#      DB_PASSWORD: postgres
-#      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-#      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-#    ports:
-#      - "8084:8084"
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    restart: unless-stopped
-#  deployment-service:
-#    build:
-#      context: ./mcp-server-deployment-service
-#    container_name: deployment-service
-#    environment: *server-env
-#    ports:
-#      - "8082:8082"
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    restart: unless-stopped
-#  notification-service:
-#    build:
-#      context: ./mcp-server-notification-service
-#    container_name: notification-service
-#    environment: *server-env
-#    ports:
-#      - "8083:8083"
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    restart: unless-stopped
-#  ticket-service:
-#    build:
-#      context: ./mcp-server-ticket-service
-#    container_name: ticket-service
-#    environment: &server-env
-#      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-#      DB_USERNAME: postgres
-#      DB_PASSWORD: postgres
-#      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-#      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-#    ports:
-#      - "8081:8081"
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    restart: unless-stopped
+  hr-service:
+    build:
+      context: ./mcp-server-hr-service
+    container_name: hr-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  deployment-service:
+    build:
+      context: ./mcp-server-deployment-service
+    container_name: deployment-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  notification-service:
+    build:
+      context: ./mcp-server-notification-service
+    container_name: notification-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  ticket-service:
+    build:
+      context: ./mcp-server-ticket-service
+    container_name: ticket-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  mcp-client:
+    build:
+      context: ./llm-mcp-client
+    container_name: mcp-client
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hr-service:
+        condition: service_started
+      deployment-service:
+        condition: service_started
+      ticket-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      github-service:
+        condition: service_started
+      gmail-service:
+        condition: service_started
+      travel-service:
+        condition: service_started
+    restart: unless-stopped
   redis:
     image: redis:7-alpine
     container_name: redis

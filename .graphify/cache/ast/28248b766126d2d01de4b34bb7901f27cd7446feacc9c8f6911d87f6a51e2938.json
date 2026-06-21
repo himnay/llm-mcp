@@ -1,1 +1,12 @@
-{"nodes":[{"id":"migration_v2_seed_data","label":"V2__seed_data.sql","file_type":"code","source_file":"/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/resources/db/migration/V2__seed_data.sql","source_location":"L1"}],"edges":[]}
+{
+  "nodes": [
+    {
+      "id": "migration_v2_seed_data",
+      "label": "V2__seed_data.sql",
+      "file_type": "code",
+      "source_file": "/Users/himansu/llm-mcp/mcp-server-ticket-service/src/main/resources/db/migration/V2__seed_data.sql",
+      "source_location": "L1"
+    }
+  ],
+  "edges": []
+}

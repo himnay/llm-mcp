@@ -1,11 +1,13 @@
 package com.org.travel.security;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RateLimiterTest {
 
+    @DisplayName("Allows requests up to the configured limit then rejects further ones")
     @Test
     void allowsRequestsUpToLimit() {
         RateLimiter limiter = new RateLimiter(3);
@@ -15,6 +17,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("user1")).isFalse();
     }
 
+    @DisplayName("Tracks request counts independently per user")
     @Test
     void isolatesCountsByUser() {
         RateLimiter limiter = new RateLimiter(2);
@@ -26,6 +29,7 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("bob")).isTrue();
     }
 
+    @DisplayName("Reports the current acquisition count for a user")
     @Test
     void tracksCurrentCount() {
         RateLimiter limiter = new RateLimiter(10);
@@ -34,6 +38,7 @@ class RateLimiterTest {
         assertThat(limiter.currentCount("user")).isEqualTo(2);
     }
 
+    @DisplayName("Returns zero count for a user that has never made a request")
     @Test
     void unknownUserCountIsZero() {
         RateLimiter limiter = new RateLimiter(10);

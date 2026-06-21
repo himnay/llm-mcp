@@ -7,6 +7,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.mcp.annotation.McpPrompt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,6 +17,9 @@ import java.util.List;
 @RequiredArgsConstructor
 class TicketPromptProvider {
     private final TicketService ticketService;
+
+    @Value("${mcp.output.max-chars:8000}")
+    private int maxOutputChars;
 
     @McpPrompt(
             name = "analyze-tickets",
@@ -34,7 +38,7 @@ class TicketPromptProvider {
                     .append("\n");
         }
         // Cap the ticket summary so a large backlog cannot flood the LLM context window.
-        String cappedSummary = OutputSizeCapUtil.cap(ticketSummary.toString());
+        String cappedSummary = OutputSizeCapUtil.cap(ticketSummary.toString(), maxOutputChars);
         log.info("PROMPT analyze-tickets | user={} ticketCount={}", actingUser, tickets.size());
         String prompt = """
                 You are a Org operations analyst.

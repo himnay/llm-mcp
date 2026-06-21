@@ -9,68 +9,68 @@ An MCP server that sends and lists notifications across channels (INTERNAL, EMAI
 
 Defined in `NotificationTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
 
-| Tool name          | Type  | Description                                                                |
-|--------------------|-------|-----------------------------------------------------------------------------|
-| `getNotifications` | READ  | Get all notifications                                                       |
+| Tool name          | Type  | Description                                                                               |
+|--------------------|-------|-------------------------------------------------------------------------------------------|
+| `getNotifications` | READ  | Get all notifications                                                                     |
 | `sendNotification` | WRITE | Send a notification — `channel` (`INTERNAL`/`EMAIL`/`SLACK`), `recipient` team, `message` |
 
 ---
 
 ## Best Practices Applied
 
-| Practice                       | Status | Notes                                                                                                          |
-|--------------------------------|--------|----------------------------------------------------------------------------------------------------------------|
-| Centralised error handling     | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body |
-| Meaningful 404s                | ✅      | `ResourceNotFoundException` → HTTP 404 for unknown notification ids                                            |
-| Input validation               | ✅      | `@ToolParam` typed enum (`NotificationChannel`) + blank/null guards → `IllegalArgumentException` → HTTP 400    |
-| Bearer token auth              | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset |
-| Acting-user propagation        | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`             |
-| Write-operation gating         | ✅      | `enforceWriteGate` rejects `sendNotification` from the default user when `mcp.security.require-user-for-writes=true` |
-| Rate limiting                  | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                        |
-| Audit logging                  | ✅      | Every tool call logs `TOOL <name> | user=… channel=… recipient=… outcome=… latencyMs=…`                         |
-| Output truncation              | ✅      | `OutputSizeCapUtil.cap` truncates tool responses                                                               |
-| Database migrations            | ✅      | Flyway with a dedicated history table (`flyway_schema_history_notification`) so multiple services can share one DB safely |
-| Externalised config            | ✅      | `SecurityProperties` (`@ConfigurationProperties`) — DB creds, tokens, limits all env-overridable               |
-| Structured logging             | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                        |
-| Distributed tracing            | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                       |
-| Prometheus metrics             | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`                                            |
-| Health/auth allow-list         | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                   |
-| Non-root container             | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                           |
-| Auth wiring in `application.yaml` | ⚠️   | `SecurityProperties` documents `mcp.security.*`, but **no `mcp:` block is present in `application.yaml`** — the filter still binds via `@ConfigurationProperties` defaults, so set `MCP_AUTH_TOKEN` to enable auth (see root [README](../README.md#notification-service--mcp-server-notification-service-8083)) |
-| Liveness/readiness probes      | ❌      | `management.endpoint.health.probes.enabled` not set (unlike HR/Gmail/GitHub/Deployment)                        |
-| Circuit breaker / resilience   | ❌      | No Resilience4j — DB failures surface directly as tool errors                                                  |
+| Practice                          | Status | Notes                                                                                                                                                                                                                                                                                                           |
+|-----------------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Centralised error handling        | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                                                                                                                                                                |
+| Meaningful 404s                   | ✅      | `ResourceNotFoundException` → HTTP 404 for unknown notification ids                                                                                                                                                                                                                                             |
+| Input validation                  | ✅      | `@ToolParam` typed enum (`NotificationChannel`) + blank/null guards → `IllegalArgumentException` → HTTP 400                                                                                                                                                                                                     |
+| Bearer token auth                 | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset                                                                                                                                                                                      |
+| Acting-user propagation           | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                                                                                                                                                              |
+| Write-operation gating            | ✅      | `enforceWriteGate` rejects `sendNotification` from the default user when `mcp.security.require-user-for-writes=true`                                                                                                                                                                                            |
+| Rate limiting                     | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                                                                                                                                                         |
+| Audit logging                     | ✅      | Every tool call logs `TOOL <name>                                                                                                                                                                                                                                                                               | user=… channel=… recipient=… outcome=… latencyMs=…`                         |
+| Output truncation                 | ✅      | `OutputSizeCapUtil.cap` truncates tool responses                                                                                                                                                                                                                                                                |
+| Database migrations               | ✅      | Flyway with a dedicated history table (`flyway_schema_history_notification`) so multiple services can share one DB safely                                                                                                                                                                                       |
+| Externalised config               | ✅      | `SecurityProperties` (`@ConfigurationProperties`) — DB creds, tokens, limits all env-overridable                                                                                                                                                                                                                |
+| Structured logging                | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                                                                                                                                                         |
+| Distributed tracing               | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                                                                                                                                                       |
+| Prometheus metrics                | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`                                                                                                                                                                                                                                             |
+| Health/auth allow-list            | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                                                                                                                                                                                                                    |
+| Non-root container                | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                                                                                                                                                                                                                            |
+| Auth wiring in `application.yaml` | ⚠️     | `SecurityProperties` documents `mcp.security.*`, but **no `mcp:` block is present in `application.yaml`** — the filter still binds via `@ConfigurationProperties` defaults, so set `MCP_AUTH_TOKEN` to enable auth (see root [README](../README.md#notification-service--mcp-server-notification-service-8083)) |
+| Liveness/readiness probes         | ❌      | `management.endpoint.health.probes.enabled` not set (unlike HR/Gmail/GitHub/Deployment)                                                                                                                                                                                                                         |
+| Circuit breaker / resilience      | ❌      | No Resilience4j — DB failures surface directly as tool errors                                                                                                                                                                                                                                                   |
 
 ---
 
 ## Design Patterns (GoF)
 
-| Pattern | Where | Role |
-|---------|-------|------|
-| **Strategy** | `ChannelDeliveryStrategy` + `InternalDeliveryStrategy` / `EmailDeliveryStrategy` / `SlackDeliveryStrategy` | One delivery algorithm per channel; `NotificationService` is closed to modification when channels are added |
-| **Factory (registry)** | `DeliveryStrategyRegistry` | Spring injects every strategy bean; registry indexes by channel and fails fast at startup if one is missing |
-| **Singleton** | All Spring beans | One shared, stateless instance per container |
-| **Facade** | `NotificationService` | Persists the notification, then dispatches via the right strategy |
-| **Factory Method** | `@Bean` methods in `McpToolConfig` | Container builds the MCP `ToolCallbackProvider` |
-| **Builder** | Lombok `@Builder` on `Notification` | Readable construction of multi-field entities |
-| **Proxy** | Spring Data JPA repositories | Dynamic proxies add persistence behaviour |
-| **Template Method** | `McpAuthFilter extends OncePerRequestFilter` | Framework skeleton calls `doFilterInternal` hooks |
-| **Chain of Responsibility** | Servlet `FilterChain` | Auth → rate-limit → tools, each link handles or passes on |
-| **Command** | `@Tool` methods (`getNotifications`, `sendNotification`) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime |
+| Pattern                     | Where                                                                                                      | Role                                                                                                        |
+|-----------------------------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| **Strategy**                | `ChannelDeliveryStrategy` + `InternalDeliveryStrategy` / `EmailDeliveryStrategy` / `SlackDeliveryStrategy` | One delivery algorithm per channel; `NotificationService` is closed to modification when channels are added |
+| **Factory (registry)**      | `DeliveryStrategyRegistry`                                                                                 | Spring injects every strategy bean; registry indexes by channel and fails fast at startup if one is missing |
+| **Singleton**               | All Spring beans                                                                                           | One shared, stateless instance per container                                                                |
+| **Facade**                  | `NotificationService`                                                                                      | Persists the notification, then dispatches via the right strategy                                           |
+| **Factory Method**          | `@Bean` methods in `McpToolConfig`                                                                         | Container builds the MCP `ToolCallbackProvider`                                                             |
+| **Builder**                 | Lombok `@Builder` on `Notification`                                                                        | Readable construction of multi-field entities                                                               |
+| **Proxy**                   | Spring Data JPA repositories                                                                               | Dynamic proxies add persistence behaviour                                                                   |
+| **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                                               | Framework skeleton calls `doFilterInternal` hooks                                                           |
+| **Chain of Responsibility** | Servlet `FilterChain`                                                                                      | Auth → rate-limit → tools, each link handles or passes on                                                   |
+| **Command**                 | `@Tool` methods (`getNotifications`, `sendNotification`) wrapped as `ToolCallback` objects                 | Tool invocations reified for the MCP runtime                                                                |
 
 ## Configuration
 
-| Property / Env Var                       | Default                                      | Description                                              |
-|--------------------------------------------|----------------------------------------------|----------------------------------------------------------|
-| `SERVER_PORT`                               | `8083`                                       | HTTP port                                                |
-| `DB_URL`                                    | `jdbc:postgresql://localhost:5432/spring_ai` | PostgreSQL JDBC URL                                      |
-| `DB_USERNAME`                               | `postgres`                                   | DB username                                              |
-| `DB_PASSWORD`                               | `postgres`                                   | DB password                                              |
-| `MCP_AUTH_TOKEN` (`mcp.security.token`)     | *(empty → insecure dev mode)*                | Shared bearer token required from MCP clients            |
-| `mcp.security.default-user`                 | `system`                                     | Fallback acting user when `X-Acting-User` is absent      |
-| `mcp.security.require-user-for-writes`      | `false`                                      | Reject `sendNotification` from the default user when `true` |
-| `mcp.security.rate-limit-per-minute`        | `120`                                        | Per-user fixed-window request cap                        |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `http://localhost:4318`                      | OTLP traces endpoint (Tempo)                             |
-| `TRACING_SAMPLING`                          | `1.0`                                        | Trace sampling probability                               |
+| Property / Env Var                      | Default                                      | Description                                                 |
+|-----------------------------------------|----------------------------------------------|-------------------------------------------------------------|
+| `SERVER_PORT`                           | `8083`                                       | HTTP port                                                   |
+| `DB_URL`                                | `jdbc:postgresql://localhost:5432/spring_ai` | PostgreSQL JDBC URL                                         |
+| `DB_USERNAME`                           | `postgres`                                   | DB username                                                 |
+| `DB_PASSWORD`                           | `postgres`                                   | DB password                                                 |
+| `MCP_AUTH_TOKEN` (`mcp.security.token`) | *(empty → insecure dev mode)*                | Shared bearer token required from MCP clients               |
+| `mcp.security.default-user`             | `system`                                     | Fallback acting user when `X-Acting-User` is absent         |
+| `mcp.security.require-user-for-writes`  | `false`                                      | Reject `sendNotification` from the default user when `true` |
+| `mcp.security.rate-limit-per-minute`    | `120`                                        | Per-user fixed-window request cap                           |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`           | `http://localhost:4318`                      | OTLP traces endpoint (Tempo)                                |
+| `TRACING_SAMPLING`                      | `1.0`                                        | Trace sampling probability                                  |
 
 ---
 

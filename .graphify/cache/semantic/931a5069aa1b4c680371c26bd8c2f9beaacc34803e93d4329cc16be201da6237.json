@@ -1,1 +1,371 @@
-{"nodes":[{"id":"docker_compose_root","label":"Root docker-compose.yml (Infra Stack)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_postgres","label":"postgres service (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_tempo","label":"tempo service (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_prometheus","label":"prometheus service (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_grafana","label":"grafana service (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_github_service","label":"github-service container (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_gmail_service","label":"gmail-service container (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_travel_service","label":"travel-service container (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"compose_mcp_inspector","label":"mcp-inspector container (docker-compose)","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":"Runs @modelcontextprotocol/inspector via npx for local MCP debugging; auth proxy token disabled for dev convenience (DANGEROUSLY_OMIT_AUTH=true)"},{"id":"observability_tempo_config","label":"observability/tempo.yml","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"observability_prometheus_config","label":"observability/prometheus.yml","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null},{"id":"observability_grafana_provisioning","label":"observability/grafana/provisioning","file_type":"code","source_file":"docker-compose.yml","source_location":null,"source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":null}],"edges":[{"source":"llm_mcp_client","target":"github_service","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"llm_mcp_client","target":"gmail_service","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_postgres","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_tempo","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_prometheus","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_grafana","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_github_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_gmail_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_travel_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"docker_compose_root","target":"compose_mcp_inspector","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_tempo","target":"observability_tempo_config","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_prometheus","target":"observability_prometheus_config","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_grafana","target":"observability_grafana_provisioning","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_github_service","target":"github_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_gmail_service","target":"gmail_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_travel_service","target":"travel_service","relation":"references","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_github_service","target":"compose_tempo","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_gmail_service","target":"compose_tempo","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_travel_service","target":"compose_tempo","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_grafana","target":"compose_prometheus","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"compose_grafana","target":"compose_tempo","relation":"calls","confidence":"EXTRACTED","confidence_score":1,"source_file":"docker-compose.yml","source_location":null,"weight":1},{"source":"travel_service","target":"github_service","relation":"semantically_similar_to","confidence":"INFERRED","confidence_score":0.6,"source_file":"docker-compose.yml","source_location":null,"weight":1}],"hyperedges":[]}
+{
+  "nodes": [
+    {
+      "id": "docker_compose_root",
+      "label": "Root docker-compose.yml (Infra Stack)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_postgres",
+      "label": "postgres service (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_tempo",
+      "label": "tempo service (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_prometheus",
+      "label": "prometheus service (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_grafana",
+      "label": "grafana service (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_github_service",
+      "label": "github-service container (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_gmail_service",
+      "label": "gmail-service container (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_travel_service",
+      "label": "travel-service container (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "compose_mcp_inspector",
+      "label": "mcp-inspector container (docker-compose)",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Runs @modelcontextprotocol/inspector via npx for local MCP debugging; auth proxy token disabled for dev convenience (DANGEROUSLY_OMIT_AUTH=true)"
+    },
+    {
+      "id": "observability_tempo_config",
+      "label": "observability/tempo.yml",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "observability_prometheus_config",
+      "label": "observability/prometheus.yml",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    },
+    {
+      "id": "observability_grafana_provisioning",
+      "label": "observability/grafana/provisioning",
+      "file_type": "code",
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "llm_mcp_client",
+      "target": "github_service",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "llm_mcp_client",
+      "target": "gmail_service",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_postgres",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_tempo",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_prometheus",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_grafana",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_github_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_gmail_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_travel_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "docker_compose_root",
+      "target": "compose_mcp_inspector",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_tempo",
+      "target": "observability_tempo_config",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_prometheus",
+      "target": "observability_prometheus_config",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_grafana",
+      "target": "observability_grafana_provisioning",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_github_service",
+      "target": "github_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_gmail_service",
+      "target": "gmail_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_travel_service",
+      "target": "travel_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_github_service",
+      "target": "compose_tempo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_gmail_service",
+      "target": "compose_tempo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_travel_service",
+      "target": "compose_tempo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_grafana",
+      "target": "compose_prometheus",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "compose_grafana",
+      "target": "compose_tempo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    },
+    {
+      "source": "travel_service",
+      "target": "github_service",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.6,
+      "source_file": "docker-compose.yml",
+      "source_location": null,
+      "weight": 1
+    }
+  ],
+  "hyperedges": []
+}

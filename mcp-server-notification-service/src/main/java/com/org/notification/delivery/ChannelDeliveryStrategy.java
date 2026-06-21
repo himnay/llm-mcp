@@ -11,9 +11,13 @@ import com.org.notification.model.NotificationChannel;
  */
 public interface ChannelDeliveryStrategy {
 
-    /** The channel this strategy handles. */
+    /**
+     * The channel this strategy handles.
+     */
     NotificationChannel channel();
 
-    /** Deliver the (already persisted) notification over this channel. */
+    /**
+     * Deliver the (already persisted) notification over this channel.
+     */
     void deliver(Notification notification);
 }
