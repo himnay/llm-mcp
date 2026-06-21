@@ -47,8 +47,8 @@ spring:
           connections:
             #            ticket:
             #              url: http://localhost:8081
-            #            deployment:
-            #              url: http://localhost:8082
+            deployment:
+              url: http://localhost:8082
             #            notification:
             #              url: http://localhost:8083
             #            hr:
@@ -57,6 +57,12 @@ spring:
               url: http://localhost:8085
 #            gmail:
 #              url: http://localhost:8086
+
+mcp:
+  oauth2:
+    token-uri: ${MCP_OAUTH2_TOKEN_URI:http://localhost:8180/realms/org-mcp/protocol/openid-connect/token}
+    client-id: ${MCP_OAUTH2_CLIENT_ID:llm-mcp-client}
+    client-secret: ${MCP_OAUTH2_CLIENT_SECRET:llm-mcp-client-secret}
 
 management:
   endpoints:

@@ -261,7 +261,9 @@ them was ever committed). The table is aspirational; see
 
 ## Deployment Service — `mcp-server-deployment-service` (:8082)
 
-Manages deployment scheduling. Uses **STREAMABLE** MCP protocol (others use STATELESS).
+Manages deployment scheduling. Uses **STREAMABLE** MCP protocol (others use STATELESS). The only server in this repo
+currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer token — see
+[KEYCLOAK_OAUTH2.md](KEYCLOAK_OAUTH2.md) for the full setup.
 
 ### MCP Tools
 
@@ -289,11 +291,16 @@ Manages deployment scheduling. Uses **STREAMABLE** MCP protocol (others use STAT
 
 | Variable         | Default                                      |
 |------------------|----------------------------------------------|
-| `SERVER_PORT`    | `8082`                                       |
-| `DB_URL`         | `jdbc:postgresql://localhost:5432/spring_ai` |
-| `DB_USERNAME`    | `postgres`                                   |
-| `DB_PASSWORD`    | `postgres`                                   |
-| `MCP_AUTH_TOKEN` | *(empty → insecure dev mode)*                |
+| `SERVER_PORT`            | `8082`                                                |
+| `DB_URL`                 | `jdbc:postgresql://localhost:5432/spring_ai`          |
+| `DB_USERNAME`            | `postgres`                                            |
+| `DB_PASSWORD`            | `postgres`                                            |
+| `MCP_AUTH_TOKEN`         | *(unused — superseded by OAuth2 below)*               |
+| `MCP_OAUTH2_ISSUER_URI`  | `http://localhost:8180/realms/org-mcp`                |
+
+Calls to `/mcp` require a valid Keycloak-issued bearer JWT (scope `deployment-invoke`, audience
+`deployment-service`) — see [KEYCLOAK_OAUTH2.md](KEYCLOAK_OAUTH2.md). Set `mcp.security.oauth2.enabled=false` to
+fall back to no auth on this endpoint (used by the test profile).
 
 `mcp.security.*` properties are the same as HR Service.
 
@@ -443,7 +450,7 @@ inconsistent on enum names) of what MCP 2.0 offers, what this repo now uses, and
 | `@McpComplete` (argument auto-completion) | ⏳ Not implemented | Would let a prompt/resource argument (e.g. `environment` in `createDeployment`, `state` in `getIssues`) offer auto-complete suggestions instead of relying on the LLM to guess valid enum values from the description string |
 | `@McpLogging` (client receives server log notifications) | ⏳ Not implemented | Servers could stream structured log events to the client during a tool call instead of only writing to their own `AUDIT`/`TOOL` log lines |
 | `@McpToolListChanged` / `@McpResourceListChanged` / `@McpPromptListChanged` | ⏳ Not implemented | No module's tool/resource/prompt set changes at runtime today, so there's nothing to notify about yet |
-| MCP Security (OAuth 2.1 authorization) | ⏳ Not implemented | This repo's `McpAuthFilter` uses a simple shared bearer token (see [Security & Operations](#security--operations-mcp-servers)) rather than spec-compliant per-client OAuth2.1 tokens/scopes — fine for this internal demo, a real gap for production |
+| MCP Security (OAuth 2.1 authorization) | ✅ Implemented (PoC: deployment-service) | `mcp-server-deployment-service` is now a Keycloak-backed OAuth2 resource server (client-credentials grant, scope + audience validated) instead of `McpAuthFilter`'s shared bearer token; the other five servers are unchanged. Full setup walkthrough: [KEYCLOAK_OAUTH2.md](KEYCLOAK_OAUTH2.md) |
 | `mcp-spring-webflux`/`mcp-spring-webmvc` moved in-tree | ⚙ Transparent | These transports used to be separate `io.modelcontextprotocol.sdk` artifacts; Spring AI 2.0 absorbed them into `spring-ai-mcp`. No code change needed — picked up automatically via the BOM bump |
 
 > **Known gap found during this audit, unrelated to the migration above:** `mcp-server-ticket-service` has **no MCP

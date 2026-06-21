@@ -16,6 +16,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    command: [ "start-dev", "--import-realm" ]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8180:8080"   # http://localhost:8180  (admin console: admin/admin)
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
+    restart: unless-stopped
+    healthcheck:
+      # Keycloak's first boot (Quarkus re-augmentation triggered by --import-realm) can take
+      # several minutes — start_period keeps those early failures from counting against retries.
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
   tempo:
     image: grafana/tempo:latest
     container_name: tempo
@@ -89,10 +109,13 @@ services:
       DB_PASSWORD: postgres
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      MCP_OAUTH2_ISSUER_URI: http://keycloak:8080/realms/org-mcp
     ports:
       - "8082:8082"
     depends_on:
       postgres:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     restart: unless-stopped
   notification-service:
@@ -138,10 +161,15 @@ services:
       DB_PASSWORD: postgres
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      MCP_OAUTH2_TOKEN_URI: http://keycloak:8080/realms/org-mcp/protocol/openid-connect/token
+      MCP_OAUTH2_CLIENT_ID: llm-mcp-client
+      MCP_OAUTH2_CLIENT_SECRET: llm-mcp-client-secret
     ports:
       - "8090:8090"
     depends_on:
       postgres:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
       hr-service:
         condition: service_started

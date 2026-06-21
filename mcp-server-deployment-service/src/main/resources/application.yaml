@@ -36,6 +36,11 @@ spring:
       server:
         enabled: true
         protocol: STREAMABLE
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${MCP_OAUTH2_ISSUER_URI:http://localhost:8180/realms/org-mcp}
 
 management:
   endpoints:

@@ -11,6 +11,11 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
+mcp:
+  security:
+    oauth2:
+      enabled: false
+
 management:
   tracing:
     sampling:
