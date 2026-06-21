@@ -6,7 +6,7 @@ import com.org.gmail.security.SecurityProperties;
 import com.org.gmail.service.GmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -56,7 +56,7 @@ class GmailMcpTools {
 
     // ── READ tools ────────────────────────────────────────────────────────────
 
-    @Tool(name = "listEmails",
+    @McpTool(name = "listEmails",
             description = "List emails from Gmail. Provide optional labelIds (e.g. INBOX, SENT, SPAM, TRASH or custom label ID) "
                     + "and optional maxResults (default: 20, max: 100). Returns message IDs and thread IDs.")
     public String listEmails(String labelIds, Integer maxResults) {
@@ -76,7 +76,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "getEmail",
+    @McpTool(name = "getEmail",
             description = "Get the full content of an email by its message ID. Provide messageId and optional format "
                     + "(full, metadata, minimal, raw). Default format is 'full' which includes headers and body.")
     public String getEmail(String messageId, String format) {
@@ -96,7 +96,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "searchEmails",
+    @McpTool(name = "searchEmails",
             description = "Search emails using Gmail query syntax. Examples: 'from:boss@example.com', 'subject:invoice', "
                     + "'is:unread', 'after:2024/01/01', 'has:attachment'. Provide query and optional maxResults.")
     public String searchEmails(String query, Integer maxResults) {
@@ -117,7 +117,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "getEmailThread",
+    @McpTool(name = "getEmailThread",
             description = "Get a full email conversation thread by thread ID. Returns all messages in the thread "
                     + "in chronological order with full headers and body.")
     public String getEmailThread(String threadId) {
@@ -137,7 +137,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "getGmailProfile",
+    @McpTool(name = "getGmailProfile",
             description = "Get the Gmail profile of the authenticated user. Returns email address, total messages count, "
                     + "total threads count, and history ID.")
     public String getGmailProfile() {
@@ -155,7 +155,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "listLabels",
+    @McpTool(name = "listLabels",
             description = "List all Gmail labels (folders) for the authenticated user. Returns system labels like INBOX, SENT, "
                     + "TRASH, SPAM and any custom labels with their IDs, names, and message counts.")
     public String listLabels() {
@@ -173,7 +173,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "getEmailsByLabel",
+    @McpTool(name = "getEmailsByLabel",
             description = "Get emails filtered by a specific Gmail label ID. Use listLabels first to get label IDs. "
                     + "Provide labelId and optional maxResults.")
     public String getEmailsByLabel(String labelId, Integer maxResults) {
@@ -196,7 +196,7 @@ class GmailMcpTools {
 
     // ── WRITE tools ───────────────────────────────────────────────────────────
 
-    @Tool(name = "markAsRead",
+    @McpTool(name = "markAsRead",
             description = "Mark an email as read by removing the UNREAD label. Provide the messageId.")
     public String markAsRead(String messageId) {
         String actingUser = resolveUser();
@@ -215,7 +215,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "markAsUnread",
+    @McpTool(name = "markAsUnread",
             description = "Mark an email as unread by adding the UNREAD label. Provide the messageId.")
     public String markAsUnread(String messageId) {
         String actingUser = resolveUser();
@@ -234,7 +234,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "createDraft",
+    @McpTool(name = "createDraft",
             description = "Create a Gmail draft email. Provide to (recipient email address), subject, and body (plain text).")
     public String createDraft(String to, String subject, String body) {
         String actingUser = resolveUser();
@@ -255,7 +255,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "sendEmail",
+    @McpTool(name = "sendEmail",
             description = "Send an email via Gmail. Provide to (recipient email), subject, and body (plain text). "
                     + "This immediately sends the email — use createDraft if you want to review first.")
     public String sendEmail(String to, String subject, String body) {
@@ -277,7 +277,7 @@ class GmailMcpTools {
         }
     }
 
-    @Tool(name = "deleteEmail",
+    @McpTool(name = "deleteEmail",
             description = "Move an email to Trash. Provide the messageId. The email can be permanently deleted from Trash later.")
     public String deleteEmail(String messageId) {
         String actingUser = resolveUser();

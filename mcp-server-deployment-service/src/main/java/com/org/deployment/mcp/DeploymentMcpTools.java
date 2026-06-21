@@ -8,7 +8,7 @@ import com.org.deployment.security.SecurityProperties;
 import com.org.deployment.service.DeploymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -98,7 +98,7 @@ class DeploymentMcpTools {
         return (System.nanoTime() - startNano) / 1_000_000L;
     }
 
-    @Tool(name = "getDeployments",
+    @McpTool(name = "getDeployments",
             description = "List all deployment records across all environments and services. "
                     + "Returns id, serviceName, environment (DEV/QA/STAGING/PROD), status, scheduledTime, and owner for each deployment. "
                     + "Use this to get an overview of what is deployed or scheduled.")
@@ -121,7 +121,7 @@ class DeploymentMcpTools {
 
     // ─────────────────────────────── helpers ─────────────────────────────────
 
-    @Tool(name = "getDeployment",
+    @McpTool(name = "getDeployment",
             description = "Retrieve the full details of a single deployment by its numeric id. "
                     + "Returns serviceName, environment, status, scheduledTime, owner, and any notes. "
                     + "Use getDeployments first if you don't know the id.")
@@ -146,7 +146,7 @@ class DeploymentMcpTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "createDeployment",
             description = "Create a new deployment. Provide serviceName, environment (DEV, QA, STAGING, PROD), "
                     + "scheduledTime (ISO format yyyy-MM-ddTHH:mm:ss or with offset) and owner"
@@ -182,7 +182,7 @@ class DeploymentMcpTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "assignOwner",
             description = "Assign a new owner to an existing deployment"
     )
@@ -211,7 +211,7 @@ class DeploymentMcpTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "rescheduleDeployment",
             description = "Reschedule a deployment to a new ISO datetime (yyyy-MM-ddTHH:mm:ss)"
     )
@@ -242,7 +242,7 @@ class DeploymentMcpTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "cancelDeployment",
             description = "Cancel a deployment by id"
     )

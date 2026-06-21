@@ -7,8 +7,8 @@ import com.org.travel.security.ActingUserContext;
 import com.org.travel.service.FlightSearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -72,7 +72,7 @@ class FlightMcpTools {
         return (System.nanoTime() - startNano) / 1_000_000L;
     }
 
-    @Tool(
+    @McpTool(
             name = "searchFlights",
             description = """
                     Search for available flights between two airports using the Amadeus API.
@@ -83,15 +83,15 @@ class FlightMcpTools {
                     """
     )
     public String searchFlights(
-            @ToolParam(description = "Origin airport IATA code (e.g. DUB for Dublin)")
+            @McpToolParam(description = "Origin airport IATA code (e.g. DUB for Dublin)")
             String originCode,
-            @ToolParam(description = "Destination airport IATA code (e.g. MUC for Munich)")
+            @McpToolParam(description = "Destination airport IATA code (e.g. MUC for Munich)")
             String destinationCode,
-            @ToolParam(description = "Departure date in ISO-8601 format (yyyy-MM-dd, e.g. 2025-08-15)")
+            @McpToolParam(description = "Departure date in ISO-8601 format (yyyy-MM-dd, e.g. 2025-08-15)")
             String departureDate,
-            @ToolParam(description = "Number of adult passengers (1 to 9)")
+            @McpToolParam(description = "Number of adult passengers (1 to 9)")
             int adults,
-            @ToolParam(description = "Maximum number of flight options to return (1 to 20, default 5)")
+            @McpToolParam(description = "Maximum number of flight options to return (1 to 20, default 5)")
             int maxResults) {
 
         if (originCode == null || originCode.isBlank()) {
@@ -129,7 +129,7 @@ class FlightMcpTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "getAirportInfo",
             description = """
                     Returns IATA airport codes for common cities to help identify the correct
@@ -141,7 +141,7 @@ class FlightMcpTools {
                     """
     )
     public String getAirportInfo(
-            @ToolParam(description = "City or airport name to look up (e.g. Dublin, Munich)")
+            @McpToolParam(description = "City or airport name to look up (e.g. Dublin, Munich)")
             String cityOrAirport) {
 
         if (cityOrAirport == null || cityOrAirport.isBlank()) {

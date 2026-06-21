@@ -7,8 +7,8 @@ import com.org.hr.security.ActingUserContext;
 import com.org.hr.service.HRService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -58,13 +58,13 @@ class HrMcpTools {
     // Helpers
     // -------------------------------------------------------------------------
 
-    @Tool(
+    @McpTool(
             name = "applyLeave",
             description = "Apply leave for a user on a specific ISO-8601 date (yyyy-MM-dd)"
     )
     public String applyLeave(
-            @ToolParam(description = "The user name") String username,
-            @ToolParam(description = "The date to apply leave on (yyyy-MM-dd)") String date) {
+            @McpToolParam(description = "The user name") String username,
+            @McpToolParam(description = "The date to apply leave on (yyyy-MM-dd)") String date) {
 
         // --- Input validation ---
         if (username == null || username.isBlank()) {
@@ -104,13 +104,13 @@ class HrMcpTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "findReplacement",
             description = "Find a replacement employee for a user on a specific date - ISO-8601 date format (yyyy-MM-dd)"
     )
     public String findReplacement(
-            @ToolParam(description = "The user name") String username,
-            @ToolParam(description = "The date to find a replacement for (yyyy-MM-dd)") String date) {
+            @McpToolParam(description = "The user name") String username,
+            @McpToolParam(description = "The date to find a replacement for (yyyy-MM-dd)") String date) {
 
         // --- Input validation ---
         if (username == null || username.isBlank()) {

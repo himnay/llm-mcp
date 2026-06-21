@@ -218,18 +218,22 @@ Manages employee leave and replacement lookups.
 
 ## Ticket Service — `mcp-server-ticket-service` (:8081)
 
-Manages support tickets. Exposes an `analyze-tickets` MCP prompt in addition to tools.
+Manages support tickets. Exposes an `analyze-tickets` MCP prompt — **but, despite the table below, no MCP tools**:
+`createTicket`/`getTickets`/`getTicket`/`updateTicketStatus`/`assignTicket` exist only as REST endpoints on
+`TicketController` (confirmed via full `git log --all` history search — no `@Tool`/`@McpTool`-annotated class for
+them was ever committed). The table is aspirational; see
+[Spring AI 2.0 MCP — Feature Status](#spring-ai-20-mcp--feature-status) for the full note.
 
 ### MCP Tools & Prompts
 
-| Name                 | Type   | Description                                              |
-|----------------------|--------|----------------------------------------------------------|
-| `createTicket`       | Tool   | Create a ticket (title, description, priority, assignee) |
-| `getTickets`         | Tool   | List all tickets                                         |
-| `getTicket`          | Tool   | Get a ticket by id                                       |
-| `updateTicketStatus` | Tool   | Update a ticket's status                                 |
-| `assignTicket`       | Tool   | Assign a ticket to an employee                           |
-| `analyze-tickets`    | Prompt | Returns a pre-built prompt summarising open ticket load  |
+| Name                 | Type            | Description                                              |
+|----------------------|-----------------|-----------------------------------------------------------|
+| `createTicket`       | ⚠️ REST only — not an MCP tool | Create a ticket (title, description, priority, assignee) |
+| `getTickets`         | ⚠️ REST only — not an MCP tool | List all tickets                                         |
+| `getTicket`          | ⚠️ REST only — not an MCP tool | Get a ticket by id                                       |
+| `updateTicketStatus` | ⚠️ REST only — not an MCP tool | Update a ticket's status                                 |
+| `assignTicket`       | ⚠️ REST only — not an MCP tool | Assign a ticket to an employee                           |
+| `analyze-tickets`    | Prompt          | Returns a pre-built prompt summarising open ticket load  |
 
 ### REST API
 
@@ -421,6 +425,43 @@ turn.
 
 ---
 
+## Spring AI 2.0 MCP — Feature Status
+
+Spring AI 2.0 (`spring-ai-mcp-annotations`) adds a fully declarative way to implement MCP server/client behaviour on
+top of the protocol features this project already used in 1.x. The table below is a from-source audit (decompiled
+the actual `spring-ai-mcp-annotations:2.0.0` / `mcp-core:2.0.0` jars rather than trusting docs, which were
+inconsistent on enum names) of what MCP 2.0 offers, what this repo now uses, and where the rest could go.
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `@McpTool` / `@McpToolParam` | ✅ Implemented (all 6 tool-bearing servers) | Every `*McpTools`/`*Tools` class (hr, deployment, notification, github, gmail, travel) was migrated off the older `@Tool` + `MethodToolCallbackProvider` pattern onto `@McpTool`; every module's `McpToolConfig` bean was deleted since the annotation scanner replaces it. Verified live on both protocols — `Registered tools: N` from `McpServerAutoConfiguration` (STREAMABLE) and `McpServerStatelessAutoConfiguration` (STATELESS) |
+| **Sampling** (`McpSyncRequestContext.sample(...)`, client `@McpSampling`) | ✅ Implemented | Server asks the *client's* LLM to run a completion instead of holding its own model key. `GitHubAiInsightsTools` (server) ↔ `McpSamplingHandler` (client, routes through the same `ChatModel` that powers `/chat`) |
+| **Elicitation** (`McpSyncRequestContext.elicit(...)`, client `@McpElicitation`) | ⏳ Not implemented | Lets a tool pause mid-call and ask the human for missing/confirming input (e.g. confirm `cancelDeployment` or `deleteEmail` before executing). Natural fit for this codebase's existing write-gate pattern, but needs a non-blocking client handler — `llm-mcp-client`'s `/chat` is a single-shot REST call with no place to surface a mid-turn question back to the caller, so a real implementation needs a streaming/async chat endpoint first (the existing SSE `streamChat` is the closest building block) |
+| **Progress notifications** (`ctx.progress(...)`, client `@McpProgress`) | ⏳ Not implemented | Long-running tools currently return silently until done — `GitHubService`'s 202-retry loop for stats endpoints and `AmadeusFlightClient`'s flight search are the two best candidates to emit incremental progress |
+| `@McpResource` / resource templates | ⏳ Not implemented | All domain data (tickets, deployments, employees) is exposed only as `@McpTool` *actions*; none of it is exposed as an addressable MCP *Resource* the client could read without a tool round-trip |
+| `@McpPrompt` | ⚙ Partial | Only `ticket-service`'s `analyze-tickets` prompt exists, and it already uses the new `@McpPrompt` annotation; no other module defines any prompts |
+| `@McpComplete` (argument auto-completion) | ⏳ Not implemented | Would let a prompt/resource argument (e.g. `environment` in `createDeployment`, `state` in `getIssues`) offer auto-complete suggestions instead of relying on the LLM to guess valid enum values from the description string |
+| `@McpLogging` (client receives server log notifications) | ⏳ Not implemented | Servers could stream structured log events to the client during a tool call instead of only writing to their own `AUDIT`/`TOOL` log lines |
+| `@McpToolListChanged` / `@McpResourceListChanged` / `@McpPromptListChanged` | ⏳ Not implemented | No module's tool/resource/prompt set changes at runtime today, so there's nothing to notify about yet |
+| MCP Security (OAuth 2.1 authorization) | ⏳ Not implemented | This repo's `McpAuthFilter` uses a simple shared bearer token (see [Security & Operations](#security--operations-mcp-servers)) rather than spec-compliant per-client OAuth2.1 tokens/scopes — fine for this internal demo, a real gap for production |
+| `mcp-spring-webflux`/`mcp-spring-webmvc` moved in-tree | ⚙ Transparent | These transports used to be separate `io.modelcontextprotocol.sdk` artifacts; Spring AI 2.0 absorbed them into `spring-ai-mcp`. No code change needed — picked up automatically via the BOM bump |
+
+> **Known gap found during this audit, unrelated to the migration above:** `mcp-server-ticket-service` has **no MCP
+> tools in code at all** — `createTicket`, `getTickets`, `getTicket`, `updateTicketStatus`, and `assignTicket` exist
+> only as REST endpoints on `TicketController`; no `@Tool`/`@McpTool`-annotated class for them was ever committed to
+> this repo (verified via full `git log --all` history search). Only the `analyze-tickets` `@McpPrompt` exists. The
+> per-service tool table further down this README documents those five tools as if they were MCP tools — that
+> documentation is aspirational, not a description of current code.
+
+**Why sampling and not elicitation first:** both are gated to **stateful (STREAMABLE)** sessions and both required
+decompiling the real `2.0.0` jars to pin down the exact API (the public docs/blog posts disagreed with each other on
+`ElicitResult.Action`'s values — `DECLINE` vs a hallucinated `REJECT` — and on `StructuredElicitResult`'s accessor
+name — `.result()` vs the real `.structuredContent()`). Sampling maps cleanly onto this project's existing
+synchronous `/chat` request/response cycle; elicitation's pause-and-ask-the-human semantics don't, without first
+building a way for a mid-flight tool call to surface a question back through `ChatService` to the original caller.
+
+---
+
 ## Design Patterns (GoF)
 
 Each module README has a **Design Patterns (GoF)** section mapping patterns to the classes that implement them.
@@ -435,7 +476,7 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 |------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
 | Singleton        | ✅ In use    | Every Spring bean (services, filters, properties) — container-managed, no hand-rolled statics                                                     |
 | Factory Method   | ✅ In use    | `@Bean` methods in every `*Config` class; `DeliveryStrategyRegistry` (notification) hands out the right strategy per channel                      |
-| Builder          | ✅ In use    | Lombok `@Builder` entities; `RestClient.builder()`, `RedisCacheManager.builder()`, `ChatClient.builder()`, `MethodToolCallbackProvider.builder()` |
+| Builder          | ✅ In use    | Lombok `@Builder` entities; `RestClient.builder()`, `RedisCacheManager.builder()`, `ChatClient.builder()`, `SyncMcpToolCallbackProvider.builder()` |
 | Abstract Factory | ⚙ Framework | Spring `BeanFactory`/`ApplicationContext` — families of related beans created without naming concrete classes                                     |
 | Prototype        | ✗ Not used  | All beans are stateless singletons; per-request mutable objects are plain `new`/builder calls. Prototype-scoped beans would add no value          |
 
@@ -458,7 +499,7 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 | Strategy                | ✅ In use    | `ChannelDeliveryStrategy` + per-channel implementations (notification); selected at runtime via `DeliveryStrategyRegistry`                        |
 | Template Method         | ✅ In use    | `ToolExecutionTemplate` (github) defines the invariant tool-execution skeleton once; `OncePerRequestFilter.doFilterInternal` in every auth filter |
 | State                   | ✅ In use    | `TicketStatus` enum owns its legal transitions; `TicketService.updateStatus` rejects illegal lifecycle moves                                      |
-| Command                 | ✅ In use    | `@Tool` methods reified as `ToolCallback` objects; `Supplier<String>` actions handed to `ToolExecutionTemplate`                                   |
+| Command                 | ✅ In use    | `@McpTool` methods reified as MCP tool callbacks; `Supplier<String>` actions handed to `ToolExecutionTemplate`                                   |
 | Chain of Responsibility | ✅ In use    | Servlet `FilterChain`: auth → acting-user → rate-limit → handler in every module                                                                  |
 | Observer                | ✅ In use    | `@EventListener(ContextRefreshedEvent)` startup checks (github/gmail); Micrometer counters/actuator events                                        |
 | Mediator                | ✅ In use    | `ChatService` + `BoundedToolCallingManager` (client) coordinate model, memory, prompts and tools without coupling them to each other              |
@@ -527,43 +568,41 @@ clients.
 
 **How it's used here:** This is the core AI layer of the whole system.
 
-- **MCP servers** (`spring-ai-starter-mcp-server-webmvc`): HR, ticket, deployment, notification, GitHub, Gmail, and
-  travel services each register their `@Tool`-annotated methods with `MethodToolCallbackProvider`. Spring AI's
-  auto-configuration detects every bean of type `ToolCallbackProvider` and exposes the collected tools over HTTP as an
-  MCP endpoint. The `McpToolConfig` bean in each service (e.g. `mcp-server-hr-service`'s `McpToolConfig`) builds the
-  provider:
+- **MCP servers** (`spring-ai-starter-mcp-server-webmvc`): HR, deployment, notification, GitHub, Gmail, and travel
+  services each register their tool methods with the **`@McpTool` annotation-driven** path introduced in Spring AI
+  2.0 (`spring-ai-mcp-annotations`). `McpServerAnnotationScannerAutoConfiguration` scans every `@Component` bean for
+  `@McpTool` (also `@McpResource`, `@McpPrompt`, `@McpComplete`) methods and registers them with the MCP server
+  directly — no `ToolCallbackProvider`/`MethodToolCallbackProvider` bean needed, and no extra config beyond having
+  the starter on the classpath (`spring.ai.mcp.server.annotation-scanner.enabled` defaults to `true`):
 
   ```java
-  // McpToolConfig (HR server — same pattern in all servers)
-  @Bean
-  ToolCallbackProvider hrTools(HrMcpTools hrMcpTools) {
-      return MethodToolCallbackProvider.builder()
-              .toolObjects(hrMcpTools)
-              .build();
-  }
-  ```
-
-  `MethodToolCallbackProvider` reflects over the supplied object, finds every `@Tool`-annotated method, and produces one
-  `ToolCallback` per method. The tool name, natural-language description, and JSON Schema for the parameters come from
-  the `@Tool` / `@ToolParam` annotations and are the exact strings the LLM reads when choosing which tool to call.
-
-  ```java
-  // HrMcpTools — representative @Tool method
-  @Tool(
+  // HrMcpTools — representative @McpTool method
+  @McpTool(
       name = "applyLeave",
       description = "Apply leave for a user on a specific ISO-8601 date (yyyy-MM-dd)"
   )
   public String applyLeave(
-          @ToolParam(description = "The user name") String username,
-          @ToolParam(description = "The date to apply leave on (yyyy-MM-dd)") String date) { … }
+          @McpToolParam(description = "The user name") String username,
+          @McpToolParam(description = "The date to apply leave on (yyyy-MM-dd)") String date) { … }
   ```
 
-  The MCP server is activated in `application.yaml` with a single property pair:
+  The tool name, natural-language description, and JSON Schema for the parameters come from `@McpTool` /
+  `@McpToolParam` and are the exact strings the LLM reads when choosing which tool to call. This works on both
+  protocol modes — confirmed live for both: `McpServerAutoConfiguration` logs `Registered tools: N` on STREAMABLE
+  servers, `McpServerStatelessAutoConfiguration` logs the same on STATELESS ones.
 
   ```yaml
   spring.ai.mcp.server.enabled: true
   spring.ai.mcp.server.protocol: STATELESS   # or STREAMABLE
   ```
+
+  > **Migration note:** earlier versions of every `*McpTools` class in this repo used the older `@Tool`
+  > (`org.springframework.ai.tool.annotation.Tool`) + `MethodToolCallbackProvider` pattern, wired through a
+  > per-module `McpToolConfig` `@Configuration` bean. All seven servers have since been migrated to `@McpTool`
+  > (`org.springframework.ai.mcp.annotation.McpTool`) and every `McpToolConfig` bean was deleted — the annotation
+  > scanner replaces it entirely. The only behavioural difference this migration unlocks is the ability to inject
+  > `McpSyncRequestContext`/`McpAsyncRequestContext` into a tool method (see sampling below); plain tool methods are
+  > otherwise functionally identical under either annotation.
 
 - **MCP client** (`spring-ai-starter-mcp-client`): The `llm-mcp-client` module declares one or more downstream
   connections in `application.yaml`:
@@ -586,6 +625,24 @@ clients.
   `client.initialize()` on each one individually (skipping unreachable servers with a warning), then wraps the live
   clients in a `SyncMcpToolCallbackProvider` and hands that delegate to `ResilientToolCallbackProvider`.
 
+- **MCP Sampling** (new in Spring AI 2.0, `spring-ai-mcp-annotations`): beyond plain tool registration, the
+  `@McpTool` family extends to client-facing capabilities too — `@McpSampling`, `@McpElicitation`, `@McpLogging`,
+  `@McpProgress` — auto-scanned and registered by `McpClientAnnotationScannerAutoConfiguration` with zero extra
+  config (`spring.ai.mcp.client.annotation-scanner.enabled` defaults to `true`). This project uses **sampling**:
+  `GitHubAiInsightsTools.summarizeRepositoryHealth` (`mcp-server-github-service`) is a `@McpTool` method
+  that takes an injected `McpSyncRequestContext` — a parameter the framework recognises and excludes from the tool's
+  JSON schema — and calls `ctx.sample(...)` to ask the *connected client* to run an LLM completion on the server's
+  behalf, instead of the server holding its own model API key. On the client side, `McpSamplingHandler`
+  (`com.org.ai.mcp`) is a `@McpSampling(clients = "github")` bean that receives the resulting
+  `McpSchema.CreateMessageRequest`, runs it through the same `ChatModel` that powers `/chat`, and returns a
+  `McpSchema.CreateMessageResult`. Registration is fully automatic: Spring Boot wires the handler into the
+  `McpClient.SyncSpec` for the named connection before the client is built, and `McpServerAutoConfiguration` merges
+  the new `@McpTool`-sourced `SyncToolSpecification` list with the existing `ToolCallbackProvider`-sourced one (both
+  surface on the same MCP endpoint — confirmed live: `tools/list` against a running `mcp-server-github-service`
+  reports 13 tools, the prior 12 plus `summarizeRepositoryHealth`). Because `McpSyncRequestContext`-based methods
+  require a stateful session, this only works on **STREAMABLE** servers (github, deployment, gmail) — Spring AI logs
+  a warning and skips the method on STATELESS servers (hr, ticket, notification, travel).
+
 - **`SyncMcpToolCallbackProvider`**: Adapts a `List<McpSyncClient>` to a flat `ToolCallback[]`. When the `ChatClient`
   calls `getToolCallbacks()`, each client is queried for its MCP tool list (`client.listTools()`) and each entry becomes
   a `ToolCallback` that, when invoked, calls `client.callTool(name, args)` over HTTP.
@@ -598,7 +655,7 @@ clients.
 - **`PromptTemplate`**: Used to render the `prompts/system.st` StringTemplate file at runtime, injecting
   `assistantName`, `currentUser`, and `currentTime` before each request.
 
-- **`@Tool` / `@ToolParam`**: Annotations on `HrMcpTools`, `DeploymentMcpTools`, etc. define the function name,
+- **`@McpTool` / `@McpToolParam`**: Annotations on `HrMcpTools`, `DeploymentMcpTools`, etc. define the function name,
   description, and parameter descriptions that the LLM sees when deciding which tool to call.
 
 - **Advisor chain**: `ChatClient` is built with a three-advisor chain (in order of execution): `SafeGuardAdvisor` →
@@ -898,8 +955,11 @@ unauthenticated.
 `GitHubClientConfig` configures a `RestClient` with the `GITHUB_TOKEN` bearer token and the required
 `X-GitHub-Api-Version: 2022-11-28` header. All responses are returned as raw JSON strings and cached in Redis. The
 service handles GitHub's asynchronous stats endpoints (HTTP 202 "not ready yet") with a retry loop. `GitHubMcpTools`
-exposes twelve tools (repositories, commits, metrics, branches, PRs, issues, contributors, workflow runs, releases,
-search, code frequency, create issue) to the AI assistant.
+exposes twelve `@McpTool` methods (repositories, commits, metrics, branches, PRs, issues, contributors, workflow
+runs, releases, search, code frequency, create issue) to the AI assistant. A thirteenth tool,
+`summarizeRepositoryHealth` (`GitHubAiInsightsTools`, a separate class so its `McpSyncRequestContext` parameter isn't
+mixed in with the plain tools), uses **MCP sampling** to have the connected chat client's LLM write a narrative
+health summary — see [MCP Sampling](#spring-ai-200) above.
 
 ---
 

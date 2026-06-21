@@ -8,8 +8,8 @@ import com.org.notification.security.SecurityProperties;
 import com.org.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -58,7 +58,7 @@ class NotificationTools {
 
     // ─────────────────────────────── helpers ─────────────────────────────────
 
-    @Tool(name = "getNotifications",
+    @McpTool(name = "getNotifications",
             description = "List all notifications across all channels and recipients. "
                     + "Returns id, channel (INTERNAL/EMAIL/SLACK), recipient team, message, sentAt, and status. "
                     + "Use this to check what notifications have been sent or are pending.")
@@ -78,14 +78,14 @@ class NotificationTools {
         }
     }
 
-    @Tool(
+    @McpTool(
             name = "sendNotification",
             description = "Send a notification to a team using the specified channel"
     )
     public String sendNotification(
-            @ToolParam(description = "The notification channel (INTERNAL, EMAIL, SLACK)") NotificationChannel channel,
-            @ToolParam(description = "The recipient team") String recipient,
-            @ToolParam(description = "Notification message") String message) {
+            @McpToolParam(description = "The notification channel (INTERNAL, EMAIL, SLACK)") NotificationChannel channel,
+            @McpToolParam(description = "The recipient team") String recipient,
+            @McpToolParam(description = "Notification message") String message) {
 
         String actingUser = resolveUser();
         enforceWriteGate(actingUser);

@@ -2,7 +2,7 @@ package com.org.github.mcp;
 
 import com.org.github.service.GitHubService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,7 +34,7 @@ class GitHubMcpTools {
         return s;
     }
 
-    @Tool(name = "getRepository",
+    @McpTool(name = "getRepository",
             description = "Get GitHub repository metadata including stars, forks, language, description, open issues count, "
                     + "default branch and visibility. Provide owner (GitHub username or org) and repo name.")
     public String getRepository(String owner, String repo) {
@@ -44,7 +44,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getRepository(owner, repo));
     }
 
-    @Tool(name = "getCommitHistory",
+    @McpTool(name = "getCommitHistory",
             description = "Get recent commit history for a GitHub repository. Provide owner, repo, branch (default: main) "
                     + "and optional page number (default: 1). Returns SHA, message, author, and date for each commit.")
     public String getCommitHistory(String owner, String repo, String branch, Integer page) {
@@ -57,7 +57,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getCommitHistory(owner, repo, resolvedBranch, resolvedPage));
     }
 
-    @Tool(name = "getCommitMetrics",
+    @McpTool(name = "getCommitMetrics",
             description = "Get commit metrics for a GitHub repository within a date range. Returns commit count, "
                     + "authors, and frequency statistics. Provide owner, repo, since (ISO date e.g. 2024-01-01T00:00:00Z) "
                     + "and until (ISO date e.g. 2024-12-31T23:59:59Z).")
@@ -71,7 +71,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getCommitMetrics(owner, repo, since, until));
     }
 
-    @Tool(name = "listBranches",
+    @McpTool(name = "listBranches",
             description = "List all branches in a GitHub repository with their latest commit SHA. Provide owner and repo.")
     public String listBranches(String owner, String repo) {
         requireNonBlank(owner, "owner");
@@ -80,7 +80,7 @@ class GitHubMcpTools {
                 () -> gitHubService.listBranches(owner, repo));
     }
 
-    @Tool(name = "getPullRequests",
+    @McpTool(name = "getPullRequests",
             description = "List pull requests for a GitHub repository. Provide owner, repo, and state (open, closed, or all). "
                     + "Returns PR number, title, author, labels, created date, and merge status.")
     public String getPullRequests(String owner, String repo, String state) {
@@ -92,7 +92,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getPullRequests(owner, repo, resolvedState));
     }
 
-    @Tool(name = "getIssues",
+    @McpTool(name = "getIssues",
             description = "List issues for a GitHub repository. Provide owner, repo, state (open, closed, or all), "
                     + "and optional comma-separated labels to filter by.")
     public String getIssues(String owner, String repo, String state, String labels) {
@@ -104,7 +104,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getIssues(owner, repo, resolvedState, labels));
     }
 
-    @Tool(name = "getContributors",
+    @McpTool(name = "getContributors",
             description = "Get the list of contributors for a GitHub repository sorted by commit count. "
                     + "Returns login, avatar, contributions count per contributor.")
     public String getContributors(String owner, String repo) {
@@ -114,7 +114,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getContributors(owner, repo));
     }
 
-    @Tool(name = "getWorkflowRuns",
+    @McpTool(name = "getWorkflowRuns",
             description = "Get GitHub Actions workflow runs for a repository. Provide owner, repo and optional workflowId "
                     + "(filename like ci.yml or numeric ID). Returns run status, conclusion, branch, and triggered time.")
     public String getWorkflowRuns(String owner, String repo, String workflowId) {
@@ -125,7 +125,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getWorkflowRuns(owner, repo, workflowId));
     }
 
-    @Tool(name = "getReleases",
+    @McpTool(name = "getReleases",
             description = "List releases for a GitHub repository including tags, release dates, and download counts. "
                     + "Provide owner and repo.")
     public String getReleases(String owner, String repo) {
@@ -137,7 +137,7 @@ class GitHubMcpTools {
 
     // ── WRITE tools ───────────────────────────────────────────────────────────
 
-    @Tool(name = "searchRepositories",
+    @McpTool(name = "searchRepositories",
             description = "Search GitHub repositories by query string. Supports GitHub search qualifiers like language:java, "
                     + "stars:>100, topic:spring-boot. Provide query, sort (stars, forks, updated), and order (asc, desc).")
     public String searchRepositories(String query, String sort, String order) {
@@ -151,7 +151,7 @@ class GitHubMcpTools {
 
     // ── validation helpers ────────────────────────────────────────────────────
 
-    @Tool(name = "getCodeFrequency",
+    @McpTool(name = "getCodeFrequency",
             description = "Get weekly code frequency statistics (additions and deletions) for a GitHub repository. "
                     + "Returns an array of [timestamp, additions, deletions] tuples per week.")
     public String getCodeFrequency(String owner, String repo) {
@@ -161,7 +161,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getCodeFrequency(owner, repo));
     }
 
-    @Tool(name = "createIssue",
+    @McpTool(name = "createIssue",
             description = "Create a new GitHub issue in a repository. Provide owner, repo, title, optional body, "
                     + "and optional comma-separated labels. Requires write access to the repository.")
     public String createIssue(String owner, String repo, String title, String body, String labels) {

@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * Template Method (GoF) for MCP tool execution. The invariant skeleton —
  * resolve the acting user, enforce the write gate for mutations, time the
  * call, emit a structured audit log line, cap the output size — is defined
- * once here. Each {@code @Tool} method supplies only the varying step: the
+ * once here. Each {@code @McpTool} method supplies only the varying step: the
  * actual business call, passed as a {@link Supplier} (a lightweight Command).
  */
 @Slf4j
