@@ -1,6 +1,7 @@
 package com.org.github.service;
 
 import com.org.github.config.GitHubProperties;
+import com.org.github.exception.ExternalServiceException;
 import com.org.github.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -153,7 +154,7 @@ public class GitHubService {
                     .retrieve()
                     .body(String.class);
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("GitHub search failed: " + ex.getMessage());
+            throw new ExternalServiceException("GitHub search failed: " + ex.getMessage());
         }
     }
 
@@ -180,9 +181,9 @@ public class GitHubService {
                 throw new ResourceNotFoundException("Repository " + owner + "/" + repo + " not found");
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted waiting for GitHub stats", ex);
+                throw new ExternalServiceException("Interrupted waiting for GitHub stats", ex);
             } catch (Exception ex) {
-                throw new RuntimeException("Failed to fetch code frequency: " + ex.getMessage(), ex);
+                throw new ExternalServiceException("Failed to fetch code frequency: " + ex.getMessage(), ex);
             }
         }
         return "[]";
@@ -205,7 +206,7 @@ public class GitHubService {
                     .retrieve()
                     .body(String.class);
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to create issue: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to create issue: " + ex.getMessage());
         }
     }
 }

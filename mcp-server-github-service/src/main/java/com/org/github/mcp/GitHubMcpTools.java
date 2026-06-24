@@ -1,5 +1,6 @@
 package com.org.github.mcp;
 
+import com.org.github.exception.InvalidToolArgumentException;
 import com.org.github.service.GitHubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -21,7 +22,7 @@ class GitHubMcpTools {
 
     private static void requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+            throw new InvalidToolArgumentException(fieldName + " must not be null or blank");
         }
     }
 
@@ -29,7 +30,7 @@ class GitHubMcpTools {
         if (state == null || state.isBlank()) return defaultState;
         String s = state.trim().toLowerCase();
         if (!s.equals("open") && !s.equals("closed") && !s.equals("all")) {
-            throw new IllegalArgumentException("state must be one of: open, closed, all. Got: " + state);
+            throw new InvalidToolArgumentException("state must be one of: open, closed, all. Got: " + state);
         }
         return s;
     }

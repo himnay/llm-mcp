@@ -1,5 +1,6 @@
 package com.org.ai.mcp;
 
+import com.org.ai.exception.ToolInvocationException;
 import com.org.ai.web.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class BoundedToolCallingManager implements ToolCallingManager {
         int iteration = ITERATIONS.get() + 1;
         ITERATIONS.set(iteration);
         if (iteration > maxIterations) {
-            throw new IllegalStateException(
+            throw new ToolInvocationException(
                     "Exceeded max tool-call iterations (" + maxIterations + ") for a single request");
         }
 

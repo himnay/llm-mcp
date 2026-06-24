@@ -1,6 +1,7 @@
 package com.org.ticket.controller;
 
 
+import com.org.ticket.exception.WriteNotPermittedException;
 import com.org.ticket.model.Ticket;
 import com.org.ticket.model.TicketPriority;
 import com.org.ticket.model.TicketStatus;
@@ -125,7 +126,7 @@ public class TicketController {
     private void enforceWriteGate(String actingUser) {
         if (securityProperties.isRequireUserForWrites()
                 && securityProperties.getDefaultUser().equals(actingUser)) {
-            throw new IllegalStateException(
+            throw new WriteNotPermittedException(
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }

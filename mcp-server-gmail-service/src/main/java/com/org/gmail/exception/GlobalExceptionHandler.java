@@ -35,6 +35,18 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(InvalidToolArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidToolArgument(InvalidToolArgumentException ex) {
+        log.warn("Invalid tool argument | {}", ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<Map<String, Object>> handleExternalServiceFailure(ExternalServiceException ex) {
+        log.error("External service call failed | {}", ex.getMessage());
+        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         List<String> details = ex.getConstraintViolations().stream()

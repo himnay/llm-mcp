@@ -1,5 +1,7 @@
 package com.org.deployment.mcp;
 
+import com.org.deployment.exception.InvalidToolArgumentException;
+import com.org.deployment.exception.WriteGateException;
 import com.org.deployment.model.Deployment;
 import com.org.deployment.model.DeploymentEnvironment;
 import com.org.deployment.security.ActingUserContext;
@@ -24,7 +26,7 @@ import java.util.List;
  *
  * <p>Every tool:
  * <ul>
- *   <li>Validates its inputs (null/blank/enum/date guards → {@link IllegalArgumentException})</li>
+ *   <li>Validates its inputs (null/blank/enum/date guards → {@link InvalidToolArgumentException})</li>
  *   <li>Logs tool name, acting user, sanitised argument summary, outcome and latency at INFO</li>
  *   <li>Write/destructive methods additionally enforce the write-gate when
  *       {@code mcp.security.requireUserForWrites} is enabled</li>
@@ -46,7 +48,7 @@ class DeploymentMcpTools {
 
     private static void requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+            throw new InvalidToolArgumentException(fieldName + " must not be null or blank");
         }
     }
 
@@ -54,7 +56,7 @@ class DeploymentMcpTools {
         try {
             return DeploymentEnvironment.valueOf(environment.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException(
+            throw new InvalidToolArgumentException(
                     "Invalid environment '" + environment + "'. Allowed values: DEV, QA, STAGING, PROD");
         }
     }
@@ -77,7 +79,7 @@ class DeploymentMcpTools {
         try {
             return LocalDateTime.parse(trimmed);
         } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
+            throw new InvalidToolArgumentException(
                     "scheduledTime '" + value + "' is not a valid ISO datetime. "
                             + "Use format yyyy-MM-ddTHH:mm:ss (e.g. 2025-06-01T14:00:00)");
         }
@@ -88,7 +90,7 @@ class DeploymentMcpTools {
         try {
             return LocalDateTime.parse(trimmed);
         } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
+            throw new InvalidToolArgumentException(
                     "newTime '" + value + "' is not a valid ISO local datetime. "
                             + "Use format yyyy-MM-ddTHH:mm:ss (e.g. 2025-06-01T14:00:00)");
         }
@@ -129,10 +131,10 @@ class DeploymentMcpTools {
         String actingUser = resolveUser();
         long start = System.nanoTime();
         if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
+            throw new InvalidToolArgumentException("id must not be null");
         }
         if (id <= 0) {
-            throw new IllegalArgumentException("id must be a positive number, got: " + id);
+            throw new InvalidToolArgumentException("id must be a positive number, got: " + id);
         }
         try {
             Deployment result = deploymentService.getDeployment(id);
@@ -192,10 +194,10 @@ class DeploymentMcpTools {
         long start = System.nanoTime();
 
         if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
+            throw new InvalidToolArgumentException("id must not be null");
         }
         if (id <= 0) {
-            throw new IllegalArgumentException("id must be a positive number, got: " + id);
+            throw new InvalidToolArgumentException("id must be a positive number, got: " + id);
         }
         requireNonBlank(newOwner, "newOwner");
 
@@ -221,10 +223,10 @@ class DeploymentMcpTools {
         long start = System.nanoTime();
 
         if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
+            throw new InvalidToolArgumentException("id must not be null");
         }
         if (id <= 0) {
-            throw new IllegalArgumentException("id must be a positive number, got: " + id);
+            throw new InvalidToolArgumentException("id must be a positive number, got: " + id);
         }
         requireNonBlank(newTime, "newTime");
 
@@ -252,10 +254,10 @@ class DeploymentMcpTools {
         long start = System.nanoTime();
 
         if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
+            throw new InvalidToolArgumentException("id must not be null");
         }
         if (id <= 0) {
-            throw new IllegalArgumentException("id must be a positive number, got: " + id);
+            throw new InvalidToolArgumentException("id must be a positive number, got: " + id);
         }
 
         try {
@@ -278,7 +280,7 @@ class DeploymentMcpTools {
     private void enforceWriteGate(String actingUser) {
         if (securityProperties.isRequireUserForWrites()
                 && securityProperties.getDefaultUser().equals(actingUser)) {
-            throw new IllegalStateException(
+            throw new WriteGateException(
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }

@@ -1,5 +1,6 @@
 package com.org.notification.delivery;
 
+import com.org.notification.exception.DeliveryConfigurationException;
 import com.org.notification.model.NotificationChannel;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,7 @@ public class DeliveryStrategyRegistry {
         discovered.forEach(s -> strategies.put(s.channel(), s));
         for (NotificationChannel channel : NotificationChannel.values()) {
             if (!strategies.containsKey(channel)) {
-                throw new IllegalStateException(
+                throw new DeliveryConfigurationException(
                         "No ChannelDeliveryStrategy registered for channel " + channel);
             }
         }

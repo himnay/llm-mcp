@@ -1,6 +1,7 @@
 package com.org.ai.resilience;
 
 import com.org.ai.audit.ToolAuditLog;
+import com.org.ai.exception.ToolInvocationException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -196,7 +197,7 @@ public class ResilientToolCallbackProvider implements ToolCallbackProvider {
                             + "Please try again later.\"}";
                 }
                 log.error("Tool call failed for server {}: {}", serverName, cause.getMessage());
-                throw new RuntimeException("MCP tool call failed: " + cause.getMessage(), cause);
+                throw new ToolInvocationException("MCP tool call failed: " + cause.getMessage(), cause);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return "Tool call interrupted";

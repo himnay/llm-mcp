@@ -2,6 +2,7 @@ package com.org.travel.amadeus;
 
 import com.org.travel.amadeus.model.TokenResponse;
 import com.org.travel.config.AmadeusProperties;
+import com.org.travel.exception.ExternalServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -69,7 +70,7 @@ public class AmadeusTokenService {
                 .body(TokenResponse.class);
 
         if (response == null || response.getAccessToken() == null) {
-            throw new IllegalStateException("Amadeus token response was null or missing access_token");
+            throw new ExternalServiceException("Amadeus token response was null or missing access_token");
         }
 
         cachedToken = response.getAccessToken();

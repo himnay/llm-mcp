@@ -1,6 +1,7 @@
 package com.org.ticket.service;
 
 
+import com.org.ticket.exception.InvalidStatusTransitionException;
 import com.org.ticket.exception.ResourceNotFoundException;
 import com.org.ticket.model.Ticket;
 import com.org.ticket.model.TicketPriority;
@@ -48,7 +49,7 @@ public class TicketService {
     public Ticket updateStatus(Long id, TicketStatus status) {
         Ticket ticket = getTicket(id);
         if (!ticket.getStatus().canTransitionTo(status)) {
-            throw new IllegalArgumentException(
+            throw new InvalidStatusTransitionException(
                     "Illegal status transition " + ticket.getStatus() + " → " + status
                             + ". Allowed: " + ticket.getStatus().allowedTransitions());
         }

@@ -1,5 +1,6 @@
 package com.org.gmail.mcp;
 
+import com.org.gmail.exception.InvalidToolArgumentException;
 import com.org.gmail.security.ActingUserContext;
 import com.org.gmail.security.RateLimiter;
 import com.org.gmail.security.SecurityProperties;
@@ -28,7 +29,7 @@ class GmailMcpTools {
 
     private static void requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+            throw new InvalidToolArgumentException(fieldName + " must not be null or blank");
         }
     }
 

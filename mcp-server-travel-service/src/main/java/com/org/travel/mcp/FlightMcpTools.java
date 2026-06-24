@@ -3,6 +3,7 @@ package com.org.travel.mcp;
 import com.org.travel.config.McpOutputProperties;
 import com.org.travel.config.SecurityProperties;
 import com.org.travel.config.ToolOutputUtil;
+import com.org.travel.exception.InvalidToolArgumentException;
 import com.org.travel.security.ActingUserContext;
 import com.org.travel.service.FlightSearchService;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,7 @@ class FlightMcpTools {
         try {
             LocalDate.parse(date);
         } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
+            throw new InvalidToolArgumentException(
                     "Invalid date format '" + date + "' — expected yyyy-MM-dd", ex);
         }
     }
@@ -95,17 +96,17 @@ class FlightMcpTools {
             int maxResults) {
 
         if (originCode == null || originCode.isBlank()) {
-            throw new IllegalArgumentException("originCode must not be blank");
+            throw new InvalidToolArgumentException("originCode must not be blank");
         }
         if (destinationCode == null || destinationCode.isBlank()) {
-            throw new IllegalArgumentException("destinationCode must not be blank");
+            throw new InvalidToolArgumentException("destinationCode must not be blank");
         }
         if (departureDate == null || departureDate.isBlank()) {
-            throw new IllegalArgumentException("departureDate must not be blank");
+            throw new InvalidToolArgumentException("departureDate must not be blank");
         }
         validateDate(departureDate);
         if (adults < 1 || adults > 9) {
-            throw new IllegalArgumentException("adults must be between 1 and 9");
+            throw new InvalidToolArgumentException("adults must be between 1 and 9");
         }
         int cappedMax = Math.max(1, Math.min(20, maxResults));
 
@@ -145,7 +146,7 @@ class FlightMcpTools {
             String cityOrAirport) {
 
         if (cityOrAirport == null || cityOrAirport.isBlank()) {
-            throw new IllegalArgumentException("cityOrAirport must not be blank");
+            throw new InvalidToolArgumentException("cityOrAirport must not be blank");
         }
 
         // Static lookup for common airports — extend as needed

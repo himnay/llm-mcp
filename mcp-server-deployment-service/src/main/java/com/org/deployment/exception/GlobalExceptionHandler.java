@@ -67,8 +67,20 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(InvalidToolArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidToolArgument(InvalidToolArgumentException ex) {
+        log.warn("Invalid tool argument | {}", ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+        log.warn("Write gate rejected | {}", ex.getMessage());
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(WriteGateException.class)
+    public ResponseEntity<Map<String, Object>> handleWriteGate(WriteGateException ex) {
         log.warn("Write gate rejected | {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
     }

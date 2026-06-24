@@ -56,11 +56,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class,
-            IllegalArgumentException.class
+            IllegalArgumentException.class,
+            InvalidStatusTransitionException.class
     })
     public ResponseEntity<Map<String, Object>> handleBadRequest(Exception ex) {
         log.warn("Bad request | {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(WriteNotPermittedException.class)
+    public ResponseEntity<Map<String, Object>> handleWriteNotPermitted(WriteNotPermittedException ex) {
+        log.warn("Write not permitted | {}", ex.getMessage());
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(Exception.class)

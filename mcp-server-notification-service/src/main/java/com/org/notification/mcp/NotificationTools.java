@@ -1,5 +1,6 @@
 package com.org.notification.mcp;
 
+import com.org.notification.exception.InvalidToolArgumentException;
 import com.org.notification.model.Notification;
 import com.org.notification.model.NotificationChannel;
 import com.org.notification.security.ActingUserContext;
@@ -22,7 +23,7 @@ import java.util.List;
  *
  * <p>Every tool:
  * <ul>
- *   <li>Validates its inputs (null/blank/enum guards → {@link IllegalArgumentException})</li>
+ *   <li>Validates its inputs (null/blank/enum guards → {@link InvalidToolArgumentException})</li>
  *   <li>Resolves the acting user from {@link ActingUserContext} (set by the auth filter)</li>
  *   <li>Logs tool name, acting user, sanitised argument summary, outcome and latency</li>
  *   <li>Write/destructive methods additionally enforce the write-gate when
@@ -46,7 +47,7 @@ class NotificationTools {
 
     private static void requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+            throw new InvalidToolArgumentException(fieldName + " must not be null or blank");
         }
     }
 
@@ -93,7 +94,7 @@ class NotificationTools {
 
         // ── validation ────────────────────────────────────────────────────────
         if (channel == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidToolArgumentException(
                     "channel must not be null. Allowed values: INTERNAL, EMAIL, SLACK");
         }
         requireNonBlank(recipient, "recipient");
@@ -121,7 +122,7 @@ class NotificationTools {
     private void enforceWriteGate(String actingUser) {
         if (securityProperties.isRequireUserForWrites()
                 && securityProperties.getDefaultUser().equals(actingUser)) {
-            throw new IllegalStateException(
+            throw new InvalidToolArgumentException(
                     "Write operations require an explicit X-Acting-User header. "
                             + "Default user '" + actingUser + "' is not permitted to perform mutations.");
         }

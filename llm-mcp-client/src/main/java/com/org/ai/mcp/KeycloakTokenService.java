@@ -1,5 +1,6 @@
 package com.org.ai.mcp;
 
+import com.org.ai.exception.ToolInvocationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -62,7 +63,7 @@ public class KeycloakTokenService {
                 .body(KeycloakTokenResponse.class);
 
         if (response == null || response.accessToken() == null) {
-            throw new IllegalStateException("Keycloak token response was null or missing access_token");
+            throw new ToolInvocationException("Keycloak token response was null or missing access_token");
         }
 
         cachedToken = response.accessToken();

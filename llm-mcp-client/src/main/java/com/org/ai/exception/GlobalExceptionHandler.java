@@ -57,6 +57,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(ToolInvocationException.class)
+    public ResponseEntity<Map<String, Object>> handleToolInvocation(ToolInvocationException ex) {
+        log.error("Tool invocation failed", ex);
+        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

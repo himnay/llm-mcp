@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
-    @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class, IllegalArgumentException.class})
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class, IllegalArgumentException.class, InvalidToolArgumentException.class})
     public ResponseEntity<Map<String, Object>> handleBadRequest(Exception ex) {
         log.warn("Bad request | {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
@@ -61,6 +61,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
         log.warn("Write gate rejected | {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<Map<String, Object>> handleExternalServiceFailure(ExternalServiceException ex) {
+        log.error("External service call failed | {}", ex.getMessage(), ex);
+        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(Exception.class)

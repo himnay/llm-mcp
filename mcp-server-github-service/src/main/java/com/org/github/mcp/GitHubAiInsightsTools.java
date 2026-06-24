@@ -1,5 +1,6 @@
 package com.org.github.mcp;
 
+import com.org.github.exception.InvalidToolArgumentException;
 import com.org.github.service.GitHubService;
 import io.modelcontextprotocol.spec.McpSchema;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ class GitHubAiInsightsTools {
 
     private static void requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be null or blank");
+            throw new InvalidToolArgumentException(fieldName + " must not be null or blank");
         }
     }
 

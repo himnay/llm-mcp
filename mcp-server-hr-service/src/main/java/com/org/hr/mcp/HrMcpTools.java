@@ -3,6 +3,8 @@ package com.org.hr.mcp;
 import com.org.hr.config.McpOutputProperties;
 import com.org.hr.config.SecurityProperties;
 import com.org.hr.config.ToolOutputUtil;
+import com.org.hr.exception.InvalidToolArgumentException;
+import com.org.hr.exception.MissingActingUserException;
 import com.org.hr.security.ActingUserContext;
 import com.org.hr.service.HRService;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +43,7 @@ class HrMcpTools {
         try {
             return LocalDate.parse(date);
         } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(
+            throw new InvalidToolArgumentException(
                     "Invalid date format '" + date + "' — expected yyyy-MM-dd", ex);
         }
     }
@@ -68,10 +70,10 @@ class HrMcpTools {
 
         // --- Input validation ---
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("username must not be blank");
+            throw new InvalidToolArgumentException("username must not be blank");
         }
         if (date == null || date.isBlank()) {
-            throw new IllegalArgumentException("date must not be blank");
+            throw new InvalidToolArgumentException("date must not be blank");
         }
         LocalDate leaveDate = parseDate(date);
 
@@ -83,7 +85,7 @@ class HrMcpTools {
         // --- Write gate ---
         if (securityProperties.isRequireUserForWrites()
                 && securityProperties.getDefaultUser().equalsIgnoreCase(actingUser)) {
-            throw new IllegalStateException(
+            throw new MissingActingUserException(
                     "applyLeave requires an identified acting user; "
                             + "provide the X-Acting-User header");
         }
@@ -114,10 +116,10 @@ class HrMcpTools {
 
         // --- Input validation ---
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("username must not be blank");
+            throw new InvalidToolArgumentException("username must not be blank");
         }
         if (date == null || date.isBlank()) {
-            throw new IllegalArgumentException("date must not be blank");
+            throw new InvalidToolArgumentException("date must not be blank");
         }
         LocalDate leaveDate = parseDate(date);
 

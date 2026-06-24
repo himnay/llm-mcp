@@ -2,6 +2,7 @@ package com.org.gmail.service;
 
 import com.org.gmail.config.GmailProperties;
 import com.org.gmail.config.GmailTokenManager;
+import com.org.gmail.exception.ExternalServiceException;
 import com.org.gmail.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to list emails: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to list emails: " + ex.getMessage());
         }
     }
 
@@ -82,7 +83,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Gmail search failed: " + ex.getMessage());
+            throw new ExternalServiceException("Gmail search failed: " + ex.getMessage());
         }
     }
 
@@ -108,7 +109,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to get profile: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to get profile: " + ex.getMessage());
         }
     }
 
@@ -121,7 +122,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to list labels: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to list labels: " + ex.getMessage());
         }
     }
 
@@ -168,7 +169,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to create draft: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to create draft: " + ex.getMessage());
         }
     }
 
@@ -185,7 +186,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to send email: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to send email: " + ex.getMessage());
         }
     }
 
@@ -212,7 +213,7 @@ public class GmailService {
                     .retrieve()
                     .body(String.class));
         } catch (HttpClientErrorException ex) {
-            throw new IllegalArgumentException("Failed to get emails by label: " + ex.getMessage());
+            throw new ExternalServiceException("Failed to get emails by label: " + ex.getMessage());
         }
     }
 
