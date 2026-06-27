@@ -41,8 +41,8 @@ class FlightSearchServiceTest {
         flightSearchService = new FlightSearchService(flightClient);
     }
 
-    @DisplayName("Formats flight search results with route, date, and price details")
     @Test
+    @DisplayName("Formats flight search results with route, date, and price details")
     void searchAndFormat_returnsFormattedFlights_forValidRoute() {
         FlightOffersResponse response = buildSampleResponse();
         when(flightClient.searchFlights(anyString(), anyString(), anyString(), anyInt(), anyInt()))
@@ -57,8 +57,8 @@ class FlightSearchServiceTest {
         assertThat(result).contains("100.00");
     }
 
-    @DisplayName("Returns a no-flights message when the response data is empty")
     @Test
+    @DisplayName("Returns a no-flights message when the response data is empty")
     void searchAndFormat_returnsNoFlightsMessage_whenResponseEmpty() {
         FlightOffersResponse empty = new FlightOffersResponse();
         empty.setData(List.of());
@@ -70,8 +70,8 @@ class FlightSearchServiceTest {
         assertThat(result).contains("No flights found");
     }
 
-    @DisplayName("Uppercases origin and destination codes before calling the flight client")
     @Test
+    @DisplayName("Uppercases origin and destination codes before calling the flight client")
     void searchAndFormat_callsFlightClientWithUppercasedCodes() {
         when(flightClient.searchFlights("DUB", "LHR", "2026-07-01", 2, 3))
                 .thenReturn(buildSampleResponse());

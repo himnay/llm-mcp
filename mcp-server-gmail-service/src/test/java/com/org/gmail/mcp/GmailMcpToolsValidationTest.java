@@ -38,64 +38,64 @@ class GmailMcpToolsValidationTest {
         ActingUserContext.clear();
     }
 
-    @DisplayName("Rejects getEmail call when messageId is blank")
     @Test
+    @DisplayName("Rejects getEmail call when messageId is blank")
     void getEmail_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.getEmail("", "full"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("messageId");
     }
 
-    @DisplayName("Rejects searchEmails call when query is blank")
     @Test
+    @DisplayName("Rejects searchEmails call when query is blank")
     void searchEmails_rejectsBlankQuery() {
         assertThatThrownBy(() -> tools.searchEmails("", 10))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("query");
     }
 
-    @DisplayName("Rejects getEmailThread call when threadId is blank")
     @Test
+    @DisplayName("Rejects getEmailThread call when threadId is blank")
     void getEmailThread_rejectsBlankThreadId() {
         assertThatThrownBy(() -> tools.getEmailThread(""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("threadId");
     }
 
-    @DisplayName("Rejects sendEmail call when recipient 'to' address is blank")
     @Test
+    @DisplayName("Rejects sendEmail call when recipient 'to' address is blank")
     void sendEmail_rejectsBlankTo() {
         assertThatThrownBy(() -> tools.sendEmail("", "subject", "body"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("to");
     }
 
-    @DisplayName("Rejects createDraft call when subject is blank")
     @Test
+    @DisplayName("Rejects createDraft call when subject is blank")
     void createDraft_rejectsBlankSubject() {
         assertThatThrownBy(() -> tools.createDraft("to@example.com", "", "body"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("subject");
     }
 
-    @DisplayName("Rejects deleteEmail call when messageId is blank")
     @Test
+    @DisplayName("Rejects deleteEmail call when messageId is blank")
     void deleteEmail_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.deleteEmail(""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("messageId");
     }
 
-    @DisplayName("Rejects markAsRead call when messageId is blank")
     @Test
+    @DisplayName("Rejects markAsRead call when messageId is blank")
     void markAsRead_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.markAsRead(""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("messageId");
     }
 
-    @DisplayName("Rejects getEmailsByLabel call when labelId is blank")
     @Test
+    @DisplayName("Rejects getEmailsByLabel call when labelId is blank")
     void getEmailsByLabel_rejectsBlankLabelId() {
         assertThatThrownBy(() -> tools.getEmailsByLabel("", 10))
                 .isInstanceOf(IllegalArgumentException.class)

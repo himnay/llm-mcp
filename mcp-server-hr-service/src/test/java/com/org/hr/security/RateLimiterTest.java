@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RateLimiterTest {
 
-    @DisplayName("Allows requests up to the limit then blocks further requests")
     @Test
+    @DisplayName("Allows requests up to the limit then blocks further requests")
     void allowsUpToLimitThenBlocks() {
         RateLimiter limiter = new RateLimiter(3);
 
@@ -22,8 +22,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("alice")).isFalse();
     }
 
-    @DisplayName("Tracks separate request counters per user")
     @Test
+    @DisplayName("Tracks separate request counters per user")
     void differentUsersHaveSeparateCounters() {
         RateLimiter limiter = new RateLimiter(2);
 
@@ -37,8 +37,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("carol")).isFalse();
     }
 
-    @DisplayName("Allows exactly one request when the limit is one")
     @Test
+    @DisplayName("Allows exactly one request when the limit is one")
     void limitOfOneAllowsExactlyOneRequest() {
         RateLimiter limiter = new RateLimiter(1);
 

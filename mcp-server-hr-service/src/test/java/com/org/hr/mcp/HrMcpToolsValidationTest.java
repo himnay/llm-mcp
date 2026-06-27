@@ -38,16 +38,16 @@ class HrMcpToolsValidationTest {
     // applyLeave — blank / null username
     // ------------------------------------------------------------------
 
-    @DisplayName("applyLeave throws IllegalArgumentException when username is blank")
     @Test
+    @DisplayName("applyLeave throws IllegalArgumentException when username is blank")
     void applyLeave_blankUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("", "2025-06-01"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("username");
     }
 
-    @DisplayName("applyLeave throws IllegalArgumentException when username is null")
     @Test
+    @DisplayName("applyLeave throws IllegalArgumentException when username is null")
     void applyLeave_nullUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave(null, "2025-06-01"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -58,16 +58,16 @@ class HrMcpToolsValidationTest {
     // applyLeave — invalid date format
     // ------------------------------------------------------------------
 
-    @DisplayName("applyLeave throws IllegalArgumentException when date is not in yyyy-MM-dd format")
     @Test
+    @DisplayName("applyLeave throws IllegalArgumentException when date is not in yyyy-MM-dd format")
     void applyLeave_badDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("alice", "not-a-date"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("yyyy-MM-dd");
     }
 
-    @DisplayName("applyLeave throws IllegalArgumentException when date is blank")
     @Test
+    @DisplayName("applyLeave throws IllegalArgumentException when date is blank")
     void applyLeave_blankDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("alice", "  "))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -78,8 +78,8 @@ class HrMcpToolsValidationTest {
     // findReplacement — blank / null username
     // ------------------------------------------------------------------
 
-    @DisplayName("findReplacement throws IllegalArgumentException when username is blank")
     @Test
+    @DisplayName("findReplacement throws IllegalArgumentException when username is blank")
     void findReplacement_blankUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.findReplacement("", "2025-06-01"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -90,8 +90,8 @@ class HrMcpToolsValidationTest {
     // findReplacement — invalid date
     // ------------------------------------------------------------------
 
-    @DisplayName("findReplacement throws IllegalArgumentException when date is not in yyyy-MM-dd format")
     @Test
+    @DisplayName("findReplacement throws IllegalArgumentException when date is not in yyyy-MM-dd format")
     void findReplacement_badDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.findReplacement("bob", "01/06/2025"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -102,8 +102,8 @@ class HrMcpToolsValidationTest {
     // applyLeave — requireUserForWrites + default user → IllegalState
     // ------------------------------------------------------------------
 
-    @DisplayName("applyLeave throws IllegalStateException when writes require a user but only the default user is available")
     @Test
+    @DisplayName("applyLeave throws IllegalStateException when writes require a user but only the default user is available")
     void applyLeave_requireUserForWritesAndDefaultUser_throwsIllegalState() {
         SecurityProperties sec = new SecurityProperties();
         sec.setRequireUserForWrites(true);
@@ -121,8 +121,8 @@ class HrMcpToolsValidationTest {
     // Happy path — valid input reaches service
     // ------------------------------------------------------------------
 
-    @DisplayName("applyLeave succeeds and reaches the service when input is valid")
     @Test
+    @DisplayName("applyLeave succeeds and reaches the service when input is valid")
     void applyLeave_validInput_succeeds() {
         when(hrService.applyLeave(anyString(), any())).thenReturn(null);
         // Should not throw

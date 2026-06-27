@@ -99,6 +99,14 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   deployment-service:
     build:
       context: ./mcp-server-deployment-service
@@ -118,6 +126,14 @@ services:
       keycloak:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   notification-service:
     build:
       context: ./mcp-server-notification-service
@@ -134,6 +150,14 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   ticket-service:
     build:
       context: ./mcp-server-ticket-service
@@ -150,6 +174,14 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   mcp-client:
     build:
       context: ./llm-mcp-client
@@ -186,6 +218,14 @@ services:
       travel-service:
         condition: service_started
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -214,6 +254,14 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   gmail-service:
     build:
       context: ./mcp-server-gmail-service
@@ -225,6 +273,14 @@ services:
     ports:
       - "8086:8086"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   travel-service:
     build:
       context: ./mcp-server-travel-service
@@ -239,6 +295,14 @@ services:
     ports:
       - "8087:8087"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
   mcp-inspector:
     image: node:22-alpine
     container_name: mcp-inspector

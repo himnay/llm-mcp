@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class RateLimiterTest {
 
-    @DisplayName("Allows requests up to the configured limit then rejects further ones")
     @Test
+    @DisplayName("Allows requests up to the configured limit then rejects further ones")
     void allowsRequestsUpToLimit() {
         RateLimiter limiter = new RateLimiter(3);
         assertThat(limiter.tryAcquire("user1")).isTrue();
@@ -17,8 +17,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("user1")).isFalse();
     }
 
-    @DisplayName("Tracks request counts independently per user")
     @Test
+    @DisplayName("Tracks request counts independently per user")
     void isolatesCountsByUser() {
         RateLimiter limiter = new RateLimiter(2);
         assertThat(limiter.tryAcquire("alice")).isTrue();
@@ -29,8 +29,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("bob")).isTrue();
     }
 
-    @DisplayName("Reports the current acquisition count for a user")
     @Test
+    @DisplayName("Reports the current acquisition count for a user")
     void tracksCurrentCount() {
         RateLimiter limiter = new RateLimiter(10);
         limiter.tryAcquire("user");
@@ -38,8 +38,8 @@ class RateLimiterTest {
         assertThat(limiter.currentCount("user")).isEqualTo(2);
     }
 
-    @DisplayName("Returns zero count for a user that has never made a request")
     @Test
+    @DisplayName("Returns zero count for a user that has never made a request")
     void unknownUserCountIsZero() {
         RateLimiter limiter = new RateLimiter(10);
         assertThat(limiter.currentCount("nobody")).isEqualTo(0);

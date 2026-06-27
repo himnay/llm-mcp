@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RateLimiterTest {
 
-    @DisplayName("Allows requests up to the configured limit")
     @Test
+    @DisplayName("Allows requests up to the configured limit")
     void allowsUpToLimit() {
         RateLimiter limiter = new RateLimiter(3);
         assertThat(limiter.tryAcquire("alice")).isTrue();
@@ -19,8 +19,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("alice")).isTrue();
     }
 
-    @DisplayName("Blocks requests once the limit is exceeded")
     @Test
+    @DisplayName("Blocks requests once the limit is exceeded")
     void blocksAboveLimit() {
         RateLimiter limiter = new RateLimiter(2);
         limiter.tryAcquire("bob");
@@ -28,8 +28,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("bob")).isFalse();
     }
 
-    @DisplayName("Tracks rate limit windows independently per user")
     @Test
+    @DisplayName("Tracks rate limit windows independently per user")
     void differentUsersHaveIndependentWindows() {
         RateLimiter limiter = new RateLimiter(1);
         assertThat(limiter.tryAcquire("carol")).isTrue();
@@ -38,8 +38,8 @@ class RateLimiterTest {
         assertThat(limiter.tryAcquire("dave")).isTrue();
     }
 
-    @DisplayName("Blocks every request when the limit is zero")
     @Test
+    @DisplayName("Blocks every request when the limit is zero")
     void zeroLimitBlocksEveryone() {
         RateLimiter limiter = new RateLimiter(0);
         assertThat(limiter.tryAcquire("eve")).isFalse();

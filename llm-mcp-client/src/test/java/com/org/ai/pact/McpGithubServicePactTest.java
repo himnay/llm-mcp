@@ -70,8 +70,8 @@ class McpGithubServicePactTest {
                 .toPact();
     }
 
-    @DisplayName("MCP server returns 200 with matching protocol version and server info for an initialize request")
     @Test
+    @DisplayName("MCP server returns 200 with matching protocol version and server info for an initialize request")
     @PactTestFor(pactMethod = "mcpInitializePact")
     void mcpServerRespondsToInitialize(MockServer mockServer) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();

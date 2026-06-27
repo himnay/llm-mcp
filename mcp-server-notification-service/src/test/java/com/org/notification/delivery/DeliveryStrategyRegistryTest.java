@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class DeliveryStrategyRegistryTest {
 
-    @DisplayName("Resolves a registered delivery strategy for every notification channel")
     @Test
+    @DisplayName("Resolves a registered delivery strategy for every notification channel")
     void resolvesAStrategyForEveryChannel() {
         DeliveryStrategyRegistry registry = new DeliveryStrategyRegistry(List.of(
                 new InternalDeliveryStrategy(), new EmailDeliveryStrategy(), new SlackDeliveryStrategy()));
@@ -26,16 +26,16 @@ class DeliveryStrategyRegistryTest {
         }
     }
 
-    @DisplayName("Throws IllegalStateException at construction when a channel has no strategy")
     @Test
+    @DisplayName("Throws IllegalStateException at construction when a channel has no strategy")
     void failsFastWhenAChannelHasNoStrategy() {
         assertThatThrownBy(() -> new DeliveryStrategyRegistry(List.of(new InternalDeliveryStrategy())))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("EMAIL");
     }
 
-    @DisplayName("Slack delivery strategy delivers a notification without throwing")
     @Test
+    @DisplayName("Slack delivery strategy delivers a notification without throwing")
     void strategiesAcceptANotification() {
         Notification n = Notification.builder()
                 .id(1L).channel(NotificationChannel.SLACK).recipient("ops").message("hi").build();

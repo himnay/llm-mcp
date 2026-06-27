@@ -18,8 +18,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "AI Assistant")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/chat")
+@RequiredArgsConstructor
 public class ChatController {
 
     private final ChatService chatService;

@@ -61,8 +61,8 @@ class GmailServiceTest {
         gmailService = new GmailService(restClient, gmailProperties, tokenManager);
     }
 
-    @DisplayName("Returns the raw JSON string response when listing emails")
     @Test
+    @DisplayName("Returns the raw JSON string response when listing emails")
     @SuppressWarnings("unchecked")
     void listEmails_returnsJsonString() {
         String expectedJson = "{\"messages\":[{\"id\":\"msg1\",\"threadId\":\"thread1\"}]}";
@@ -75,8 +75,8 @@ class GmailServiceTest {
         assertThat(result).contains("msg1");
     }
 
-    @DisplayName("Refreshes the access token and retries when the API returns 401")
     @Test
+    @DisplayName("Refreshes the access token and retries when the API returns 401")
     @SuppressWarnings("unchecked")
     void listEmails_refreshesToken_on401() {
         String expectedJson = "{\"messages\":[]}";
@@ -94,8 +94,8 @@ class GmailServiceTest {
         assertThat(result).isEqualTo(expectedJson);
     }
 
-    @DisplayName("Returns the raw JSON string response when listing labels")
     @Test
+    @DisplayName("Returns the raw JSON string response when listing labels")
     @SuppressWarnings("unchecked")
     void listLabels_returnsJsonString() {
         String expectedJson = "{\"labels\":[{\"id\":\"INBOX\",\"name\":\"INBOX\"}]}";

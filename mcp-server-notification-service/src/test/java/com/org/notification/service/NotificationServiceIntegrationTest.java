@@ -16,8 +16,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Import(TestcontainersConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers(disabledWithoutDocker = true)
 class NotificationServiceIntegrationTest {
 
@@ -32,8 +32,8 @@ class NotificationServiceIntegrationTest {
         notificationRepository.deleteAll();
     }
 
-    @DisplayName("Persists an EMAIL notification with recipient, message, and timestamp")
     @Test
+    @DisplayName("Persists an EMAIL notification with recipient, message, and timestamp")
     void sendNotification_persistsEmailNotification() {
         Notification saved = notificationService.sendNotification(
                 NotificationChannel.EMAIL, "alice@example.com", "Your report is ready");
@@ -45,8 +45,8 @@ class NotificationServiceIntegrationTest {
         assertThat(saved.getCreatedAt()).isNotNull();
     }
 
-    @DisplayName("Persists a SLACK notification with the correct channel and recipient")
     @Test
+    @DisplayName("Persists a SLACK notification with the correct channel and recipient")
     void sendNotification_persistsSlackNotification() {
         Notification saved = notificationService.sendNotification(
                 NotificationChannel.SLACK, "#ops-alerts", "Deploy finished");
@@ -56,8 +56,8 @@ class NotificationServiceIntegrationTest {
         assertThat(saved.getRecipient()).isEqualTo("#ops-alerts");
     }
 
-    @DisplayName("Persists an INTERNAL notification with the correct channel")
     @Test
+    @DisplayName("Persists an INTERNAL notification with the correct channel")
     void sendNotification_persistsInternalNotification() {
         Notification saved = notificationService.sendNotification(
                 NotificationChannel.INTERNAL, "bob", "You have a new ticket assigned");
@@ -65,8 +65,8 @@ class NotificationServiceIntegrationTest {
         assertThat(saved.getChannel()).isEqualTo(NotificationChannel.INTERNAL);
     }
 
-    @DisplayName("Returns all previously sent notifications across all channels")
     @Test
+    @DisplayName("Returns all previously sent notifications across all channels")
     void getNotifications_returnsAllSaved() {
         notificationService.sendNotification(NotificationChannel.EMAIL, "a@a.com", "msg1");
         notificationService.sendNotification(NotificationChannel.SLACK, "#general", "msg2");
@@ -82,8 +82,8 @@ class NotificationServiceIntegrationTest {
                         NotificationChannel.INTERNAL);
     }
 
-    @DisplayName("Returns an empty list when no notifications have been sent")
     @Test
+    @DisplayName("Returns an empty list when no notifications have been sent")
     void getNotifications_returnsEmptyWhenNoneSent() {
         assertThat(notificationService.getNotifications()).isEmpty();
     }

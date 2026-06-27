@@ -14,8 +14,8 @@ import org.springframework.test.context.TestPropertySource;
 })
 class TravelServiceApplicationTests {
 
-    @DisplayName("Spring application context loads successfully")
     @Test
+    @DisplayName("Spring application context loads successfully")
     void contextLoads() {
     }
 }

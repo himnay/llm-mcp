@@ -31,8 +31,8 @@ class McpAuthFilterTokenTest {
         filter = new McpAuthFilter(props, new ObjectMapper(), rateLimiter);
     }
 
-    @DisplayName("Permits health endpoint requests without an Authorization token")
     @Test
+    @DisplayName("Permits health endpoint requests without an Authorization token")
     void permitsHealthWithoutToken() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -41,8 +41,8 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
-    @DisplayName("Allows the request through when no token is configured")
     @Test
+    @DisplayName("Allows the request through when no token is configured")
     void allowsRequestWhenNoTokenConfigured() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/mcp");
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -51,8 +51,8 @@ class McpAuthFilterTokenTest {
         verify(filterChain).doFilter(request, response);
     }
 
-    @DisplayName("Rejects the request with 401 when the bearer token is incorrect")
     @Test
+    @DisplayName("Rejects the request with 401 when the bearer token is incorrect")
     void rejectsRequestWithWrongToken() throws Exception {
         props.setToken("correct-token");
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/mcp");
@@ -62,8 +62,8 @@ class McpAuthFilterTokenTest {
         assertThat(response.getStatus()).isEqualTo(401);
     }
 
-    @DisplayName("Accepts the request with 200 when the bearer token matches")
     @Test
+    @DisplayName("Accepts the request with 200 when the bearer token matches")
     void acceptsRequestWithCorrectToken() throws Exception {
         props.setToken("secret");
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/mcp");

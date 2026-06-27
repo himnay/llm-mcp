@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
+@Table(name = "deployment")
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "deployment")
 public class Deployment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,15 +22,15 @@ public class Deployment {
     @Column(name = "service_name", nullable = false)
     private String serviceName;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private DeploymentEnvironment environment;
 
     @Column(name = "scheduled_time", nullable = false)
     private LocalDateTime scheduledTime;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private DeploymentStatus status;
 
     private String owner;

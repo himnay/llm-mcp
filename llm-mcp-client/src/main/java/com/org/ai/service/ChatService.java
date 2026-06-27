@@ -1,6 +1,7 @@
 package com.org.ai.service;
 
 import com.org.ai.config.AssistantProperties;
+import com.org.ai.config.PromptInjectionGuard;
 import com.org.ai.mcp.SemanticToolSelector;
 import com.org.ai.web.RequestContext;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -33,11 +34,15 @@ public class ChatService {
     private final PromptLoader promptLoader;
     private final AssistantProperties assistantProperties;
     private final MeterRegistry meterRegistry;
+    private final PromptInjectionGuard injectionGuard;
 
     @Value("classpath:prompts/system.st")
     private Resource systemPromptTemplate;
 
     public String handleMessage(String message) {
+        if (!injectionGuard.isQuerySafe(message)) {
+            return injectionGuard.blockMessage();
+        }
         String conversationId = RequestContext.user();
         String processedPrompt = promptLoader.loadPrompt(message);
 
@@ -62,6 +67,15 @@ public class ChatService {
     }
 
     public void streamChat(String conversationId, String message, SseEmitter emitter) {
+        if (!injectionGuard.isQuerySafe(message)) {
+            try {
+                emitter.send(SseEmitter.event().name("error").data(injectionGuard.blockMessage()));
+                emitter.complete();
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            }
+            return;
+        }
         String processedPrompt = promptLoader.loadPrompt(message);
 
         String systemPrompt = new PromptTemplate(systemPromptTemplate).render(Map.of(

@@ -6,13 +6,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
 @Import(TestcontainersConfiguration.class)
+@SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
 class AiAssistantMcpApplicationTests {
 
-    @DisplayName("Spring application context loads successfully")
     @Test
+    @DisplayName("Spring application context loads successfully")
     void contextLoads() {
     }
 }

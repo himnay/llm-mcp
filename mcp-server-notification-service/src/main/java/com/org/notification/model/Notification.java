@@ -5,21 +5,21 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Table(name = "notification")
+@Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private NotificationChannel channel;
 
     @Column(nullable = false)

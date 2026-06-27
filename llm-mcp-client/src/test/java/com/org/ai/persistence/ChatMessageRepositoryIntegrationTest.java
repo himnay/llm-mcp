@@ -14,8 +14,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Import(TestcontainersConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers(disabledWithoutDocker = true)
 class ChatMessageRepositoryIntegrationTest {
 
@@ -27,8 +27,8 @@ class ChatMessageRepositoryIntegrationTest {
         repository.deleteAll();
     }
 
-    @DisplayName("Saves a chat message and generates id, timestamp, and stores all fields")
     @Test
+    @DisplayName("Saves a chat message and generates id, timestamp, and stores all fields")
     void save_persistsMessageWithGeneratedId() {
         ChatMessageEntity entity = new ChatMessageEntity("conv-1", "USER", "Hello!");
 
@@ -41,8 +41,8 @@ class ChatMessageRepositoryIntegrationTest {
         assertThat(saved.getCreatedAt()).isNotNull();
     }
 
-    @DisplayName("Returns messages for a conversation in insertion order")
     @Test
+    @DisplayName("Returns messages for a conversation in insertion order")
     void findByConversationId_returnsInOrder() {
         repository.save(new ChatMessageEntity("conv-2", "USER", "Question 1"));
         repository.save(new ChatMessageEntity("conv-2", "ASSISTANT", "Answer 1"));
@@ -56,8 +56,8 @@ class ChatMessageRepositoryIntegrationTest {
         assertThat(messages.get(1).getMessageType()).isEqualTo("ASSISTANT");
     }
 
-    @DisplayName("Excludes messages belonging to other conversation ids")
     @Test
+    @DisplayName("Excludes messages belonging to other conversation ids")
     void findByConversationId_excludesOtherConversations() {
         repository.save(new ChatMessageEntity("conv-A", "USER", "msg A"));
         repository.save(new ChatMessageEntity("conv-B", "USER", "msg B"));
@@ -69,8 +69,8 @@ class ChatMessageRepositoryIntegrationTest {
         assertThat(messages.get(0).getContent()).isEqualTo("msg A");
     }
 
-    @DisplayName("Deletes only the messages of the targeted conversation id")
     @Test
+    @DisplayName("Deletes only the messages of the targeted conversation id")
     void deleteByConversationId_removesOnlyThatConversation() {
         repository.save(new ChatMessageEntity("conv-X", "USER", "keep X"));
         repository.save(new ChatMessageEntity("conv-Y", "USER", "remove Y1"));
@@ -82,8 +82,8 @@ class ChatMessageRepositoryIntegrationTest {
         assertThat(repository.findByConversationId("conv-X", PageRequest.of(0, 10))).hasSize(1);
     }
 
-    @DisplayName("Limits the number of returned messages to the requested page size")
     @Test
+    @DisplayName("Limits the number of returned messages to the requested page size")
     void findByConversationId_respectsPageSizeLimit() {
         for (int i = 0; i < 5; i++) {
             repository.save(new ChatMessageEntity("conv-page", "USER", "msg " + i));

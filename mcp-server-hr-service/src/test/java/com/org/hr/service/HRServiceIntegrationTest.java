@@ -18,8 +18,8 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Import(TestcontainersConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers(disabledWithoutDocker = true)
 class HRServiceIntegrationTest {
 
@@ -42,8 +42,8 @@ class HRServiceIntegrationTest {
                 .build());
     }
 
-    @DisplayName("Creates a new leave record with the correct username and date")
     @Test
+    @DisplayName("Creates a new leave record with the correct username and date")
     void applyLeave_createsNewLeaveRecord() {
         saveEmployee("alice", "Alice Smith", "backend");
         LocalDate leaveDate = LocalDate.of(2026, 7, 10);
@@ -55,8 +55,8 @@ class HRServiceIntegrationTest {
         assertThat(record.getLeaveDate()).isEqualTo(leaveDate);
     }
 
-    @DisplayName("Returns the same leave record when applying leave twice for the same date")
     @Test
+    @DisplayName("Returns the same leave record when applying leave twice for the same date")
     void applyLeave_idempotent_returnsSameRecord() {
         saveEmployee("bob", "Bob Jones", "frontend");
         LocalDate leaveDate = LocalDate.of(2026, 7, 15);
@@ -67,8 +67,8 @@ class HRServiceIntegrationTest {
         assertThat(second.getId()).isEqualTo(first.getId());
     }
 
-    @DisplayName("isOnLeave returns true when a leave record exists for that date")
     @Test
+    @DisplayName("isOnLeave returns true when a leave record exists for that date")
     void isOnLeave_returnsTrue_whenLeaveExists() {
         saveEmployee("carol", "Carol White", "devops");
         LocalDate leaveDate = LocalDate.of(2026, 8, 1);
@@ -77,16 +77,16 @@ class HRServiceIntegrationTest {
         assertThat(hrService.isOnLeave("carol", leaveDate)).isTrue();
     }
 
-    @DisplayName("isOnLeave returns false when no leave record exists for that date")
     @Test
+    @DisplayName("isOnLeave returns false when no leave record exists for that date")
     void isOnLeave_returnsFalse_whenNoLeave() {
         saveEmployee("dave", "Dave Brown", "qa");
 
         assertThat(hrService.isOnLeave("dave", LocalDate.of(2026, 9, 1))).isFalse();
     }
 
-    @DisplayName("Finds an available team member as replacement for an employee on leave")
     @Test
+    @DisplayName("Finds an available team member as replacement for an employee on leave")
     void findReplacement_returnsAvailableTeamMember() {
         saveEmployee("eve", "Eve Green", "backend");
         saveEmployee("frank", "Frank Blue", "backend");
@@ -98,16 +98,16 @@ class HRServiceIntegrationTest {
         assertThat(replacement).isEqualTo("frank");
     }
 
-    @DisplayName("findReplacement throws ResourceNotFoundException when the employee does not exist")
     @Test
+    @DisplayName("findReplacement throws ResourceNotFoundException when the employee does not exist")
     void findReplacement_throwsWhenEmployeeNotFound() {
         assertThatThrownBy(() -> hrService.findReplacement("unknown", LocalDate.now()))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("unknown");
     }
 
-    @DisplayName("findReplacement throws ResourceNotFoundException when all team members are on leave")
     @Test
+    @DisplayName("findReplacement throws ResourceNotFoundException when all team members are on leave")
     void findReplacement_throwsWhenAllTeamMembersOnLeave() {
         saveEmployee("grace", "Grace Kim", "solo");
         LocalDate leaveDate = LocalDate.of(2026, 11, 1);

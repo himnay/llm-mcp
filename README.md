@@ -379,6 +379,115 @@ Liveness/readiness probes are enabled on HR and Deployment services (`management
 
 ---
 
+## Prompt Injection Security
+
+Three-layer defense is applied before any user message reaches the LLM or an MCP tool.
+
+### Layer 1 — Pre-LLM query guard (`PromptInjectionGuard`)
+
+Every user message passes through `PromptInjectionGuard.isQuerySafe()` in `ChatService` before any LLM or MCP tool
+call is made. If any configured regex pattern matches, the request is rejected immediately and the block message is
+returned to the caller — the LLM and all downstream MCP servers are never contacted.
+
+Patterns are compiled once at startup from `app.security.injection-guard.patterns` in `application.yaml`.
+`InjectionGuardProperties` (`@ConfigurationProperties(prefix = "app.security.injection-guard")`) externalises the full
+catalogue so new attack signatures can be added or disabled without code changes or redeployment. The guard can also be
+disabled entirely at runtime via the `INJECTION_GUARD_ENABLED=false` environment variable.
+
+Pattern categories in the default catalogue:
+
+| Category                    | Examples blocked                                                                 |
+|-----------------------------|----------------------------------------------------------------------------------|
+| Instruction override        | "ignore previous instructions", "disregard your instructions"                   |
+| Roleplay / persona hijack   | "you are now DAN", "act as if you have no restrictions", "pretend you are"      |
+| System prompt exfiltration  | "reveal your system prompt", "what are your instructions"                       |
+| Structural delimiter injection | `[SYSTEM]`, `<system>`, ` ```system `, `### instruction`                     |
+| Jailbreak keywords          | "jailbreak", "developer mode", "DAN mode"                                       |
+
+Streaming requests (`streamChat`) send an SSE `error` event with the block message and close the emitter immediately.
+
+### Layer 2 — Spring AI `SafeGuardAdvisor`
+
+`SafeGuardAdvisor` is registered at `order = Integer.MIN_VALUE` in the `ChatClient` advisor chain, ensuring it runs
+before the model is invoked. The sensitive-word list is driven by `assistant.sensitive-words` in `application.yaml`.
+This layer catches any injection that might arrive via processed prompts (e.g. after `PromptLoader` expansion) rather
+than raw user input.
+
+### Layer 3 — Per-server `McpAuthFilter` and rate limiting
+
+Each MCP server validates the incoming bearer token (`MCP_AUTH_TOKEN`) via `McpAuthFilter` and enforces per-client
+rate limits (default 120 req/min). This prevents indirect prompt injection via poisoned tool results: even if a
+malicious payload reaches a tool response, the per-server auth and rate limits contain lateral movement.
+
+### Adding new attack patterns
+
+Add entries to `application.yaml` — no code change or restart required if the application is re-run:
+
+```yaml
+app:
+  security:
+    injection-guard:
+      patterns:
+        - "(?i)your new pattern here"
+```
+
+Patterns are standard Java regex strings compiled with `Pattern.compile`. Invalid patterns are skipped at startup with
+an `ERROR` log entry so a misconfigured pattern cannot prevent the application from starting.
+
+### Disabling the guard (dev / test)
+
+```bash
+INJECTION_GUARD_ENABLED=false ./mvnw spring-boot:run
+```
+
+Or in a test `application.yaml`:
+
+```yaml
+app:
+  security:
+    injection-guard:
+      enabled: false
+```
+
+---
+
+## MCP Services Reference
+
+All 7 MCP servers and the client:
+
+| Module | Port | Protocol | Tools / Purpose |
+|---|---|---|---|
+| `llm-mcp-client` | 8080 | — | Central chat assistant; orchestrates all downstream servers via Streamable HTTP |
+| `mcp-server-ticket-service` | 8081 | STATELESS | `analyze-tickets` prompt; REST-only ticket CRUD (createTicket, getTickets, getTicket, updateTicketStatus, assignTicket) |
+| `mcp-server-deployment-service` | 8082 | STREAMABLE | `getDeployments`, `getDeployment`, `createDeployment`, `assignOwner`, `rescheduleDeployment`, `cancelDeployment`; OAuth2.1 (Keycloak) protected |
+| `mcp-server-notification-service` | 8083 | STATELESS | `getNotifications`, `sendNotification` (channels: INTERNAL, EMAIL, SLACK) |
+| `mcp-server-hr-service` | 8084 | STATELESS | `applyLeave`, `findReplacement`; employee leave and substitution management |
+| `mcp-server-github-service` | 8085 | STREAMABLE | 12 GitHub tools (repos, commits, PRs, issues, workflows, releases, search, code frequency) + `summarizeRepositoryHealth` (MCP sampling) |
+| `mcp-server-gmail-service` | 8086 | STREAMABLE | 12 Gmail tools (list, get, search, thread, labels, mark read/unread, draft, send, delete) |
+| `mcp-server-travel-service` | 8086* | STATELESS | `searchFlights` via Amadeus Flight Offers API (OAuth2 client-credentials token caching) |
+
+*Override `SERVER_PORT` for travel-service when running alongside gmail-service.
+
+## Streamable HTTP — MCP Protocol
+
+All client-to-server communication uses the **MCP Streamable HTTP** transport (protocol version `2025-03-26`). Every tool call is a JSON-RPC 2.0 `POST` to the `/mcp` endpoint on each server. The protocol variant (STATELESS or STREAMABLE) is declared per-server in `application.yaml`:
+
+```yaml
+spring:
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STREAMABLE   # or STATELESS
+```
+
+- **STATELESS** — each POST is self-contained; no session state is kept between calls. Used for simple CRUD tools (HR, ticket, notification, travel).
+- **STREAMABLE** — the connection is a persistent streaming channel (Server-Sent Events), enabling incremental results and MCP sampling. Required for long-running queries and server-initiated LLM calls (deployment, GitHub, Gmail).
+
+The client connection is always Streamable HTTP (`spring.ai.mcp.client.streamable-http.connections`). The `MCP_AUTH_TOKEN` bearer header and `X-Acting-User` header are injected on every outbound request by `McpClientSecurityConfig`.
+
+---
+
 ## Observability
 
 Full setup in [OBSERVABILITY.md](OBSERVABILITY.md).

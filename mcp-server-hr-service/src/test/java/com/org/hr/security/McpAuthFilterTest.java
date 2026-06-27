@@ -45,8 +45,8 @@ class McpAuthFilterTest {
     // Auth disabled (blank token) — filter passes through
     // ------------------------------------------------------------------
 
-    @DisplayName("Passes request through when the configured token is blank")
     @Test
+    @DisplayName("Passes request through when the configured token is blank")
     void whenTokenBlank_requestPassesThrough() throws Exception {
         props.setToken("");
         RateLimiter limiter = new RateLimiter(120);
@@ -64,8 +64,8 @@ class McpAuthFilterTest {
     // Auth enabled — correct token passes
     // ------------------------------------------------------------------
 
-    @DisplayName("Passes request through when the bearer token matches the configured token")
     @Test
+    @DisplayName("Passes request through when the bearer token matches the configured token")
     void whenTokenConfigured_correctTokenPasses() throws Exception {
         props.setToken("secret-token");
         RateLimiter limiter = new RateLimiter(120);
@@ -83,8 +83,8 @@ class McpAuthFilterTest {
     // Auth enabled — wrong token → 401
     // ------------------------------------------------------------------
 
-    @DisplayName("Returns 401 when the bearer token does not match the configured token")
     @Test
+    @DisplayName("Returns 401 when the bearer token does not match the configured token")
     void whenTokenConfigured_wrongTokenReturns401() throws Exception {
         props.setToken("secret-token");
         RateLimiter limiter = new RateLimiter(120);
@@ -104,8 +104,8 @@ class McpAuthFilterTest {
     // Auth enabled — missing Authorization header → 401
     // ------------------------------------------------------------------
 
-    @DisplayName("Returns 401 when the Authorization header is missing")
     @Test
+    @DisplayName("Returns 401 when the Authorization header is missing")
     void whenTokenConfigured_missingAuthHeaderReturns401() throws Exception {
         props.setToken("secret-token");
         RateLimiter limiter = new RateLimiter(120);
@@ -125,8 +125,8 @@ class McpAuthFilterTest {
     // Rate limit exceeded → 429
     // ------------------------------------------------------------------
 
-    @DisplayName("Returns 429 and blocks the filter chain when the rate limit is exceeded")
     @Test
+    @DisplayName("Returns 429 and blocks the filter chain when the rate limit is exceeded")
     void whenRateLimitExceeded_returns429() throws Exception {
         props.setToken("");
         RateLimiter limiter = new RateLimiter(1); // allow only 1 per minute

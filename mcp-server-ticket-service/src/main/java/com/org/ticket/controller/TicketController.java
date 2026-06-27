@@ -33,10 +33,10 @@ import java.util.List;
  * Input validation is enforced declaratively via Jakarta Bean Validation.
  */
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/tickets")
 @RequiredArgsConstructor
-@Validated
 public class TicketController {
 
     private final TicketService ticketService;

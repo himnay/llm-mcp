@@ -38,48 +38,48 @@ class GitHubMcpToolsValidationTest {
         ActingUserContext.clear();
     }
 
-    @DisplayName("Throws IllegalArgumentException when owner is blank")
     @Test
+    @DisplayName("Throws IllegalArgumentException when owner is blank")
     void getRepository_rejectsBlankOwner() {
         assertThatThrownBy(() -> tools.getRepository("", "spring-framework"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("owner");
     }
 
-    @DisplayName("Throws IllegalArgumentException when repo is blank")
     @Test
+    @DisplayName("Throws IllegalArgumentException when repo is blank")
     void getRepository_rejectsBlankRepo() {
         assertThatThrownBy(() -> tools.getRepository("spring-projects", ""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("repo");
     }
 
-    @DisplayName("Throws IllegalArgumentException when since is blank")
     @Test
+    @DisplayName("Throws IllegalArgumentException when since is blank")
     void getCommitMetrics_rejectsBlankSince() {
         assertThatThrownBy(() -> tools.getCommitMetrics("owner", "repo", "", "2024-12-31T23:59:59Z"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("since");
     }
 
-    @DisplayName("Throws IllegalArgumentException when pull request state is invalid")
     @Test
+    @DisplayName("Throws IllegalArgumentException when pull request state is invalid")
     void getPullRequests_rejectsInvalidState() {
         assertThatThrownBy(() -> tools.getPullRequests("owner", "repo", "invalid"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("state");
     }
 
-    @DisplayName("Throws IllegalArgumentException when issue title is blank")
     @Test
+    @DisplayName("Throws IllegalArgumentException when issue title is blank")
     void createIssue_rejectsBlankTitle() {
         assertThatThrownBy(() -> tools.createIssue("owner", "repo", "", null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("title");
     }
 
-    @DisplayName("Throws IllegalArgumentException when search query is blank")
     @Test
+    @DisplayName("Throws IllegalArgumentException when search query is blank")
     void searchRepositories_rejectsBlankQuery() {
         assertThatThrownBy(() -> tools.searchRepositories("", null, null))
                 .isInstanceOf(IllegalArgumentException.class)

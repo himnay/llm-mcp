@@ -10,11 +10,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
+@Table(name = "leave_record")
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "leave_record")
 public class LeaveRecord {
 
     @Id
@@ -27,8 +27,8 @@ public class LeaveRecord {
     @Column(nullable = false)
     private LocalDate leaveDate;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private LeaveStatus status;
 
     @Column(nullable = false)

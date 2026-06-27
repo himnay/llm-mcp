@@ -7,8 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class GitHubServiceApplicationTests {
 
-    @DisplayName("Loads the Spring application context successfully")
     @Test
+    @DisplayName("Loads the Spring application context successfully")
     void contextLoads() {
     }
 }
