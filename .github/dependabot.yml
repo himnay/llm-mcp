@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      spring:
+        patterns: ["org.springframework*"]
+      testing:
+        patterns: ["*junit*", "*testcontainers*", "*mockito*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directories:
+      - "/llm-mcp-client"
+      - "/mcp-server-hr-service"
+      - "/mcp-server-ticket-service"
+      - "/mcp-server-deployment-service"
+      - "/mcp-server-notification-service"
+      - "/mcp-server-github-service"
+      - "/mcp-server-gmail-service"
+      - "/mcp-server-travel-service"
+    schedule:
+      interval: weekly

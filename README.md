@@ -94,6 +94,15 @@ separate Flyway schema-history tables per service:
 
 ## Running
 
+### 0. Secrets
+
+Copy `.env.example` to `.env` and fill in real values (`OPENAI_API_KEY`, `GITHUB_TOKEN`, etc.).
+`docker compose` reads `.env` automatically; the file is gitignored and must never be committed.
+The Keycloak client secret defaults to the dev value baked into
+`docker/keycloak/realm-export.json` — override `MCP_OAUTH2_CLIENT_SECRET` in `.env`
+for any non-local deployment. Secret hygiene is enforced by `.gitleaks.toml`
+(run `gitleaks detect --source . --config .gitleaks.toml` locally or in CI).
+
 ### 1. Start infrastructure
 
 ```bash
@@ -552,8 +561,8 @@ inconsistent on enum names) of what MCP 2.0 offers, what this repo now uses, and
 |---------|--------|-------|
 | `@McpTool` / `@McpToolParam` | ✅ Implemented (all 6 tool-bearing servers) | Every `*McpTools`/`*Tools` class (hr, deployment, notification, github, gmail, travel) was migrated off the older `@Tool` + `MethodToolCallbackProvider` pattern onto `@McpTool`; every module's `McpToolConfig` bean was deleted since the annotation scanner replaces it. Verified live on both protocols — `Registered tools: N` from `McpServerAutoConfiguration` (STREAMABLE) and `McpServerStatelessAutoConfiguration` (STATELESS) |
 | **Sampling** (`McpSyncRequestContext.sample(...)`, client `@McpSampling`) | ✅ Implemented | Server asks the *client's* LLM to run a completion instead of holding its own model key. `GitHubAiInsightsTools` (server) ↔ `McpSamplingHandler` (client, routes through the same `ChatModel` that powers `/chat`) |
-| **Elicitation** (`McpSyncRequestContext.elicit(...)`, client `@McpElicitation`) | ⏳ Not implemented | Lets a tool pause mid-call and ask the human for missing/confirming input (e.g. confirm `cancelDeployment` or `deleteEmail` before executing). Natural fit for this codebase's existing write-gate pattern, but needs a non-blocking client handler — `llm-mcp-client`'s `/chat` is a single-shot REST call with no place to surface a mid-turn question back to the caller, so a real implementation needs a streaming/async chat endpoint first (the existing SSE `streamChat` is the closest building block) |
-| **Progress notifications** (`ctx.progress(...)`, client `@McpProgress`) | ⏳ Not implemented | Long-running tools currently return silently until done — `GitHubService`'s 202-retry loop for stats endpoints and `AmadeusFlightClient`'s flight search are the two best candidates to emit incremental progress |
+| **Elicitation** (`McpSyncRequestContext.elicit(...)`, client `@McpElicitation`) | ✅ Implemented | `DeploymentInteractiveTools.executeDeployment` (server) pauses before any PROD execution and requests structured confirmation (`{confirm, reason}`); `McpElicitationHandler` (client) answers by policy since `/chat` has no human mid-call — DECLINE by default, ACCEPT when `assistant.elicitation.auto-confirm=true`. Surfacing the question to a real user over SSE `streamChat` remains a natural follow-up |
+| **Progress notifications** (`ctx.progress(...)`, client `@McpProgress`) | ✅ Implemented | `DeploymentInteractiveTools.executeDeployment` (server) emits validate/deploy/verify stage updates via `ctx.progress(...)`; `McpProgressHandler` (client) logs each notification and tracks last-known progress per token. `GitHubService`'s 202-retry loop and `AmadeusFlightClient` are the next candidates |
 | `@McpResource` / resource templates | ⏳ Not implemented | All domain data (tickets, deployments, employees) is exposed only as `@McpTool` *actions*; none of it is exposed as an addressable MCP *Resource* the client could read without a tool round-trip |
 | `@McpPrompt` | ⚙ Partial | Only `ticket-service`'s `analyze-tickets` prompt exists, and it already uses the new `@McpPrompt` annotation; no other module defines any prompts |
 | `@McpComplete` (argument auto-completion) | ⏳ Not implemented | Would let a prompt/resource argument (e.g. `environment` in `createDeployment`, `state` in `getIssues`) offer auto-complete suggestions instead of relying on the LLM to guess valid enum values from the description string |
@@ -1147,8 +1156,8 @@ file. It manages service startup order, networking, volume mounts, and environme
 
 | Service          | Image                    | Purpose                            |
 |------------------|--------------------------|------------------------------------|
-| `postgres`       | `postgres:18`            | Shared relational database         |
-| `redis`          | `redis:7-alpine`         | GitHub API response cache          |
+| `postgres`       | `pgvector/pgvector:pg18` | Shared relational database (pgvector for the client's embedding tables) |
+| `redis`          | `redis/redis-stack-server` | GitHub API response cache + tool-selection vector index (RediSearch) |
 | `tempo`          | `grafana/tempo:latest`   | Distributed trace storage (OTLP)   |
 | `prometheus`     | `prom/prometheus:latest` | Metrics scraping and storage       |
 | `grafana`        | `grafana/grafana:latest` | Dashboards and trace visualization |

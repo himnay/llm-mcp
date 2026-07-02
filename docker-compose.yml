@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: postgres:18
+    # pgvector build of Postgres 18 — llm-mcp-client's V2 migration runs CREATE EXTENSION vector
+    image: pgvector/pgvector:pg18
     container_name: postgres
     environment:
       POSTGRES_DB: spring_ai
@@ -195,7 +196,8 @@ services:
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
       MCP_OAUTH2_TOKEN_URI: http://keycloak:8080/realms/org-mcp/protocol/openid-connect/token
       MCP_OAUTH2_CLIENT_ID: llm-mcp-client
-      MCP_OAUTH2_CLIENT_SECRET: llm-mcp-client-secret
+      # Dev default matches docker/keycloak/realm-export.json; override in .env for anything non-local
+      MCP_OAUTH2_CLIENT_SECRET: ${MCP_OAUTH2_CLIENT_SECRET:-llm-mcp-client-secret}
     ports:
       - "8090:8090"
     depends_on:
@@ -227,7 +229,8 @@ services:
           cpus: '0.25'
           memory: 256m
   redis:
-    image: redis:7-alpine
+    # redis-stack: includes RediSearch, required by the client's Redis vector store (FT.* commands)
+    image: redis/redis-stack-server:latest
     container_name: redis
     restart: unless-stopped
     ports:

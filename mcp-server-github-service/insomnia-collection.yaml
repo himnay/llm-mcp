@@ -715,4 +715,4 @@ environments:
     isPrivate: false
   data:
     base_url: http://localhost:8085
-    mcp_auth_token: 019ea153-01b5-73a3-9db1-ee5d05381838
+    mcp_auth_token: REPLACE_WITH_YOUR_TOKEN

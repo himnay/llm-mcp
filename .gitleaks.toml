@@ -1,0 +1,18 @@
+# Gitleaks configuration — run locally with: gitleaks detect --source . --config .gitleaks.toml
+# Extends the default ruleset; allowlists documented dev-only fixtures.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Dev-only fixtures that are intentionally committed"
+paths = [
+    # Keycloak dev realm import — placeholder client secret, matches docker-compose default
+    '''docker/keycloak/realm-export\.json''',
+    # Example env file contains no real values
+    '''\.env\.example''',
+]
+regexes = [
+    '''llm-mcp-client-secret''',
+    '''REPLACE_WITH_YOUR_TOKEN''',
+]
