@@ -7,7 +7,9 @@ An MCP server that sends and lists notifications across channels (INTERNAL, EMAI
 
 ## MCP Tools
 
-Defined in `NotificationTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
+Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
+(`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
+`MethodToolCallbackProvider`:
 
 | Tool name          | Type  | Description                                                                               |
 |--------------------|-------|-------------------------------------------------------------------------------------------|
@@ -50,12 +52,12 @@ Defined in `NotificationTools` (registered via `MethodToolCallbackProvider` in `
 | **Factory (registry)**      | `DeliveryStrategyRegistry`                                                                                 | Spring injects every strategy bean; registry indexes by channel and fails fast at startup if one is missing |
 | **Singleton**               | All Spring beans                                                                                           | One shared, stateless instance per container                                                                |
 | **Facade**                  | `NotificationService`                                                                                      | Persists the notification, then dispatches via the right strategy                                           |
-| **Factory Method**          | `@Bean` methods in `McpToolConfig`                                                                         | Container builds the MCP `ToolCallbackProvider`                                                             |
+| **Factory Method**          | `McpServerAnnotationScannerAutoConfiguration` builds each `@McpTool` method into a `SyncToolSpecification`  | Framework builds the MCP tool registrations — no `McpToolConfig` bean needed                                |
 | **Builder**                 | Lombok `@Builder` on `Notification`                                                                        | Readable construction of multi-field entities                                                               |
 | **Proxy**                   | Spring Data JPA repositories                                                                               | Dynamic proxies add persistence behaviour                                                                   |
 | **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                                               | Framework skeleton calls `doFilterInternal` hooks                                                           |
 | **Chain of Responsibility** | Servlet `FilterChain`                                                                                      | Auth → rate-limit → tools, each link handles or passes on                                                   |
-| **Command**                 | `@Tool` methods (`getNotifications`, `sendNotification`) wrapped as `ToolCallback` objects                 | Tool invocations reified for the MCP runtime                                                                |
+| **Command**                 | `@McpTool` methods (`getNotifications`, `sendNotification`) reified as MCP tool callbacks                  | Tool invocations dispatched by name+arguments through the MCP runtime                                       |
 
 ## Configuration
 

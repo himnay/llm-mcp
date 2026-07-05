@@ -8,7 +8,9 @@ protocol **STATELESS**, no datasource — Spring app name `mcp-travel-service`.
 
 ## MCP Tools
 
-Defined in `FlightMcpTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
+Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
+(`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
+`MethodToolCallbackProvider`:
 
 | Tool name        | Type | Description                                                                                                                                                                                                                                                |
 |------------------|------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -51,12 +53,12 @@ Defined in `FlightMcpTools` (registered via `MethodToolCallbackProvider` in `Mcp
 | **Adapter**                 | `AmadeusFlightClient` + `amadeus.model` DTOs                          | Adapts the Amadeus v2 flight-offers wire format to the domain types the tools consume                   |
 | **Proxy (caching)**         | `AmadeusTokenService`                                                 | Stands in for the OAuth2 token endpoint; caches the token and refreshes 60 s before expiry under a lock |
 | **Facade**                  | `FlightSearchService`                                                 | Single entry point coordinating token acquisition, search, and result shaping                           |
-| **Factory Method**          | `@Bean` methods in `RestClientConfig`, `McpToolConfig`                | Container builds the qualified `RestClient`s and tool provider                                          |
+| **Factory Method**          | `@Bean` methods in `RestClientConfig`; `McpServerAnnotationScannerAutoConfiguration` builds each `@McpTool` method into a `SyncToolSpecification` | Container/framework builds the qualified `RestClient`s and tool registrations                           |
 | **Builder**                 | `RestClient.builder()`                                                | Stepwise construction of configured HTTP clients                                                        |
 | **Singleton**               | All Spring beans                                                      | One shared instance per container (token cache is deliberately shared)                                  |
 | **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                          | Framework skeleton calls `doFilterInternal` hooks                                                       |
 | **Chain of Responsibility** | Servlet `FilterChain`                                                 | Auth → rate-limit → tools, each link handles or passes on                                               |
-| **Command**                 | `@Tool` methods in `FlightMcpTools` wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime                                                            |
+| **Command**                 | `@McpTool` methods in `FlightMcpTools` reified as MCP tool callbacks  | Tool invocations dispatched by name+arguments through the MCP runtime                                   |
 
 ## Configuration
 

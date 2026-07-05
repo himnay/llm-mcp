@@ -8,7 +8,9 @@ tools for the `llm-mcp-client` assistant, backed by the GitHub REST API. Runs on
 
 ## MCP Tools
 
-Defined in `GitHubMcpTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
+Twelve plain tools are defined in `GitHubMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's
+MCP annotation scanner (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
+`MethodToolCallbackProvider`:
 
 | Tool name            | Type  | Description                                                                |
 |----------------------|-------|----------------------------------------------------------------------------|
@@ -24,6 +26,50 @@ Defined in `GitHubMcpTools` (registered via `MethodToolCallbackProvider` in `Mcp
 | `searchRepositories` | READ  | Repository search by query, sort and order                                 |
 | `getCodeFrequency`   | READ  | Weekly additions/deletions ("code frequency") stats                        |
 | `createIssue`        | WRITE | Create an issue (title, body, labels) — gated by `require-user-for-writes` |
+
+A thirteenth tool, `summarizeRepositoryHealth`, is defined separately in `GitHubAiInsightsTools` (split out because
+it injects `McpSyncRequestContext`, which only plain-tool-free classes can do cleanly). Instead of calling
+`api.github.com` itself, it calls `ctx.sample(...)` — **MCP sampling** — asking the *connected client's* LLM to
+write a narrative health summary from data the tool gathers, so the server never needs its own model API key:
+
+| Tool name                   | Type | Description                                                                                                                 |
+|------------------------------|------|------------------------------------------------------------------------------------------------------------------------------|
+| `summarizeRepositoryHealth` | READ | Gathers repo metadata, recent commits, open PR/issue counts, then uses MCP sampling (`ctx.sample(...)`) to have the client's LLM write a prose health summary |
+
+On the client, `McpSamplingHandler` (`@McpSampling(clients = "github")`) receives the resulting
+`McpSchema.CreateMessageRequest`, runs it through the same `ChatModel` that powers `/chat`, and returns a
+`McpSchema.CreateMessageResult` — the completion happens on the client's model, not a second one configured on the
+server. Because this requires a stateful session, it only works because this server is **STREAMABLE**.
+
+### MCP sampling flow for `summarizeRepositoryHealth`
+
+```mermaid
+sequenceDiagram
+    participant Client as llm-mcp-client
+    participant Srv as mcp-server-github-service (STREAMABLE)
+    participant Tool as GitHubAiInsightsTools
+    participant SVC as GitHubService (Redis-cached)
+    participant API as GitHub REST API
+    participant Sampling as McpSamplingHandler
+    participant LLM as OpenAI ChatModel
+
+    Client->>Srv: tools/call summarizeRepositoryHealth {owner, repo}
+    Srv->>Tool: summarizeRepositoryHealth(owner, repo, ctx)
+    Tool->>SVC: getRepository / getCommitHistory / getPullRequests / getIssues
+    SVC->>API: GET (cache miss only)
+    API-->>SVC: JSON
+    SVC-->>Tool: aggregated repo data
+    Tool->>Srv: ctx.sample(CreateMessageRequest with repo data)
+    Srv->>Client: sampling/createMessage request
+    Client->>Sampling: McpSamplingHandler receives request
+    Sampling->>LLM: run completion via the same ChatModel that powers /chat
+    LLM-->>Sampling: narrative health summary
+    Sampling-->>Client: CreateMessageResult
+    Client-->>Srv: sampling/createMessage response
+    Srv-->>Tool: CreateMessageResult
+    Tool-->>Srv: tool result (prose summary)
+    Srv-->>Client: tools/call result
+```
 
 ---
 
@@ -48,8 +94,8 @@ Defined in `GitHubMcpTools` (registered via `MethodToolCallbackProvider` in `Mcp
 | Liveness/readiness probes    | ✅      | `management.endpoint.health.probes.enabled: true`                                                                                                                                              |
 | Health/auth allow-list       | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting so orchestrators can probe the service                                                                            |
 | Non-root container           | ✅      | Multi-stage Dockerfile runs as a dedicated `spring:spring` system user on a `jre`-only runtime image                                                                                           |
-| Circuit breaker / resilience | ❌      | No Resilience4j — GitHub API failures surface directly to the caller as tool errors                                                                                                            |
-| Caching                      | ❌      | Every tool call hits the live GitHub API; no response caching (consider for high-traffic read tools)                                                                                           |
+| Circuit breaker / resilience | ❌      | No Resilience4j *in this server*; the client-side `ResilientToolCallbackProvider` wraps every tool call to this server from the caller's side (circuit breaker `mcp-github`)                    |
+| Caching                      | ✅      | Every `GitHubService` method is `@Cacheable(value = "github", key = "...")`; `GitHubClientConfig` is `@EnableCaching` with a `RedisCacheManager` — repeated queries for the same repo/params are served from Redis instead of re-hitting `api.github.com` |
 
 ---
 
@@ -62,7 +108,7 @@ Defined in `GitHubMcpTools` (registered via `MethodToolCallbackProvider` in `Mcp
 | **Proxy**                       | `@Cacheable` on `GitHubService` (Redis-backed AOP proxy); JPA-style dynamic proxying by Spring                  | Caching proxy intercepts calls and serves repeated GitHub queries from Redis                                                                                                  |
 | **Facade**                      | `GitHubService`                                                                                                 | Hides GitHub REST API details (URIs, headers, 202-retry for async stats, error translation) behind simple methods                                                             |
 | **Builder**                     | `RestClient.builder()`, `RedisCacheManager.builder()` in `GitHubClientConfig`                                   | Stepwise construction of configured clients                                                                                                                                   |
-| **Factory Method**              | `@Bean` methods in `GitHubClientConfig`, `McpToolConfig`                                                        | Container builds and wires the REST client, cache manager, tool provider                                                                                                      |
+| **Factory Method**              | `@Bean` methods in `GitHubClientConfig` (`RestClient`, `RedisCacheManager`); `McpServerAnnotationScannerAutoConfiguration` builds each `@McpTool` method into a `SyncToolSpecification` | Container/framework builds and wires the REST client, cache manager, and tool registrations                                                                                                      |
 | **Observer**                    | `@EventListener(ContextRefreshedEvent)` (`warnIfNoToken`)                                                       | Startup event subscription warns when no GitHub token is configured                                                                                                           |
 | **Singleton**                   | All Spring beans                                                                                                | One shared, stateless instance per container                                                                                                                                  |
 | **Template Method** (framework) | `McpAuthFilter extends OncePerRequestFilter`                                                                    | Framework skeleton calls `doFilterInternal` hooks                                                                                                                             |
@@ -276,6 +322,21 @@ curl -s http://localhost:8085/mcp \
         }}
       }'
 ```
+
+### Summarize repository health (MCP sampling — requires a client that implements `sampling/createMessage`)
+
+```bash
+curl -s http://localhost:8085/mcp \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+        "jsonrpc":"2.0","id":14,"method":"tools/call",
+        "params":{"name":"summarizeRepositoryHealth","arguments":{"owner":"spring-projects","repo":"spring-boot"}}
+      }'
+```
+
+> Calling this tool directly with `curl` will only succeed if the caller also implements the client side of MCP
+> sampling; in this repo that role is played by `llm-mcp-client`'s `McpSamplingHandler`, not a plain HTTP client.
 
 ### Actuator
 

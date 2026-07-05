@@ -26,6 +26,169 @@ backed by PostgreSQL; Travel, GitHub and Gmail wrap external APIs (Amadeus, GitH
 
 ---
 
+## What Is MCP, and What Problem Does It Solve?
+
+### The problem: bespoke function-calling per provider
+
+Before the Model Context Protocol, giving an LLM the ability to act on the outside world meant writing
+provider-specific glue code. OpenAI's `tools`/`functions` array, Anthropic's `tool_use` blocks, and Google's
+function-calling schema each have their own JSON shape, their own way of describing a parameter, and their own
+conversational turn-taking convention for "the model wants to call X with args Y." If an application wanted to expose
+the same HR-lookup or GitHub-query capability to two different model providers, or wanted to swap OpenAI for Claude
+without a rewrite, every tool definition, every request/response adapter, and every retry/error-handling path had to
+be duplicated or abstracted by hand. Worse, the *tools themselves* were usually inline code in the same process as
+the chat loop — there was no standard way to run "the GitHub tool" as an independent, independently-deployable,
+independently-scaled service that any compliant client could discover and call without prior knowledge of its
+internals.
+
+### The solution: a standard client/server protocol
+
+MCP (originally introduced by Anthropic, now an open, provider-agnostic specification) factors this problem in two
+directions at once:
+
+1. **Transport/protocol standardization** — every MCP interaction is a JSON-RPC 2.0 message over a small set of
+   standard transports (`stdio` for local subprocesses, Server-Sent Events, or **Streamable HTTP**). A client that
+   speaks MCP can talk to *any* MCP server, regardless of what language or framework built it, as long as both sides
+   implement the same handshake (`initialize`) and message types (`tools/list`, `tools/call`, `prompts/list`,
+   `prompts/get`, `resources/list`, plus optional capabilities like sampling, elicitation, and progress
+   notifications).
+2. **Capability discovery instead of hardcoding** — a server doesn't need to be known to the client at compile time.
+   The client calls `tools/list` at connection time and gets back a live JSON Schema for every tool the server
+   currently exposes (name, description, parameter types). The LLM reads those descriptions directly to decide which
+   tool to call and with what arguments — adding a new tool to a server means the client picks it up automatically on
+   next connect, with zero client-side code changes.
+
+In short: MCP turns "tool calling" from a per-model, per-integration problem into a network protocol problem, the
+same way HTTP turned "how do I fetch this document" from a per-application problem into something every browser and
+server agrees on.
+
+### How this repo is shaped around that idea
+
+This repo is a direct, from-scratch implementation of that client/server split using **Spring AI's MCP starters**:
+
+- **One MCP client** — `llm-mcp-client` (`:8080`). It has no domain logic of its own. It receives a chat message over
+  REST (`POST /chat`), calls OpenAI's `ChatModel` with the user's prompt and system context, and whenever the model
+  decides it needs to act (list deployments, look up a GitHub repo, apply leave, …), it dispatches that decision as an
+  MCP `tools/call` to whichever downstream server owns that tool. The client never knows *how* `getRepository` is
+  implemented — only that some connected server advertises a tool by that name with that schema.
+- **Seven independent MCP servers**, each a separate Spring Boot process with its own port, its own datasource (or
+  external API), and its own `pom.xml`: `mcp-server-hr-service`, `mcp-server-ticket-service`,
+  `mcp-server-deployment-service`, `mcp-server-notification-service`, `mcp-server-travel-service`,
+  `mcp-server-github-service`, `mcp-server-gmail-service`. Four are backed by PostgreSQL (HR, ticket, deployment,
+  notification); three wrap external REST APIs (travel → Amadeus, GitHub → GitHub REST API, Gmail → Gmail REST API).
+- **Transport, verified from the actual config**: every server declares `spring.ai.mcp.server.protocol` as either
+  `STATELESS` (hr, ticket, notification, travel — self-contained request/response, no session kept between calls) or
+  `STREAMABLE` (deployment, github, gmail — a persistent session that also unlocks server-initiated features like
+  sampling, elicitation, and progress notifications). The client side is *always* **Streamable HTTP**
+  (`spring.ai.mcp.client.streamable-http.connections` in `llm-mcp-client/src/main/resources/application.yaml`) —
+  **`stdio` transport is not used anywhere in this repo**; every client→server hop is a JSON-RPC 2.0 `POST /mcp` over
+  plain HTTP(S), the same transport regardless of whether the target server is STATELESS or STREAMABLE.
+- **Not every server is wired up by default.** As currently checked in, `llm-mcp-client/src/main/resources/application.yaml`
+  only *uncomments* two connections — `deployment` (`:8082`) and `github` (`:8085`) — the `hr`, `ticket`,
+  `notification`, and `gmail` entries exist in the same YAML block but are commented out, and `travel` isn't present
+  at all. This means that, as shipped, the assistant can actively reach the deployment and GitHub servers even though
+  the "Running" instructions below start all seven; enabling HR/ticket/notification/gmail/travel end-to-end requires
+  uncommenting (or adding) their block under `spring.ai.mcp.client.streamable-http.connections` and restarting the
+  client. The component diagram below distinguishes active connections (solid arrows) from configured-but-disabled
+  ones (dashed arrows) accordingly.
+
+### Component diagram — client, servers, and external systems
+
+```mermaid
+flowchart TB
+    U(["User / API caller"]) -->|"POST /chat, /chat/stream"| CC["ChatController"]
+
+    subgraph CLIENT["llm-mcp-client  :8080  —  the MCP client"]
+        CC --> CS["ChatService<br/>PromptInjectionGuard → ChatClient → memory"]
+        CS --> SEL["SemanticToolSelector<br/>(top-K relevant tools)"]
+        SEL --> RTC["ResilientToolCallbackProvider<br/>(circuit breaker + retry per server)"]
+        CS -.-> SAMP["McpSamplingHandler"]
+        CS -.-> ELI["McpElicitationHandler"]
+        CS -.-> PROG["McpProgressHandler"]
+    end
+
+    CS <-->|"chat completion, tool-call decisions"| LLM[["OpenAI ChatModel<br/>(GPT-4o / GPT-4-turbo)"]]
+
+    RTC ==>|"MCP Streamable HTTP<br/>JSON-RPC 2.0 · ACTIVE"| DEP["mcp-server-deployment-service :8082<br/>STREAMABLE + OAuth2/Keycloak"]
+    RTC ==>|"MCP Streamable HTTP<br/>ACTIVE"| GH["mcp-server-github-service :8085<br/>STREAMABLE"]
+    RTC -.->|"configured, commented out"| HR["mcp-server-hr-service :8084<br/>STATELESS"]
+    RTC -.->|"configured, commented out"| TIX["mcp-server-ticket-service :8081<br/>STATELESS"]
+    RTC -.->|"configured, commented out"| NOTIF["mcp-server-notification-service :8083<br/>STATELESS"]
+    RTC -.->|"configured, commented out"| GMAIL["mcp-server-gmail-service :8086<br/>STREAMABLE"]
+    RTC -.->|"not wired in application.yaml"| TRAVEL["mcp-server-travel-service :8086*<br/>STATELESS"]
+
+    DEP -.->|"ctx.elicit(...) / ctx.progress(...)"| ELI
+    DEP -.-> PROG
+    GH -.->|"ctx.sample(...)"| SAMP
+
+    GH -->|"REST, Bearer token, Redis-cached"| GHAPI[("GitHub REST API")]
+    GMAIL -->|"REST, OAuth2 bearer token"| GMAILAPI[("Gmail REST API")]
+    TRAVEL -->|"REST, OAuth2 client-credentials"| AMADEUS[("Amadeus Flight Offers API")]
+
+    HR --> PG[("PostgreSQL: spring_ai<br/>per-service Flyway schema")]
+    TIX --> PG
+    DEP --> PG
+    NOTIF --> PG
+    CS --> PG
+```
+
+### Sequence diagram — a representative end-to-end tool call
+
+The flow below traces a real tool in this codebase: the user asks about a GitHub repository, the LLM decides to call
+`getRepository`, and the call travels client → MCP server → external GitHub REST API → back to the LLM. This mirrors
+`ChatService.handleMessage` → `SemanticToolSelector.selectTools` → `ResilientToolCallbackProvider` →
+`mcp-server-github-service`'s `GitHubMcpTools.getRepository` → `GitHubService` (Redis-cached `RestClient` call to
+`api.github.com`) exactly as implemented.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant CC as ChatController
+    participant CS as ChatService
+    participant LLM as OpenAI ChatModel
+    participant SEL as SemanticToolSelector
+    participant RTC as ResilientToolCallbackProvider
+    participant SRV as mcp-server-github-service :8085
+    participant TOOLS as GitHubMcpTools
+    participant SVC as GitHubService (Redis-cached)
+    participant API as GitHub REST API
+
+    User->>CC: POST /chat {"message":"How healthy is org/repo?"}
+    CC->>CS: handleMessage(message)
+    CS->>CS: PromptInjectionGuard.isQuerySafe()
+    CS->>SEL: selectTools(processedPrompt)
+    SEL-->>CS: top-K ToolCallback[] (incl. getRepository)
+    CS->>LLM: chatClient.prompt().user(...).toolCallbacks(...).call()
+    LLM-->>CS: tool_call: getRepository(owner="org", repo="repo")
+    CS->>RTC: invoke ToolCallback "getRepository"
+    RTC->>RTC: Retry.decorateCallable(retry,<br/>CircuitBreaker.decorateCallable(cb, call))
+    RTC->>SRV: POST /mcp  JSON-RPC 2.0<br/>{"method":"tools/call","params":{"name":"getRepository", "arguments":{...}}}
+    SRV->>TOOLS: getRepository(owner, repo)
+    TOOLS->>SVC: gitHubService.getRepository(owner, repo)
+    alt cache miss
+        SVC->>API: GET https://api.github.com/repos/{owner}/{repo}<br/>Authorization: Bearer GITHUB_TOKEN
+        API-->>SVC: 200 OK JSON (stars, forks, language, ...)
+        SVC->>SVC: cache response in Redis (@Cacheable)
+    else cache hit
+        SVC-->>SVC: return cached JSON, skip network call
+    end
+    SVC-->>TOOLS: JSON string result
+    TOOLS-->>SRV: MCP tool result
+    SRV-->>RTC: JSON-RPC 2.0 result
+    RTC-->>CS: tool result (truncated to assistant.max-tool-result-chars)
+    CS->>LLM: submit tool result, continue completion
+    LLM-->>CS: final natural-language answer
+    CS->>CS: recordTokenUsage() → Prometheus ai.tokens
+    CS-->>CC: response content
+    CC-->>User: 200 OK {"message": "..."}
+```
+
+If the circuit breaker for `mcp-github` is open (repeated recent failures), `RTC` short-circuits before step
+`RTC->>SRV` and returns a structured `{"error":"... is temporarily unavailable (circuit open) ..."}` string directly
+to `CS`, which the LLM relays to the user instead of the call ever reaching the network.
+
+---
+
 ## Modules
 
 | Directory                         | Port  | Role       | MCP protocol | Spring App Name        |
@@ -161,12 +324,23 @@ calls to the downstream MCP servers over Streamable HTTP.
 
 ### MCP server connections
 
-| Server         | URL                     |
-|----------------|-------------------------|
-| `hr`           | `http://localhost:8084` |
-| `ticket`       | `http://localhost:8081` |
-| `deployment`   | `http://localhost:8082` |
-| `notification` | `http://localhost:8083` |
+Declared under `spring.ai.mcp.client.streamable-http.connections` in
+`llm-mcp-client/src/main/resources/application.yaml`. As currently checked in, only two entries are actually
+uncommented — the rest exist in the same file as commented-out templates:
+
+| Server         | URL                     | Status (as shipped)               |
+|----------------|-------------------------|------------------------------------|
+| `deployment`   | `http://localhost:8082` | ✅ Active                          |
+| `github`       | `http://localhost:8085` | ✅ Active                          |
+| `hr`           | `http://localhost:8084` | ⏸ Commented out                   |
+| `ticket`       | `http://localhost:8081` | ⏸ Commented out                   |
+| `notification` | `http://localhost:8083` | ⏸ Commented out                   |
+| `gmail`        | `http://localhost:8086` | ⏸ Commented out                   |
+| `travel`       | `http://localhost:8087` | ⏸ Not present in the file at all  |
+
+Uncomment (or add) a server's block and restart `llm-mcp-client` to bring it into the live tool set — `AppConfig`
+picks up whatever `List<McpSyncClient>` Spring AI auto-configures from this file, initializes each reachable one, and
+skips (with a warning) any that refuse to connect.
 
 ### `assistant.*` configuration properties
 
@@ -284,6 +458,7 @@ currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer t
 | `assignOwner`          | Assign a new owner to an existing deployment                      |
 | `rescheduleDeployment` | Reschedule a deployment to a new ISO datetime                     |
 | `cancelDeployment`     | Cancel a deployment by id                                         |
+| `executeDeployment`    | Execute (simulate) a scheduled deployment now, streaming MCP progress notifications through validate/deploy/verify stages; PROD deployments additionally require interactive confirmation from the connected client via MCP elicitation (`DeploymentInteractiveTools`, separate from the other six tools because it injects `McpSyncRequestContext`) |
 
 ### REST API
 
@@ -468,12 +643,12 @@ All 7 MCP servers and the client:
 |---|---|---|---|
 | `llm-mcp-client` | 8080 | — | Central chat assistant; orchestrates all downstream servers via Streamable HTTP |
 | `mcp-server-ticket-service` | 8081 | STATELESS | `analyze-tickets` prompt; REST-only ticket CRUD (createTicket, getTickets, getTicket, updateTicketStatus, assignTicket) |
-| `mcp-server-deployment-service` | 8082 | STREAMABLE | `getDeployments`, `getDeployment`, `createDeployment`, `assignOwner`, `rescheduleDeployment`, `cancelDeployment`; OAuth2.1 (Keycloak) protected |
+| `mcp-server-deployment-service` | 8082 | STREAMABLE | `getDeployments`, `getDeployment`, `createDeployment`, `assignOwner`, `rescheduleDeployment`, `cancelDeployment`, `executeDeployment` (progress + elicitation); OAuth2.1 (Keycloak) protected |
 | `mcp-server-notification-service` | 8083 | STATELESS | `getNotifications`, `sendNotification` (channels: INTERNAL, EMAIL, SLACK) |
 | `mcp-server-hr-service` | 8084 | STATELESS | `applyLeave`, `findReplacement`; employee leave and substitution management |
 | `mcp-server-github-service` | 8085 | STREAMABLE | 12 GitHub tools (repos, commits, PRs, issues, workflows, releases, search, code frequency) + `summarizeRepositoryHealth` (MCP sampling) |
 | `mcp-server-gmail-service` | 8086 | STREAMABLE | 12 Gmail tools (list, get, search, thread, labels, mark read/unread, draft, send, delete) |
-| `mcp-server-travel-service` | 8086* | STATELESS | `searchFlights` via Amadeus Flight Offers API (OAuth2 client-credentials token caching) |
+| `mcp-server-travel-service` | 8086* | STATELESS | `searchFlights` via Amadeus Flight Offers API (OAuth2 client-credentials token caching); `getAirportInfo` (static city/airport-name → IATA code lookup) |
 
 *Override `SERVER_PORT` for travel-service when running alongside gmail-service.
 
@@ -1065,8 +1240,9 @@ token.
 `/v1/security/oauth2/token`, caches it in memory, and automatically refreshes 60 seconds before expiry using a
 `ReentrantLock` for thread safety (double-checked locking pattern). `AmadeusFlightClient` calls the
 `/v2/shopping/flight-offers` endpoint with IATA origin/destination codes, departure date, passenger count, and
-max-results limit. The travel service exposes this as MCP tools (`searchFlights`) that the AI assistant can invoke when
-a user asks about flights.
+max-results limit. `FlightMcpTools` exposes two `@McpTool` methods: `searchFlights` (the live Amadeus call above) and
+`getAirportInfo` (a static city/airport-name → IATA-code lookup table) so the assistant can resolve "Dublin" or
+"Munich" to `DUB`/`MUC` before calling `searchFlights`, without needing a second external API round-trip.
 
 ---
 

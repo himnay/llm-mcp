@@ -7,7 +7,9 @@ on **`:8084`**, MCP protocol **STATELESS**, Spring app name `mcp-hr-service`.
 
 ## MCP Tools
 
-Defined in `HrMcpTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
+Defined in `HrMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
+(`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
+`MethodToolCallbackProvider`:
 
 | Tool name         | Type  | Description                                                       |
 |-------------------|-------|-------------------------------------------------------------------|
@@ -49,12 +51,11 @@ Defined in `HrMcpTools` (registered via `MethodToolCallbackProvider` in `McpTool
 |-----------------------------|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
 | **Singleton**               | All Spring beans (`HRService`, `McpAuthFilter`, `RateLimiter`, properties)          | One shared, stateless instance per container                                          |
 | **Facade**                  | `HRService`                                                                         | Single entry point hiding `EmployeeRepository` + `LeaveRecordRepository` coordination |
-| **Factory Method**          | `@Bean` methods in `McpToolConfig`, `RateLimiterConfig`                             | Container builds and wires products (`ToolCallbackProvider`, `RateLimiter`)           |
-| **Builder**                 | `MethodToolCallbackProvider.builder()` in `McpToolConfig`                           | Stepwise construction of the MCP tool provider                                        |
+| **Factory Method**          | `@Bean` methods in `RateLimiterConfig`; `McpServerAnnotationScannerAutoConfiguration` builds each `@McpTool` method into a `SyncToolSpecification` | Container/framework builds and wires products (`RateLimiter`, tool registrations)      |
 | **Proxy**                   | Spring Data JPA repositories, `@Transactional` AOP                                  | Interface-backed dynamic proxies add persistence/transaction behaviour                |
 | **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                        | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks                 |
 | **Chain of Responsibility** | Servlet `FilterChain` (`McpAuthFilter` → MVC)                                       | Each filter handles or passes the request along                                       |
-| **Command**                 | `@Tool` methods (`applyLeave`, `findReplacement`) wrapped as `ToolCallback` objects | Tool invocations reified as objects the MCP runtime can schedule/dispatch             |
+| **Command**                 | `@McpTool` methods (`applyLeave`, `findReplacement`) reified as MCP tool callbacks  | Tool invocations dispatched by name+arguments through the MCP runtime                 |
 
 ## Configuration
 

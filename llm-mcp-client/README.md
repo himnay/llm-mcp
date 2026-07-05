@@ -1,32 +1,43 @@
 # AI MCP Client — `llm-mcp-client`
 
 The **MCP client / chat orchestrator** of the stack. Exposes a single `POST /chat` endpoint backed by an
-OpenAI-powered `ChatClient` that calls out to six downstream MCP servers (ticket, deployment, notification,
-hr, github, gmail) as tools, persists conversation history in PostgreSQL, and wraps every outbound call with
-resilience, rate-limiting, truncation and observability controls. Spring app name `ai-mcp-server`, runs on
-**`:8080`** (default Spring Boot port — not overridden in `application.yaml`).
+OpenAI-powered `ChatClient` that dispatches tool calls to downstream MCP servers (ticket, deployment, notification,
+hr, github, gmail are all pre-wired as named connections — see the table below for which are actually enabled by
+default), persists conversation history in PostgreSQL, and wraps every outbound call with resilience, rate-limiting,
+truncation and observability controls. Beyond plain tool calling, it also plays the *client* side of three optional
+MCP capabilities that a connected STREAMABLE server can invoke mid-call: `McpSamplingHandler` (lets a server ask this
+client's LLM to run a completion on its behalf — used by `mcp-server-github-service`'s `summarizeRepositoryHealth`),
+`McpElicitationHandler` (answers a server's request for structured human confirmation by policy, since `/chat` has no
+human attached mid-call — used by `mcp-server-deployment-service`'s `executeDeployment`), and `McpProgressHandler`
+(logs `notifications/progress` events from a long-running tool call, also used by `executeDeployment`). Every inbound
+message additionally passes through `PromptInjectionGuard` before the LLM or any tool is touched — see the root
+[README's Prompt Injection Security section](../README.md#prompt-injection-security). Spring app name
+`ai-mcp-server`, runs on **`:8080`** (default Spring Boot port — not overridden in `application.yaml`).
 
 ---
 
 ## MCP Server Connections
 
-Configured under `mcp.client.streamable-http.connections` in `application.yaml` — one `McpSyncClient` per
-downstream server, each secured and load-balanced through `ResilientToolCallbackProvider`:
+Configured under `spring.ai.mcp.client.streamable-http.connections` in `application.yaml` — one `McpSyncClient` per
+downstream server, each secured and load-balanced through `ResilientToolCallbackProvider`. `ResilienceConfig`
+pre-creates a circuit breaker for all six named downstream servers regardless of which are actually wired up:
 
-| Connection name | URL                     | Downstream service                | Circuit breaker    |
-|-----------------|-------------------------|-----------------------------------|--------------------|
-| `ticket`        | `http://localhost:8081` | `mcp-server-ticket-service`       | `mcp-ticket`       |
-| `deployment`    | `http://localhost:8082` | `mcp-server-deployment-service`   | `mcp-deployment`   |
-| `notification`  | `http://localhost:8083` | `mcp-server-notification-service` | `mcp-notification` |
-| `hr`            | `http://localhost:8084` | `mcp-server-hr-service`           | `mcp-hr`           |
-| `github`        | `http://localhost:8085` | `mcp-server-github-service`       | `mcp-github`       |
-| `gmail`         | `http://localhost:8086` | `mcp-server-gmail-service`        | `mcp-gmail`        |
+| Connection name | URL                     | Downstream service                | Circuit breaker    | Wired up in `application.yaml`? |
+|-----------------|-------------------------|-----------------------------------|--------------------|-----------------------------------|
+| `deployment`    | `http://localhost:8082` | `mcp-server-deployment-service`   | `mcp-deployment`   | ✅ active                         |
+| `github`        | `http://localhost:8085` | `mcp-server-github-service`       | `mcp-github`       | ✅ active                         |
+| `ticket`        | `http://localhost:8081` | `mcp-server-ticket-service`       | `mcp-ticket`       | ⏸ commented out                  |
+| `notification`  | `http://localhost:8083` | `mcp-server-notification-service` | `mcp-notification` | ⏸ commented out                  |
+| `hr`            | `http://localhost:8084` | `mcp-server-hr-service`           | `mcp-hr`           | ⏸ commented out                  |
+| `gmail`         | `http://localhost:8086` | `mcp-server-gmail-service`        | `mcp-gmail`        | ⏸ commented out                  |
 
-Each connection contributes its tools to a single aggregated `ToolCallbackProvider` — the model sees all
-~25 downstream tools (e.g. `applyLeave`, `getDeployments`, `sendNotification`, `getRepository`, `sendEmail`, …)
-as one flat catalogue and picks whichever fits the user's request. The `ticket` connection currently exposes
-no `@Tool`s (see [ticket-service README](../mcp-server-ticket-service/README.md)) — only its `analyze-tickets`
-MCP prompt is reachable via `PromptLoader`.
+As currently checked in, only `deployment` and `github` are uncommented, so only those two servers' tools are
+actually reachable from a running `/chat` call — the other four blocks exist in the same YAML file, ready to
+uncomment. `AppConfig` builds the aggregated `ToolCallbackProvider` from whichever `List<McpSyncClient>` Spring AI
+auto-configures from that file — the model only ever sees tools from servers that are both configured *and*
+reachable at startup. The `ticket` connection, even if enabled, currently exposes no `@McpTool`s (see
+[ticket-service README](../mcp-server-ticket-service/README.md)) — only its `analyze-tickets` MCP prompt is
+reachable via `PromptLoader`. `travel` is not present in this file at all.
 
 ---
 

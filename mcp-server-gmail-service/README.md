@@ -8,7 +8,9 @@ datasource — it is a thin, stateless proxy over `gmail.googleapis.com`.
 
 ## MCP Tools
 
-Defined in `GmailMcpTools` (registered via `MethodToolCallbackProvider` in `McpToolConfig`):
+Defined in `GmailMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
+(`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
+`MethodToolCallbackProvider`:
 
 | Tool name          | Type  | Description                                                                            |
 |--------------------|-------|----------------------------------------------------------------------------------------|
@@ -59,12 +61,12 @@ Defined in `GmailMcpTools` (registered via `MethodToolCallbackProvider` in `McpT
 |-----------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 | **Facade**                  | `GmailService`                                                                   | Hides Gmail REST API details (URIs, query params, error translation) behind simple methods |
 | **Builder**                 | `RestClient.builder()` in `GmailClientConfig`                                    | Stepwise construction of the configured Gmail client                                       |
-| **Factory Method**          | `@Bean` methods in `GmailClientConfig`, `McpToolConfig`                          | Container builds and wires the REST client and tool provider                               |
+| **Factory Method**          | `@Bean` methods in `GmailClientConfig`; `McpServerAnnotationScannerAutoConfiguration` builds each `@McpTool` method into a `SyncToolSpecification` | Container/framework builds and wires the REST client and tool registrations                |
 | **Observer**                | `@EventListener(ContextRefreshedEvent)` (`warnIfNoToken`)                        | Startup event subscription warns when no Gmail access token is configured                  |
 | **Singleton**               | All Spring beans                                                                 | One shared, stateless instance per container                                               |
 | **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                     | Framework skeleton calls `doFilterInternal` / `shouldNotFilter` hooks                      |
 | **Chain of Responsibility** | Servlet `FilterChain`                                                            | Auth → rate-limit → tools, each link handles or passes on                                  |
-| **Command**                 | `@Tool` methods (`listEmails`, `sendEmail`, …) wrapped as `ToolCallback` objects | Tool invocations reified for the MCP runtime                                               |
+| **Command**                 | `@McpTool` methods (`listEmails`, `sendEmail`, …) reified as MCP tool callbacks  | Tool invocations dispatched by name+arguments through the MCP runtime                      |
 
 ## Configuration
 
