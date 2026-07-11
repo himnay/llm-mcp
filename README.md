@@ -1,5 +1,29 @@
 # Spring AI MCP — Org Enterprise Assistant
 
+<img src="image/mcp-logo.png" alt="logo" width="80"/>
+
+## Table of contents
+
+1. [What Is MCP, and What Problem Does It Solve?](#what-is-mcp-and-what-problem-does-it-solve)
+2. [Modules](#modules)
+3. [Tech Stack](#tech-stack)
+4. [Shared Database](#shared-database)
+5. [Running](#running)
+6. [MCP Client — `llm-mcp-client`](#mcp-client--llm-mcp-client)
+7. [HR Service — `mcp-server-hr-service` (:8084)](#hr-service--mcp-server-hr-service-8084)
+8. [Ticket Service — `mcp-server-ticket-service` (:8081)](#ticket-service--mcp-server-ticket-service-8081)
+9. [Deployment Service — `mcp-server-deployment-service` (:8082)](#deployment-service--mcp-server-deployment-service-8082)
+10. [Notification Service — `mcp-server-notification-service` (:8083)](#notification-service--mcp-server-notification-service-8083)
+11. [Security & Operations (MCP Servers)](#security--operations-mcp-servers)
+12. [Prompt Injection Security](#prompt-injection-security)
+13. [MCP Services Reference](#mcp-services-reference)
+14. [Streamable HTTP — MCP Protocol](#streamable-http--mcp-protocol)
+15. [Observability](#observability)
+16. [Best Practices Applied](#best-practices-applied)
+17. [Spring AI 2.0 MCP — Feature Status](#spring-ai-20-mcp--feature-status)
+18. [Design Patterns (GoF)](#design-patterns-gof)
+19. [Technology Deep Dive](#technology-deep-dive)
+
 A multi-module Spring AI **Model Context Protocol (MCP)** demo. A central chat assistant (the MCP *client*) orchestrates
 seven domain MCP *servers* (HR, Ticketing, Deployment, Notification, Travel, GitHub, Gmail). The four core services are
 backed by PostgreSQL; Travel, GitHub and Gmail wrap external APIs (Amadeus, GitHub REST, Gmail REST).
