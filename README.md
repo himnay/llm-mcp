@@ -91,6 +91,8 @@ server agrees on.
 
 This repo is a direct, from-scratch implementation of that client/server split using **Spring AI's MCP starters**:
 
+<ul>
+
 - **One MCP client** — `llm-mcp-client` (`:8080`). It has no domain logic of its own. It receives a chat message over
   REST (`POST /chat`), calls OpenAI's `ChatModel` with the user's prompt and system context, and whenever the model
   decides it needs to act (list deployments, look up a GitHub repo, apply leave, …), it dispatches that decision as an
@@ -116,6 +118,8 @@ This repo is a direct, from-scratch implementation of that client/server split u
   uncommenting (or adding) their block under `spring.ai.mcp.client.streamable-http.connections` and restarting the
   client. The component diagram below distinguishes active connections (solid arrows) from configured-but-disabled
   ones (dashed arrows) accordingly.
+
+</ul>
 
 ### Component diagram — client, servers, and external systems
 
@@ -703,8 +707,12 @@ spring:
         protocol: STREAMABLE   # or STATELESS
 ```
 
+<ul>
+
 - **STATELESS** — each POST is self-contained; no session state is kept between calls. Used for simple CRUD tools (HR, ticket, notification, travel).
 - **STREAMABLE** — the connection is a persistent streaming channel (Server-Sent Events), enabling incremental results and MCP sampling. Required for long-running queries and server-initiated LLM calls (deployment, GitHub, Gmail).
+
+</ul>
 
 The client connection is always Streamable HTTP (`spring.ai.mcp.client.streamable-http.connections`). The `MCP_AUTH_TOKEN` bearer header and `X-Acting-User` header are injected on every outbound request by `McpClientSecurityConfig`.
 
@@ -717,9 +725,13 @@ Full setup in [OBSERVABILITY.md](OBSERVABILITY.md).
 
 `docker compose up -d` starts:
 
+<ul>
+
 - **Prometheus** — `:9090`
 - **Grafana Tempo** — `:4318` (OTLP in), `:3200` (query)
 - **Grafana** — `:3000` (admin/admin)
+
+</ul>
 
 **Grafana dashboard:** *"Org MCP — Client & Servers Overview"* auto-loads with a `Service` dropdown (multi-select +
 *All*). Panels: up status, HTTP rate/p95 latency/5xx, JVM heap, CPU, threads, DB connections, GC pause.
@@ -911,6 +923,8 @@ clients.
 
 **How it's used here:** This is the core AI layer of the whole system.
 
+<ul>
+
 - **MCP servers** (`spring-ai-starter-mcp-server-webmvc`): HR, deployment, notification, GitHub, Gmail, and travel
   services each register their tool methods with the **`@McpTool` annotation-driven** path introduced in Spring AI
   2.0 (`spring-ai-mcp-annotations`). `McpServerAnnotationScannerAutoConfiguration` scans every `@Component` bean for
@@ -1005,6 +1019,8 @@ clients.
   `MessageChatMemoryAdvisor` → `SimpleLoggerAdvisor`. The order is intentional — SafeGuard runs first (lowest `order` =
   `Integer.MIN_VALUE`) so malicious prompts are rejected before touching memory or the model.
 
+</ul>
+
 ---
 
 ### Model Context Protocol (MCP)
@@ -1013,19 +1029,27 @@ clients.
 tools" hosted in separate processes. An MCP *client* (the assistant) connects over HTTP to MCP *servers* (domain
 services), retrieves their tool catalogue, and dispatches function calls. Two transport variants exist:
 
+<ul>
+
 - **STATELESS**: Each HTTP request is fully self-contained. The server retains no session between tool calls. Suitable
   for simple, independent CRUD tools. Lower complexity and resource usage.
 - **STREAMABLE**: The connection is upgraded to a persistent streaming channel (Server-Sent Events or HTTP/2 streaming),
   allowing the server to push incremental results back as they become available. Required for long-running operations or
   tools that return progressively updated data.
 
+</ul>
+
 **How it's used here:** This project is built entirely around MCP. The `llm-mcp-client` is the single MCP client; the
 other seven modules are all MCP servers. The transport protocol at the client level is always Streamable HTTP (
 configured under `spring.ai.mcp.client.streamable-http.connections`), while individual servers declare their own mode:
 
+<ul>
+
 - `STATELESS`: HR (`8084`), ticket (`8081`), notification (`8083`), travel — simple CRUD tools with immediate responses
 - `STREAMABLE`: deployment (`8082`), GitHub (`8085`), Gmail (`8086`) — potentially long-running queries or large
   paginated results
+
+</ul>
 
 The client carries a `Bearer` token and an `X-Acting-User` header on every MCP request (injected by
 `McpClientSecurityConfig`) so servers can authenticate callers and attribute actions to the correct user.
@@ -1263,6 +1287,8 @@ fluent builder API with URI templating, default headers, response extraction, an
 
 **How it's used here:** Used in all three API-wrapper services:
 
+<ul>
+
 - **GitHub service**: `GitHubClientConfig` builds a `RestClient` with base URL `https://api.github.com`, default
   `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`, and (when configured)
   `Authorization: Bearer <token>` headers. Every `GitHubService` method calls this client.
@@ -1270,6 +1296,8 @@ fluent builder API with URI templating, default headers, response extraction, an
   bearer header.
 - **Travel service**: Two `RestClient` instances — one for Amadeus flight-offers calls (configured in
   `RestClientConfig`), another used by `AmadeusTokenService` to POST to the OAuth2 token endpoint.
+
+</ul>
 
 ---
 
@@ -1345,10 +1373,14 @@ modules. Each module has its own `pom.xml` with `spring-boot-starter-parent` as 
 module versions independent. Each module ships its own Maven Wrapper (`./mvnw`), so no system Maven installation is
 needed. Additional Maven plugins used across modules:
 
+<ul>
+
 - `spring-boot-maven-plugin` with the `build-info` goal (populates `/actuator/info` with build metadata)
 - `git-commit-id-maven-plugin` (generates `git.properties` surfaced through `/actuator/info`)
 - `maven-compiler-plugin` with Lombok and Spring Boot configuration processor as annotation processor paths
 - `jacoco-maven-plugin` (travel-service enforces ≥70% instruction coverage)
+
+</ul>
 
 ---
 
