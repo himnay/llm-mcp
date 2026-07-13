@@ -50,7 +50,8 @@ backed by PostgreSQL; Travel, GitHub and Gmail wrap external APIs (Amadeus, GitH
 
 ---
 
-## What Is MCP, and What Problem Does It Solve?
+<a id="what-is-mcp-and-what-problem-does-it-solve"></a>
+## 1. 🤖 What Is MCP, and What Problem Does It Solve?
 
 ### The problem: bespoke function-calling per provider
 
@@ -213,7 +214,8 @@ to `CS`, which the LLM relays to the user instead of the call ever reaching the 
 
 ---
 
-## Modules
+<a id="modules"></a>
+## 2. 🏗️ Modules
 
 | Directory                         | Port  | Role       | MCP protocol | Spring App Name        |
 |-----------------------------------|-------|------------|--------------|------------------------|
@@ -231,7 +233,8 @@ to `CS`, which the LLM relays to the user instead of the call ever reaching the 
 
 ---
 
-## Tech Stack
+<a id="tech-stack"></a>
+## 3. 🧰 Tech Stack
 
 All modules share the same stack:
 
@@ -265,7 +268,8 @@ All modules share the same stack:
 
 ---
 
-## Shared Database
+<a id="shared-database"></a>
+## 4. 🗄️ Shared Database
 
 All services connect to the **same** PostgreSQL instance (`spring_ai` database by default). Isolation is achieved via
 separate Flyway schema-history tables per service:
@@ -279,7 +283,8 @@ separate Flyway schema-history tables per service:
 
 ---
 
-## Running
+<a id="running"></a>
+## 5. 🚀 Running
 
 ### 0. Secrets
 
@@ -335,7 +340,8 @@ corresponding pre-defined prompt before being sent to the model.
 
 ---
 
-## MCP Client — `llm-mcp-client`
+<a id="mcp-client--llm-mcp-client"></a>
+## 6. 🤖 MCP Client — `llm-mcp-client`
 
 The orchestrating chat assistant. It has **no datasource** — it proxies user messages to OpenAI and dispatches tool
 calls to the downstream MCP servers over Streamable HTTP.
@@ -382,7 +388,8 @@ skips (with a warning) any that refuse to connect.
 
 ---
 
-## HR Service — `mcp-server-hr-service` (:8084)
+<a id="hr-service--mcp-server-hr-service-8084"></a>
+## 7. 🤖 HR Service — `mcp-server-hr-service` (:8084)
 
 Manages employee leave and replacement lookups.
 
@@ -423,7 +430,8 @@ Manages employee leave and replacement lookups.
 
 ---
 
-## Ticket Service — `mcp-server-ticket-service` (:8081)
+<a id="ticket-service--mcp-server-ticket-service-8081"></a>
+## 8. 🤖 Ticket Service — `mcp-server-ticket-service` (:8081)
 
 Manages support tickets. Exposes an `analyze-tickets` MCP prompt — **but, despite the table below, no MCP tools**:
 `createTicket`/`getTickets`/`getTicket`/`updateTicketStatus`/`assignTicket` exist only as REST endpoints on
@@ -466,7 +474,8 @@ them was ever committed). The table is aspirational; see
 
 ---
 
-## Deployment Service — `mcp-server-deployment-service` (:8082)
+<a id="deployment-service--mcp-server-deployment-service-8082"></a>
+## 9. 🤖 Deployment Service — `mcp-server-deployment-service` (:8082)
 
 Manages deployment scheduling. Uses **STREAMABLE** MCP protocol (others use STATELESS). The only server in this repo
 currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer token — see
@@ -514,7 +523,8 @@ fall back to no auth on this endpoint (used by the test profile).
 
 ---
 
-## Notification Service — `mcp-server-notification-service` (:8083)
+<a id="notification-service--mcp-server-notification-service-8083"></a>
+## 10. 🤖 Notification Service — `mcp-server-notification-service` (:8083)
 
 Sends and lists notifications across channels (INTERNAL, EMAIL, SLACK).
 
@@ -547,7 +557,8 @@ Sends and lists notifications across channels (INTERNAL, EMAIL, SLACK).
 
 ---
 
-## Security & Operations (MCP Servers)
+<a id="security--operations-mcp-servers"></a>
+## 11. 🔐 Security & Operations (MCP Servers)
 
 All seven servers share the same security model:
 
@@ -587,7 +598,8 @@ Liveness/readiness probes are enabled on HR and Deployment services (`management
 
 ---
 
-## Prompt Injection Security
+<a id="prompt-injection-security"></a>
+## 12. 🔐 Prompt Injection Security
 
 Three-layer defense is applied before any user message reaches the LLM or an MCP tool.
 
@@ -659,7 +671,8 @@ app:
 
 ---
 
-## MCP Services Reference
+<a id="mcp-services-reference"></a>
+## 13. 📚 MCP Services Reference
 
 All 7 MCP servers and the client:
 
@@ -676,7 +689,8 @@ All 7 MCP servers and the client:
 
 *Override `SERVER_PORT` for travel-service when running alongside gmail-service.
 
-## Streamable HTTP — MCP Protocol
+<a id="streamable-http--mcp-protocol"></a>
+## 14. 📨 Streamable HTTP — MCP Protocol
 
 All client-to-server communication uses the **MCP Streamable HTTP** transport (protocol version `2025-03-26`). Every tool call is a JSON-RPC 2.0 `POST` to the `/mcp` endpoint on each server. The protocol variant (STATELESS or STREAMABLE) is declared per-server in `application.yaml`:
 
@@ -696,7 +710,8 @@ The client connection is always Streamable HTTP (`spring.ai.mcp.client.streamabl
 
 ---
 
-## Observability
+<a id="observability"></a>
+## 15. 📈 Observability
 
 Full setup in [OBSERVABILITY.md](OBSERVABILITY.md).
 
@@ -719,7 +734,8 @@ turn.
 
 ---
 
-## Best Practices Applied
+<a id="best-practices-applied"></a>
+## 16. ✅ Best Practices Applied
 
 | Practice                        | Status | Notes                                                                                                                                       |
 |---------------------------------|--------|---------------------------------------------------------------------------------------------------------------------------------------------|
@@ -749,7 +765,8 @@ turn.
 
 ---
 
-## Spring AI 2.0 MCP — Feature Status
+<a id="spring-ai-20-mcp--feature-status"></a>
+## 17. 🤖 Spring AI 2.0 MCP — Feature Status
 
 Spring AI 2.0 (`spring-ai-mcp-annotations`) adds a fully declarative way to implement MCP server/client behaviour on
 top of the protocol features this project already used in 1.x. The table below is a from-source audit (decompiled
@@ -786,7 +803,8 @@ building a way for a mid-flight tool call to surface a question back through `Ch
 
 ---
 
-## Design Patterns (GoF)
+<a id="design-patterns-gof"></a>
+## 18. 🏗️ Design Patterns (GoF)
 
 Each module README has a **Design Patterns (GoF)** section mapping patterns to the classes that implement them.
 The table below is the repo-wide catalog of all 23 Gang of Four patterns. Patterns are only *hand-implemented* where
@@ -834,7 +852,8 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 
 ---
 
-## Technology Deep Dive
+<a id="technology-deep-dive"></a>
+## 19. 🧰 Technology Deep Dive
 
 This section explains every significant library, framework, database, and infrastructure component used in this
 project — what each technology is, and exactly how this codebase uses it.
