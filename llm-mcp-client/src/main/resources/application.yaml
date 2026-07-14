@@ -30,16 +30,13 @@ spring:
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
-        options:
-          model: llama3.2:3b
+        model: qwen3:4b
       embedding:
-        options:
-          model: nomic-embed-text
+        model: nomic-embed-text
     openai:
       api-key: ${OPENAI_API_KEY:}
       embedding:
-        options:
-          model: text-embedding-3-small
+        model: text-embedding-3-small
     chat:
       memory:
         repository:
@@ -106,10 +103,11 @@ management:
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING:1.0}
-  otlp:
+  opentelemetry:
     tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
-
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
 info:
   app:
     name: ${spring.application.name}
@@ -129,30 +127,30 @@ assistant:
   tool:
     timeout-seconds: 30
   sensitive-words:
-    - "ignore previous instructions"
-    - "ignore all previous"
-    - "jailbreak"
-    - "prompt injection"
-    - "disregard your instructions"
-    - "forget your instructions"
-    - "you are now"
-    - "act as if"
-    - "pretend you are"
-    - "DAN"
+  - "ignore previous instructions"
+  - "ignore all previous"
+  - "jailbreak"
+  - "prompt injection"
+  - "disregard your instructions"
+  - "forget your instructions"
+  - "you are now"
+  - "act as if"
+  - "pretend you are"
+  - "DAN"
   write-tool-keywords:
-    - apply
-    - create
-    - update
-    - delete
-    - send
-    - deploy
-    - trigger
-    - rollback
-    - cancel
-    - remove
-    - approve
-    - assign
-    - reschedule
+  - apply
+  - create
+  - update
+  - delete
+  - send
+  - deploy
+  - trigger
+  - rollback
+  - cancel
+  - remove
+  - approve
+  - assign
+  - reschedule
   tool-selector:
     top-k: 10
 
@@ -165,36 +163,35 @@ app:
       block-message: "Your request contains disallowed instructions and cannot be processed."
       patterns:
         # Instruction override attacks
-        - "(?i)ignore\\s+(?:all\\s+)?(?:previous|prior|above|all)\\s+instructions?"
-        - "(?i)ignore\\s+your\\s+(system\\s+)?prompt"
-        - "(?i)forget\\s+(your|all|previous)\\s+(instructions?|context|training)"
-        - "(?i)disregard\\s+(all|previous|your)\\s+instructions?"
-        - "(?i)override\\s+(the\\s+)?(system|previous|all)\\s+(prompt|instructions?)"
+      - "(?i)ignore\\s+(?:all\\s+)?(?:previous|prior|above|all)\\s+instructions?"
+      - "(?i)ignore\\s+your\\s+(system\\s+)?prompt"
+      - "(?i)forget\\s+(your|all|previous)\\s+(instructions?|context|training)"
+      - "(?i)disregard\\s+(all|previous|your)\\s+instructions?"
+      - "(?i)override\\s+(the\\s+)?(system|previous|all)\\s+(prompt|instructions?)"
         # Roleplay / persona hijack
-        - "(?i)you\\s+are\\s+now\\s+(?:DAN|an?\\s+AI\\s+without)"
-        - "(?i)act\\s+as\\s+if\\s+you\\s+(have\\s+no|are\\s+without)\\s+(restrictions?|rules?)"
-        - "(?i)pretend\\s+(you\\s+are|to\\s+be)\\s+"
-        - "(?i)roleplay\\s+as\\s+"
-        - "(?i)simulate\\s+(a|an|the)\\s+.{0,30}(AI|model|assistant|bot)"
+      - "(?i)you\\s+are\\s+now\\s+(?:DAN|an?\\s+AI\\s+without)"
+      - "(?i)act\\s+as\\s+if\\s+you\\s+(have\\s+no|are\\s+without)\\s+(restrictions?|rules?)"
+      - "(?i)pretend\\s+(you\\s+are|to\\s+be)\\s+"
+      - "(?i)roleplay\\s+as\\s+"
+      - "(?i)simulate\\s+(a|an|the)\\s+.{0,30}(AI|model|assistant|bot)"
         # System prompt exfiltration
-        - "(?i)(print|reveal|show|output|repeat|display)\\s+(your\\s+)?(system\\s+)?prompt"
-        - "(?i)(print|repeat|show)\\s+(all\\s+)?(your\\s+)?instructions?"
-        - "(?i)what\\s+(are|were)\\s+your\\s+instructions?"
+      - "(?i)(print|reveal|show|output|repeat|display)\\s+(your\\s+)?(system\\s+)?prompt"
+      - "(?i)(print|repeat|show)\\s+(all\\s+)?(your\\s+)?instructions?"
+      - "(?i)what\\s+(are|were)\\s+your\\s+instructions?"
         # Structural delimiter injection
-        - "(?i)\\[\\s*SYSTEM\\s*\\]"
-        - "(?i)<\\s*system\\s*>"
-        - "(?i)###\\s*(instruction|system|prompt)"
-        - "(?i)```\\s*(system|instructions?)"
+      - "(?i)\\[\\s*SYSTEM\\s*\\]"
+      - "(?i)<\\s*system\\s*>"
+      - "(?i)###\\s*(instruction|system|prompt)"
+      - "(?i)```\\s*(system|instructions?)"
         # Jailbreak keywords
-        - "(?i)jailbreak"
-        - "(?i)developer\\s+mode"
-        - "(?i)DAN\\s+mode"
+      - "(?i)jailbreak"
+      - "(?i)developer\\s+mode"
+      - "(?i)DAN\\s+mode"
 
 logging:
   level:
     io:
       modelcontextprotocol: DEBUG
-
 ---
 # Activate with --spring.profiles.active=openai to use OpenAI instead of local Ollama
 spring:

@@ -9,10 +9,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.util.StringUtils;
@@ -20,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -55,20 +59,22 @@ public class SecurityConfig {
             protected void doFilterInternal(HttpServletRequest request,
                                             HttpServletResponse response,
                                             FilterChain chain) throws ServletException, IOException {
-                if (!securityEnabled) {
-                    chain.doFilter(request, response);
-                    return;
+                if (securityEnabled) {
+                    String incomingKey = request.getHeader("X-API-Key");
+                    if (StringUtils.hasText(apiKey) && !apiKey.equals(incomingKey)) {
+                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                        response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Invalid or missing X-API-Key\"}");
+                        return;
+                    }
                 }
 
-                String incomingKey = request.getHeader("X-API-Key");
-                if (StringUtils.hasText(apiKey) && !apiKey.equals(incomingKey)) {
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-                    response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Invalid or missing X-API-Key\"}");
-                    return;
-                }
-
+                // Key check passed (or security disabled): populate the SecurityContext,
+                // otherwise .anyRequest().authenticated() rejects the request as anonymous.
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        "api-client", null, List.of(new SimpleGrantedAuthority("ROLE_API")));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
                 chain.doFilter(request, response);
             }
         };
