@@ -7,21 +7,21 @@ COPY --from=m2 com/org/llm/super-pom/1.0.0/ /opt/m2-seed/com/org/llm/super-pom/1
 COPY --from=m2 com/org/learning/learning-bom/1.1.0/ /opt/m2-seed/com/org/learning/learning-bom/1.1.0/
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-COPY llm-mcp-client/pom.xml llm-mcp-client/
+COPY mcp-client/pom.xml mcp-client/
 RUN --mount=type=cache,id=m2repo,target=/root/.m2/repository \
     cp -r /opt/m2-seed/com /root/.m2/repository/ && \
-    ./mvnw -B -f llm-mcp-client/pom.xml dependency:go-offline
-COPY llm-mcp-client/src/ llm-mcp-client/src/
+    ./mvnw -B -f mcp-client/pom.xml dependency:go-offline
+COPY mcp-client/src/ mcp-client/src/
 # git-commit-id-maven-plugin (from super-pom) needs the git metadata
 COPY .git/ .git/
 RUN --mount=type=cache,id=m2repo,target=/root/.m2/repository \
     cp -r /opt/m2-seed/com /root/.m2/repository/ && \
-    ./mvnw -B -f llm-mcp-client/pom.xml clean package -DskipTests
+    ./mvnw -B -f mcp-client/pom.xml clean package -DskipTests
 
 # ---- layer extraction stage ----
 FROM eclipse-temurin:25-jre AS extract
 WORKDIR /app
-COPY --from=build /workspace/llm-mcp-client/target/*.jar app.jar
+COPY --from=build /workspace/mcp-client/target/*.jar app.jar
 # Boot 3.3+/4 replaced -Djarmode=layertools with the 'tools' jarmode
 RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination extracted
 

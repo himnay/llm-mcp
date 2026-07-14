@@ -9,7 +9,7 @@
 3. 🧰 [Tech Stack](#tech-stack)
 4. 🗄️ [Shared Database](#shared-database)
 5. 🚀 [Running](#running)
-6. 🤖 [MCP Client — `llm-mcp-client`](#mcp-client--llm-mcp-client)
+6. 🤖 [MCP Client — `mcp-client`](#mcp-client--mcp-client)
 7. 🤖 [HR Service — `mcp-server-hr-service` (:8084)](#hr-service--mcp-server-hr-service-8084)
 8. 🤖 [Ticket Service — `mcp-server-ticket-service` (:8081)](#ticket-service--mcp-server-ticket-service-8081)
 9. 🤖 [Deployment Service — `mcp-server-deployment-service` (:8082)](#deployment-service--mcp-server-deployment-service-8082)
@@ -31,7 +31,7 @@ backed by PostgreSQL; Travel, GitHub and Gmail wrap external APIs (Amadeus, GitH
 
 ```
                     ┌─────────────────────────────────┐
-                    │         llm-mcp-client           │   POST /chat
+                    │         mcp-client           │   POST /chat
                     │  Spring AI ChatClient (OpenAI)   │
                     └──────────────┬──────────────────┘
                                    │ MCP (Streamable HTTP)
@@ -94,7 +94,7 @@ This repo is a direct, from-scratch implementation of that client/server split u
 
 <ul>
 
-- **One MCP client** — `llm-mcp-client` (`:8080`). It has no domain logic of its own. It receives a chat message over
+- **One MCP client** — `mcp-client` (`:8080`). It has no domain logic of its own. It receives a chat message over
   REST (`POST /chat`), calls OpenAI's `ChatModel` with the user's prompt and system context, and whenever the model
   decides it needs to act (list deployments, look up a GitHub repo, apply leave, …), it dispatches that decision as an
   MCP `tools/call` to whichever downstream server owns that tool. The client never knows *how* `getRepository` is
@@ -108,10 +108,10 @@ This repo is a direct, from-scratch implementation of that client/server split u
   `STATELESS` (hr, ticket, notification, travel — self-contained request/response, no session kept between calls) or
   `STREAMABLE` (deployment, github, gmail — a persistent session that also unlocks server-initiated features like
   sampling, elicitation, and progress notifications). The client side is *always* **Streamable HTTP**
-  (`spring.ai.mcp.client.streamable-http.connections` in `llm-mcp-client/src/main/resources/application.yaml`) —
+  (`spring.ai.mcp.client.streamable-http.connections` in `mcp-client/src/main/resources/application.yaml`) —
   **`stdio` transport is not used anywhere in this repo**; every client→server hop is a JSON-RPC 2.0 `POST /mcp` over
   plain HTTP(S), the same transport regardless of whether the target server is STATELESS or STREAMABLE.
-- **Not every server is wired up by default.** As currently checked in, `llm-mcp-client/src/main/resources/application.yaml`
+- **Not every server is wired up by default.** As currently checked in, `mcp-client/src/main/resources/application.yaml`
   only *uncomments* two connections — `deployment` (`:8082`) and `github` (`:8085`) — the `hr`, `ticket`,
   `notification`, and `gmail` entries exist in the same YAML block but are commented out, and `travel` isn't present
   at all. This means that, as shipped, the assistant can actively reach the deployment and GitHub servers even though
@@ -128,7 +128,7 @@ This repo is a direct, from-scratch implementation of that client/server split u
 flowchart TB
     U(["User / API caller"]) -->|"POST /chat, /chat/stream"| CC["ChatController"]
 
-    subgraph CLIENT["llm-mcp-client  :8080  —  the MCP client"]
+    subgraph CLIENT["mcp-client  :8080  —  the MCP client"]
         CC --> CS["ChatService<br/>PromptInjectionGuard → ChatClient → memory"]
         CS --> SEL["SemanticToolSelector<br/>(top-K relevant tools)"]
         SEL --> RTC["ResilientToolCallbackProvider<br/>(circuit breaker + retry per server)"]
@@ -224,7 +224,7 @@ to `CS`, which the LLM relays to the user instead of the call ever reaching the 
 
 | Directory                         | Port  | Role       | MCP protocol | Spring App Name        |
 |-----------------------------------|-------|------------|--------------|------------------------|
-| `llm-mcp-client`                  | 8080  | MCP client | —            | `ai-mcp-server`        |
+| `mcp-client`                  | 8080  | MCP client | —            | `ai-mcp-server`        |
 | `mcp-server-ticket-service`       | 8081  | MCP server | STATELESS    | `ticket-service`       |
 | `mcp-server-deployment-service`   | 8082  | MCP server | STREAMABLE   | `deployment-service`   |
 | `mcp-server-notification-service` | 8083  | MCP server | STATELESS    | `notification-service` |
@@ -251,21 +251,21 @@ All modules share the same stack:
 | Observability | Spring Boot Actuator + Micrometer + Prometheus + OTLP Tracing → Grafana Tempo |
 | Build         | Maven (each module has its own `./mvnw` wrapper)                              |
 
-> **Migration note:** all eight modules (the seven MCP servers plus `llm-mcp-client`) now build on
+> **Migration note:** all eight modules (the seven MCP servers plus `mcp-client`) now build on
 > Java 25 with the Spring AI 2.0.0 BOM, inherited transitively from `super-pom` / `llm-bom` (shared
 > across `llm-chat`, `llm-gateway`, `llm-mcp`, `llm-rag`) — no module overrides `java.version`,
 > `maven.compiler.release`, or `spring-ai.version`. Every module's multi-stage `Dockerfile` was
 > bumped from `eclipse-temurin:21-jdk`/`21-jre` to `eclipse-temurin:25-jdk`/`25-jre` to match
 > (build/extract/runtime stage structure unchanged). `mvn -o compile` succeeds for all eight modules
-> under a JDK 25 toolchain; `mvn -o test` passes for `llm-mcp-client`, `mcp-server-hr-service`,
+> under a JDK 25 toolchain; `mvn -o test` passes for `mcp-client`, `mcp-server-hr-service`,
 > `mcp-server-ticket-service`, `mcp-server-notification-service`, and `mcp-server-travel-service` —
 > `mcp-server-deployment-service`, `mcp-server-github-service`, and `mcp-server-gmail-service` have
 > pre-existing test/source drift unrelated to this migration (each module's `*McpTools`/
 > `ToolExecutionTemplate` constructor already takes a `RateLimiter` parameter that its corresponding
-> test predates). `llm-mcp-client` additionally needed `springdoc-openapi-starter-webmvc-ui` bumped
+> test predates). `mcp-client` additionally needed `springdoc-openapi-starter-webmvc-ui` bumped
 > from `2.8.9` to `3.0.3` — the older version referenced a Spring Data class that moved package in
 > Spring Boot 4.1, which crashed startup with `NoClassDefFoundError` before any DB/Redis connection
-> was even attempted; see `llm-mcp-client/README.md` for details. With that fix, `llm-mcp-client`
+> was even attempted; see `mcp-client/README.md` for details. With that fix, `mcp-client`
 > boots cleanly up to (and only stops at) the expected missing-Postgres-connection failure.
 
 ---
@@ -326,7 +326,7 @@ cd mcp-server-travel-service && ./mvnw spring-boot:run       # :8087
 
 ```bash
 export OPENAI_API_KEY=sk-...
-cd llm-mcp-client && ./mvnw spring-boot:run                  # :8080
+cd mcp-client && ./mvnw spring-boot:run                  # :8080
 ```
 
 ### 4. Send a chat request
@@ -342,8 +342,8 @@ corresponding pre-defined prompt before being sent to the model.
 
 ---
 
-<a id="mcp-client--llm-mcp-client"></a>
-## 6. 🤖 MCP Client — `llm-mcp-client`
+<a id="mcp-client--mcp-client"></a>
+## 6. 🤖 MCP Client — `mcp-client`
 
 The orchestrating chat assistant. It has **no datasource** — it proxies user messages to OpenAI and dispatches tool
 calls to the downstream MCP servers over Streamable HTTP.
@@ -357,7 +357,7 @@ calls to the downstream MCP servers over Streamable HTTP.
 ### MCP server connections
 
 Declared under `spring.ai.mcp.client.streamable-http.connections` in
-`llm-mcp-client/src/main/resources/application.yaml`. As currently checked in, only two entries are actually
+`mcp-client/src/main/resources/application.yaml`. As currently checked in, only two entries are actually
 uncommented — the rest exist in the same file as commented-out templates:
 
 | Server         | URL                      | Status (as shipped)                 |
@@ -370,7 +370,7 @@ uncommented — the rest exist in the same file as commented-out templates:
 | `gmail`        | `http://localhost:8086`  | ✅ Active                            |
 | `travel`       | `http://localhost:8087`  | ✅ Active                            |
 
-Uncomment (or add) a server's block and restart `llm-mcp-client` to bring it into the live tool set — `AppConfig`
+Uncomment (or add) a server's block and restart `mcp-client` to bring it into the live tool set — `AppConfig`
 picks up whatever `List<McpSyncClient>` Spring AI auto-configures from this file, initializes each reachable one, and
 skips (with a warning) any that refuse to connect.
 
@@ -680,7 +680,7 @@ All 7 MCP servers and the client:
 
 | Module                            | Port | Protocol   | Tools / Purpose                                                                                                                                                                               |
 |-----------------------------------|------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `llm-mcp-client`                  | 8080 | —          | Central chat assistant; orchestrates all downstream servers via Streamable HTTP                                                                                                               |
+| `mcp-client`                  | 8080 | —          | Central chat assistant; orchestrates all downstream servers via Streamable HTTP                                                                                                               |
 | `mcp-server-ticket-service`       | 8081 | STATELESS  | `analyze-tickets` prompt; REST-only ticket CRUD (createTicket, getTickets, getTicket, updateTicketStatus, assignTicket)                                                                       |
 | `mcp-server-deployment-service`   | 8082 | STREAMABLE | `getDeployments`, `getDeployment`, `createDeployment`, `assignOwner`, `rescheduleDeployment`, `cancelDeployment`, `executeDeployment` (progress + elicitation); OAuth2.1 (Keycloak) protected |
 | `mcp-server-notification-service` | 8083 | STATELESS  | `getNotifications`, `sendNotification` (channels: INTERNAL, EMAIL, SLACK)                                                                                                                     |
@@ -959,7 +959,7 @@ clients.
   > `McpSyncRequestContext`/`McpAsyncRequestContext` into a tool method (see sampling below); plain tool methods are
   > otherwise functionally identical under either annotation.
 
-- **MCP client** (`spring-ai-starter-mcp-client`): The `llm-mcp-client` module declares one or more downstream
+- **MCP client** (`spring-ai-starter-mcp-client`): The `mcp-client` module declares one or more downstream
   connections in `application.yaml`:
 
   ```yaml
@@ -1037,7 +1037,7 @@ services), retrieves their tool catalogue, and dispatches function calls. Two tr
 
 </ul>
 
-**How it's used here:** This project is built entirely around MCP. The `llm-mcp-client` is the single MCP client; the
+**How it's used here:** This project is built entirely around MCP. The `mcp-client` is the single MCP client; the
 other seven modules are all MCP servers. The transport protocol at the client level is always Streamable HTTP (
 configured under `spring.ai.mcp.client.streamable-http.connections`), while individual servers declare their own mode:
 
@@ -1074,7 +1074,7 @@ when dozens of tools are registered across all servers.
 **What it is:** The REST API provided by OpenAI that gives access to large language models (GPT-4o, GPT-4-turbo, etc.)
 capable of natural language understanding, generation, and structured function/tool calling.
 
-**How it's used here:** The `llm-mcp-client` uses `spring-ai-starter-model-openai`, configured with `OPENAI_API_KEY`.
+**How it's used here:** The `mcp-client` uses `spring-ai-starter-model-openai`, configured with `OPENAI_API_KEY`.
 Spring AI's OpenAI auto-configuration creates a `ChatModel` bean that `AppConfig` wraps into a `ChatClient`. All
 natural-language reasoning — understanding the user's intent, deciding which MCP tool(s) to call, summarising results,
 formatting Markdown responses — is performed by the OpenAI model. Token consumption (prompt tokens and completion
@@ -1443,7 +1443,7 @@ operators instantly see which exact code revision is running in any environment 
 
 | Role | Definition | In this repo |
 |---|---|---|
-| **Host** | User-facing app that owns the conversation + LLM loop | `llm-mcp-client` (`ChatService`: chat memory, system prompt, `ChatModel`) |
+| **Host** | User-facing app that owns the conversation + LLM loop | `mcp-client` (`ChatService`: chat memory, system prompt, `ChatModel`) |
 | **MCP Client** | Protocol endpoint *inside* the host, connected to exactly one server | one `McpSyncClient` per entry under `spring.ai.mcp.client.streamable-http.connections` |
 | **MCP Server** | Process exposing tools / resources / prompts | each `mcp-server-*` module |
 
@@ -1626,7 +1626,7 @@ operators instantly see which exact code revision is running in any environment 
 
 ### 20.8 Client side: from `tools/list` to a ChatModel tool call
 
-Chain inside `llm-mcp-client`, in execution order:
+Chain inside `mcp-client`, in execution order:
 
 1. **Connect** — YAML `connections.*` ⇒ one `McpSyncClient` each; `initialize` at startup; unreachable servers skipped with a warning (`AppConfig`).
 2. **Decorate** — `McpClientSecurityConfig` adds `Authorization: Bearer ${MCP_AUTH_TOKEN}` + `X-Acting-User` to every outbound call; `KeycloakTokenService` swaps in a real client-credentials JWT for `deployment-service`.
@@ -1677,7 +1677,7 @@ Chain inside `llm-mcp-client`, in execution order:
 
 | Term | Meaning |
 |---|---|
-| **Host** | user-facing app owning the LLM loop (`llm-mcp-client`) |
+| **Host** | user-facing app owning the LLM loop (`mcp-client`) |
 | **MCP client** | protocol endpoint inside the host, 1:1 with a server (`McpSyncClient`) |
 | **MCP server** | process exposing tools/resources/prompts (`mcp-server-*`) |
 | **Tool** | model-invoked action with JSON-Schema'd inputs (`@McpTool`) |

@@ -30,7 +30,7 @@ need:
 
 ```mermaid
 sequenceDiagram
-    participant Client as llm-mcp-client
+    participant Client as mcp-client
     participant Srv as mcp-server-deployment-service (STREAMABLE)
     participant Tool as DeploymentInteractiveTools
     participant DB as PostgreSQL

@@ -5,7 +5,7 @@ protocol **STATELESS**.
 
 > **Note on MCP surface:** unlike the other servers in this repo, this module does **not** currently register
 > any `@Tool`-annotated methods. It exposes a plain REST API (`TicketController`) plus one **MCP prompt**
-> (`analyze-tickets`). The `llm-mcp-client` therefore cannot call ticket operations as MCP tools yet — only the
+> (`analyze-tickets`). The `mcp-client` therefore cannot call ticket operations as MCP tools yet — only the
 > prompt is reachable over MCP. If tool exposure is desired, wrap `TicketService` (or the controller methods)
 > in `@Tool`-annotated methods and register them via a `ToolCallbackProvider`, mirroring `GitHubMcpTools` /
 > `HrMcpTools` in the sibling services.

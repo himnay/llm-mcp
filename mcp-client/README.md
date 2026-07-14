@@ -1,4 +1,4 @@
-# AI MCP Client — `llm-mcp-client`
+# AI MCP Client — `mcp-client`
 
 The **MCP client / chat orchestrator** of the stack. Exposes a single `POST /chat` endpoint backed by an
 OpenAI-powered `ChatClient` that dispatches tool calls to downstream MCP servers (ticket, deployment, notification,
@@ -100,7 +100,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 ## Semantic Tool Selection (Redis)
 
 With many MCP servers each exposing dozens of tools, stuffing every tool definition into every LLM
-call would blow past the context window and degrade response quality. Instead, `llm-mcp-client` uses
+call would blow past the context window and degrade response quality. Instead, `mcp-client` uses
 a **vector-similarity search** to select only the tools most relevant to the user's current query:
 
 ```
@@ -125,7 +125,7 @@ ToolCallbackProvider                     user query
 
 > **Backend history:** this index was originally backed by pgvector (Postgres + the `vector`
 > extension). It was switched to Redis so tool retrieval — which runs on *every* chat turn — is an
-> in-memory lookup instead of a round-trip to Postgres. Postgres is still used by `llm-mcp-client`,
+> in-memory lookup instead of a round-trip to Postgres. Postgres is still used by `mcp-client`,
 > but only for `PostgresConversationStore` (chat-memory persistence), which is unrelated to tool
 > selection. `ToolVectorIndex` and `SemanticToolSelector` depend only on the generic Spring AI
 > `VectorStore`/`Document`/`SearchRequest` API, so swapping the backend required no code changes —
@@ -211,7 +211,7 @@ host with hot reload (`./mvnw spring-boot:run`) while everything it needs lives 
 services explicitly — a bare `docker compose up -d` resolves the root compose file and starts the whole stack:
 
 ```bash
-cd llm-mcp-client
+cd mcp-client
 docker compose up -d postgres redis prometheus grafana   # :5432, :6379, :9090, :3000 (admin/admin)
 export DB_URL=jdbc:postgresql://localhost:5432/spring_ai
 export OPENAI_API_KEY=sk-xxxx

@@ -22,7 +22,7 @@
         <module>mcp-server-ticket-service</module>
         <module>mcp-server-notification-service</module>
         <module>mcp-server-deployment-service</module>
-        <module>llm-mcp-client</module>
+        <module>mcp-client</module>
         <module>mcp-server-travel-service</module>
         <module>mcp-server-github-service</module>
         <module>mcp-server-gmail-service</module>

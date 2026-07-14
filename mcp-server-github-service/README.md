@@ -1,7 +1,7 @@
 # GitHub Service — `mcp-server-github-service`
 
 An MCP server that exposes GitHub repository intelligence (commits, PRs, issues, releases, workflow runs, …) as
-tools for the `llm-mcp-client` assistant, backed by the GitHub REST API. Runs on **`:8085`**, MCP protocol
+tools for the `mcp-client` assistant, backed by the GitHub REST API. Runs on **`:8085`**, MCP protocol
 **STREAMABLE**, no datasource — it is a thin, stateless proxy over `api.github.com`.
 
 ---
@@ -45,7 +45,7 @@ server. Because this requires a stateful session, it only works because this ser
 
 ```mermaid
 sequenceDiagram
-    participant Client as llm-mcp-client
+    participant Client as mcp-client
     participant Srv as mcp-server-github-service (STREAMABLE)
     participant Tool as GitHubAiInsightsTools
     participant SVC as GitHubService (Redis-cached)
@@ -337,7 +337,7 @@ curl -s http://localhost:8085/mcp \
 ```
 
 > Calling this tool directly with `curl` will only succeed if the caller also implements the client side of MCP
-> sampling; in this repo that role is played by `llm-mcp-client`'s `McpSamplingHandler`, not a plain HTTP client.
+> sampling; in this repo that role is played by `mcp-client`'s `McpSamplingHandler`, not a plain HTTP client.
 
 ### Actuator
 

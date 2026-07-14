@@ -2,12 +2,12 @@
 
 This document covers the OAuth 2.1 authorization flow protecting `mcp-server-deployment-service` (the first MCP
 server migrated off the legacy shared-bearer-token scheme — see [`README.md`](README.md#spring-ai-20-mcp--feature-status)).
-Keycloak acts as the **Authorization Server**; `llm-mcp-client` is the **OAuth2 client** (machine-to-machine,
+Keycloak acts as the **Authorization Server**; `mcp-client` is the **OAuth2 client** (machine-to-machine,
 client-credentials grant); `mcp-server-deployment-service` is the **Resource Server** validating the JWT.
 
 ```
-llm-mcp-client  --(client_credentials)-->  Keycloak  --(JWT access token)-->  llm-mcp-client
-llm-mcp-client  --(Bearer <JWT> on every MCP call)-->  mcp-server-deployment-service
+mcp-client  --(client_credentials)-->  Keycloak  --(JWT access token)-->  mcp-client
+mcp-client  --(Bearer <JWT> on every MCP call)-->  mcp-server-deployment-service
 ```
 
 ## Option A — automatic (what this repo does by default)
@@ -20,7 +20,7 @@ required** to run the demo as-is.
 docker compose up -d keycloak postgres
 ```
 
-Keycloak admin console: http://localhost:8180 (`admin` / `admin`). The realm `org-mcp` and client `llm-mcp-client`
+Keycloak admin console: http://localhost:8180 (`admin` / `admin`). The realm `org-mcp` and client `mcp-client`
 already exist — open the console only if you want to inspect or change what was imported.
 
 The rest of this document explains **how that realm was built**, step by step, in case you want to add a second
@@ -49,10 +49,10 @@ claim onto the token so it can't be replayed against a different MCP server.
 This is exactly what `protocolMappers` + `oidc-audience-mapper` does in `docker/keycloak/realm-export.json` — the
 console just has a friendlier UI for the same JSON.
 
-### 3. Create the client (service account for `llm-mcp-client`)
+### 3. Create the client (service account for `mcp-client`)
 
 1. **Clients** (left nav) → **Create client**.
-2. General settings: Client type `OpenID Connect`, Client ID `llm-mcp-client` → **Next**.
+2. General settings: Client type `OpenID Connect`, Client ID `mcp-client` → **Next**.
 3. Capability config: turn **Client authentication** **On** (this makes it a confidential client). Authentication
    flow: enable only **Service accounts roles** (client-credentials grant) — leave Standard flow, Direct access
    grants, and Implicit flow all **off**, since this is a backend-to-backend client with no human/browser login.
@@ -84,7 +84,7 @@ Two different URLs are needed, on two different sides — don't mix them up:
 | URL | Used by | Property | Points at |
 |-----|---------|----------|-----------|
 | **Issuer URI** | Resource server (`mcp-server-deployment-service`) — used for OIDC discovery (JWKS, issuer check) | `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `.../realms/org-mcp` (no `/protocol/...` suffix — Spring Security appends `/.well-known/openid-configuration` itself) |
-| **Token URI** | OAuth2 client (`llm-mcp-client`) — used to actually request a token | `mcp.oauth2.token-uri` | `.../realms/org-mcp/protocol/openid-connect/token` (the full token endpoint) |
+| **Token URI** | OAuth2 client (`mcp-client`) — used to actually request a token | `mcp.oauth2.token-uri` | `.../realms/org-mcp/protocol/openid-connect/token` (the full token endpoint) |
 
 **`mcp-server-deployment-service/src/main/resources/application.yaml`:**
 
@@ -97,7 +97,7 @@ spring:
           issuer-uri: ${MCP_OAUTH2_ISSUER_URI:http://localhost:8180/realms/org-mcp}
 ```
 
-**`llm-mcp-client/src/main/resources/application.yaml`:**
+**`mcp-client/src/main/resources/application.yaml`:**
 
 ```yaml
 mcp:
@@ -134,7 +134,7 @@ blocks in `docker-compose.yml`.
 
 ## How the client actually presents it
 
-`llm-mcp-client`'s `KeycloakTokenService` (`com.org.ai.mcp`) fetches a token via `client_credentials`, caches it,
+`mcp-client`'s `KeycloakTokenService` (`com.org.ai.mcp`) fetches a token via `client_credentials`, caches it,
 and refreshes 60 seconds before expiry — the same shape as `AmadeusTokenService` in `mcp-server-travel-service`
 (both are a caching-proxy over an OAuth2 client-credentials endpoint). `McpClientSecurityConfig` installs this
 token (instead of the legacy static bearer token) only on the connection named `deployment`; every other MCP
@@ -145,9 +145,9 @@ connection keeps using `assistant.mcp-auth-token`.
 To protect a second server (say `mcp-server-github-service`) the same way:
 
 1. Keycloak: add a new client scope (e.g. `github-invoke`) with its own audience mapper (`aud: github-service`),
-   and add it as a **Default** scope on `llm-mcp-client` (one client can hold scopes for multiple servers — no
+   and add it as a **Default** scope on `mcp-client` (one client can hold scopes for multiple servers — no
    need for a second OAuth2 client unless you want per-server credential rotation).
 2. That server: copy `OAuth2ResourceServerConfig`, change `REQUIRED_SCOPE_AUTHORITY`/`REQUIRED_AUDIENCE`, add the
    `spring-boot-starter-oauth2-resource-server` dependency and the `issuer-uri` property.
-3. `llm-mcp-client`: add `"github"` alongside `"deployment"` in `McpClientSecurityConfig`'s OAuth2 connection-name
+3. `mcp-client`: add `"github"` alongside `"deployment"` in `McpClientSecurityConfig`'s OAuth2 connection-name
    check (today a single `String` constant — promote it to a `Set<String>` once there's more than one).

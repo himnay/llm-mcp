@@ -86,7 +86,7 @@ services:
     image: redis/redis-stack-server:latest
     container_name: redis
     environment:
-      # persistence + eviction (formerly in llm-mcp-client/docker-compose.yml)
+      # persistence + eviction (formerly in mcp-client/docker-compose.yml)
       REDIS_ARGS: "--appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru"
     restart: unless-stopped
     ports:

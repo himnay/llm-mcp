@@ -1,7 +1,7 @@
 # Gmail Service — `mcp-server-gmail-service`
 
 An MCP server that exposes Gmail inbox operations (search, read, label, draft, send, delete) as tools for the
-`llm-mcp-client` assistant, backed by the Gmail REST API. Runs on **`:8086`**, MCP protocol **STREAMABLE**, no
+`mcp-client` assistant, backed by the Gmail REST API. Runs on **`:8086`**, MCP protocol **STREAMABLE**, no
 datasource — it is a thin, stateless proxy over `gmail.googleapis.com`.
 
 ---

@@ -32,7 +32,7 @@
     {
       "clientId": "llm-mcp-client",
       "name": "Org AI Assistant (MCP client)",
-      "description": "Service account used by llm-mcp-client to call MCP servers via client-credentials",
+      "description": "Service account used by mcp-client to call MCP servers via client-credentials",
       "enabled": true,
       "protocol": "openid-connect",
       "clientAuthenticatorType": "client-secret",

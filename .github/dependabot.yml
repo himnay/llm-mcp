@@ -18,7 +18,7 @@ updates:
 
   - package-ecosystem: docker
     directories:
-      - "/llm-mcp-client"
+      - "/mcp-client"
       - "/mcp-server-hr-service"
       - "/mcp-server-ticket-service"
       - "/mcp-server-deployment-service"
