@@ -1358,6 +1358,33 @@ servers running on the host machine. `DANGEROUSLY_OMIT_AUTH: true` skips the pro
 Visiting `http://localhost:6274` in a browser lets you explore any running MCP server's tool catalogue and manually
 invoke tools during development and debugging.
 
+**Connection settings** (the proxy runs *inside* the container, so use `host.docker.internal`, not `localhost`):
+
+<ul>
+
+- **Transport Type:** `Streamable HTTP`
+- **Connection Type:** `Via Proxy`
+- **URL** — one of:
+
+| Server | URL |
+|---|---|
+| ticket-service | `http://host.docker.internal:8081/mcp` |
+| deployment-service | `http://host.docker.internal:8082/mcp` (needs a Keycloak JWT under *Authentication*) |
+| notification-service | `http://host.docker.internal:8083/mcp` |
+| hr-service | `http://host.docker.internal:8084/mcp` |
+| github-service | `http://host.docker.internal:8085/mcp` |
+| gmail-service | `http://host.docker.internal:8086/mcp` |
+| travel-service | `http://host.docker.internal:8087/mcp` |
+
+- **Authentication:** only needed when `MCP_AUTH_TOKEN` is set on the servers (Bearer token), or for
+  `deployment-service` (OAuth2 — client-credentials JWT from Keycloak realm `org-mcp`).
+
+</ul>
+
+Connected to `hr-service`, the **Tools** tab lists `applyLeave` / `findReplacement` and lets you invoke them:
+
+![MCP Inspector — Tools tab connected to hr-service](images/mcp-inspector-tools.png)
+
 ---
 
 ### Maven (Multi-Module Build)
