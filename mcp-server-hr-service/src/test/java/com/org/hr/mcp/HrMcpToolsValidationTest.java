@@ -1,6 +1,8 @@
 package com.org.hr.mcp;
 
 import com.org.hr.config.McpOutputProperties;
+import com.org.hr.exception.InvalidToolArgumentException;
+import com.org.hr.exception.MissingActingUserException;
 import com.org.hr.config.SecurityProperties;
 import com.org.hr.service.HRService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,18 +41,18 @@ class HrMcpToolsValidationTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("applyLeave throws IllegalArgumentException when username is blank")
+    @DisplayName("applyLeave throws InvalidToolArgumentException when username is blank")
     void applyLeave_blankUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("", "2025-06-01"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("username");
     }
 
     @Test
-    @DisplayName("applyLeave throws IllegalArgumentException when username is null")
+    @DisplayName("applyLeave throws InvalidToolArgumentException when username is null")
     void applyLeave_nullUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave(null, "2025-06-01"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("username");
     }
 
@@ -59,18 +61,18 @@ class HrMcpToolsValidationTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("applyLeave throws IllegalArgumentException when date is not in yyyy-MM-dd format")
+    @DisplayName("applyLeave throws InvalidToolArgumentException when date is not in yyyy-MM-dd format")
     void applyLeave_badDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("alice", "not-a-date"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("yyyy-MM-dd");
     }
 
     @Test
-    @DisplayName("applyLeave throws IllegalArgumentException when date is blank")
+    @DisplayName("applyLeave throws InvalidToolArgumentException when date is blank")
     void applyLeave_blankDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.applyLeave("alice", "  "))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("date");
     }
 
@@ -79,10 +81,10 @@ class HrMcpToolsValidationTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("findReplacement throws IllegalArgumentException when username is blank")
+    @DisplayName("findReplacement throws InvalidToolArgumentException when username is blank")
     void findReplacement_blankUsername_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.findReplacement("", "2025-06-01"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("username");
     }
 
@@ -91,19 +93,19 @@ class HrMcpToolsValidationTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("findReplacement throws IllegalArgumentException when date is not in yyyy-MM-dd format")
+    @DisplayName("findReplacement throws InvalidToolArgumentException when date is not in yyyy-MM-dd format")
     void findReplacement_badDate_throwsIllegalArgument() {
         assertThatThrownBy(() -> tools.findReplacement("bob", "01/06/2025"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("yyyy-MM-dd");
     }
 
     // ------------------------------------------------------------------
-    // applyLeave — requireUserForWrites + default user → IllegalState
+    // applyLeave — requireUserForWrites + default user → MissingActingUserException
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("applyLeave throws IllegalStateException when writes require a user but only the default user is available")
+    @DisplayName("applyLeave throws MissingActingUserException when writes require a user but only the default user is available")
     void applyLeave_requireUserForWritesAndDefaultUser_throwsIllegalState() {
         SecurityProperties sec = new SecurityProperties();
         sec.setRequireUserForWrites(true);
@@ -113,7 +115,7 @@ class HrMcpToolsValidationTest {
 
         // ActingUserContext is empty → fallback to defaultUser "system"
         assertThatThrownBy(() -> strictTools.applyLeave("alice", "2025-06-01"))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(MissingActingUserException.class)
                 .hasMessageContaining("X-Acting-User");
     }
 

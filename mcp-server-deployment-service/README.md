@@ -126,7 +126,7 @@ logs each `notifications/progress` event and tracks the last-known percentage pe
 
 ```bash
 cd mcp-server-deployment-service
-docker compose up -d         # PostgreSQL only — no other MCP-server dependency
+docker compose up -d postgres   # PostgreSQL only (resolves the root compose file) — no other MCP-server dependency
 export DB_URL=jdbc:postgresql://localhost:5432/spring_ai
 export MCP_AUTH_TOKEN=$(uuidgen)
 ./mvnw spring-boot:run       # :8082

@@ -1,5 +1,6 @@
 package com.org.notification.delivery;
 
+import com.org.notification.exception.DeliveryConfigurationException;
 import com.org.notification.model.Notification;
 import com.org.notification.model.NotificationChannel;
 import org.junit.jupiter.api.DisplayName;
@@ -27,10 +28,10 @@ class DeliveryStrategyRegistryTest {
     }
 
     @Test
-    @DisplayName("Throws IllegalStateException at construction when a channel has no strategy")
+    @DisplayName("Throws DeliveryConfigurationException at construction when a channel has no strategy")
     void failsFastWhenAChannelHasNoStrategy() {
         assertThatThrownBy(() -> new DeliveryStrategyRegistry(List.of(new InternalDeliveryStrategy())))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(DeliveryConfigurationException.class)
                 .hasMessageContaining("EMAIL");
     }
 

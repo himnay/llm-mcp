@@ -143,19 +143,20 @@ Tempo)                             |
 
 ```bash
 cd mcp-server-github-service
-GITHUB_TOKEN=ghp_xxx MCP_AUTH_TOKEN=019ea153-01b5-73a3-9db1-ee5d05381838 docker compose up
+GITHUB_TOKEN=ghp_xxx MCP_AUTH_TOKEN=019ea153-01b5-73a3-9db1-ee5d05381838 docker compose up redis prometheus grafana github-service
 ```
 
-This brings up `prometheus` (`:9090`) + `grafana` (`:3000`, admin/admin, auto-loads the
-`github-service-overview` dashboard) alongside the service on `:8085`. Or run it directly:
+This resolves the root compose file and brings up `redis` (`:6379`), `prometheus` (`:9090`) and `grafana`
+(`:3000`, admin/admin, auto-loads the `github-service-overview` dashboard) alongside the service on `:8085`.
+Or run it directly:
 
 ```bash
 export GITHUB_TOKEN=ghp_xxx
 ./mvnw spring-boot:run
 ```
 
-An Insomnia collection covering MCP discovery, every tool call, and actuator endpoints is provided in
-[`insomnia-collection.yaml`](insomnia-collection.yaml).
+An Insomnia collection covering MCP discovery and every tool call for all services is provided at the repo root:
+[`insomnia-collection.json`](../insomnia-collection.json).
 
 ---
 

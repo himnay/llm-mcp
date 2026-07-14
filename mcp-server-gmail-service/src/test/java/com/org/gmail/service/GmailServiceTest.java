@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,13 +50,15 @@ class GmailServiceTest {
         when(tokenManager.getValidToken()).thenReturn("test-access-token");
 
         when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(), any(), any()))
+        // Shared stubs for every uri(...) overload — each test exercises only one,
+        // so these must be lenient under Mockito's strict-stubs default.
+        lenient().when(requestHeadersUriSpec.uri(anyString(), any(), any(), any()))
                 .thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), anyString(), anyString()))
+        lenient().when(requestHeadersUriSpec.uri(anyString(), anyString(), anyString()))
                 .thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), anyString()))
+        lenient().when(requestHeadersUriSpec.uri(anyString(), anyString()))
                 .thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.header(anyString(), anyString()))
+        lenient().when(requestHeadersUriSpec.header(anyString(), anyString()))
                 .thenReturn(requestHeadersUriSpec);
 
         gmailService = new GmailService(restClient, gmailProperties, tokenManager);

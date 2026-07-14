@@ -22,8 +22,21 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
   ai:
+    # Local-first: Ollama is the default chat + embedding provider.
+    # Run with profile "openai" to switch back to OpenAI.
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: llama3.2:3b
+      embedding:
+        options:
+          model: nomic-embed-text
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: ${OPENAI_API_KEY:}
       embedding:
         options:
           model: text-embedding-3-small
@@ -45,18 +58,20 @@ spring:
           enabled: false
         streamable-http:
           connections:
-            #            ticket:
-            #              url: http://localhost:8081
+            ticket:
+              url: http://localhost:8081
             deployment:
               url: http://localhost:8082
-            #            notification:
-            #              url: http://localhost:8083
-            #            hr:
-            #              url: http://localhost:8084
+            notification:
+              url: http://localhost:8083
+            hr:
+              url: http://localhost:8084
             github:
               url: http://localhost:8085
-#            gmail:
-#              url: http://localhost:8086
+            gmail:
+              url: http://localhost:8086
+            travel:
+              url: http://localhost:8087
 
 mcp:
   oauth2:
@@ -179,3 +194,14 @@ logging:
   level:
     io:
       modelcontextprotocol: DEBUG
+
+---
+# Activate with --spring.profiles.active=openai to use OpenAI instead of local Ollama
+spring:
+  config:
+    activate:
+      on-profile: openai
+  ai:
+    model:
+      chat: openai
+      embedding: openai

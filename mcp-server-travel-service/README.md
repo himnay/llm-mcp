@@ -1,7 +1,7 @@
 # Travel Service — `mcp-server-travel-service`
 
-An MCP server that exposes flight-availability lookups via the **Amadeus** self-service API. Runs on **`:8086`**
-locally / **`:8087`** in the root compose stack (see [`docker-compose.yml`](../docker-compose.yml#L142)), MCP
+An MCP server that exposes flight-availability lookups via the **Amadeus** self-service API. Runs on **`:8087`**
+(locally and in the root compose stack) (see [`docker-compose.yml`](../docker-compose.yml#L142)), MCP
 protocol **STATELESS**, no datasource — Spring app name `mcp-travel-service`.
 
 ---
@@ -64,7 +64,7 @@ Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by 
 
 | Property / Env Var                                    | Default                        | Description                                         |
 |-------------------------------------------------------|--------------------------------|-----------------------------------------------------|
-| `SERVER_PORT`                                         | `8086`                         | HTTP port (root compose maps it to `8087`)          |
+| `SERVER_PORT`                                         | `8087`                         | HTTP port          |
 | `AMADEUS_CLIENT_ID` (`amadeus.client-id`)             | *(empty → 401 from Amadeus)*   | Amadeus self-service API client id                  |
 | `AMADEUS_CLIENT_SECRET` (`amadeus.client-secret`)     | *(empty)*                      | Amadeus self-service API client secret              |
 | `AMADEUS_BASE_URL` (`amadeus.base-url`)               | `https://test.api.amadeus.com` | Amadeus API base URL (test vs production)           |
@@ -85,7 +85,7 @@ cd mcp-server-travel-service
 export AMADEUS_CLIENT_ID=xxxx
 export AMADEUS_CLIENT_SECRET=xxxx
 export MCP_AUTH_TOKEN=$(uuidgen)
-./mvnw spring-boot:run                         # :8086
+./mvnw spring-boot:run                         # :8087
 ```
 
 Or via the bundled `docker-compose.yml` (single-service + healthcheck + resource limits):
@@ -107,7 +107,7 @@ AMADEUS_CLIENT_ID=xxxx AMADEUS_CLIENT_SECRET=xxxx docker compose up
 ### List available tools
 
 ```bash
-curl -s http://localhost:8086/mcp \
+curl -s http://localhost:8087/mcp \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
@@ -116,7 +116,7 @@ curl -s http://localhost:8086/mcp \
 ### Look up an airport code
 
 ```bash
-curl -s http://localhost:8086/mcp \
+curl -s http://localhost:8087/mcp \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -128,7 +128,7 @@ curl -s http://localhost:8086/mcp \
 ### Search flights
 
 ```bash
-curl -s http://localhost:8086/mcp \
+curl -s http://localhost:8087/mcp \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -143,6 +143,6 @@ curl -s http://localhost:8086/mcp \
 ### Actuator
 
 ```bash
-curl -s http://localhost:8086/actuator/health | jq
-curl -s http://localhost:8086/actuator/prometheus | head -40
+curl -s http://localhost:8087/actuator/health | jq
+curl -s http://localhost:8087/actuator/prometheus | head -40
 ```

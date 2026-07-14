@@ -94,7 +94,7 @@ protocol **STATELESS**.
 
 ```bash
 cd mcp-server-ticket-service
-docker compose up -d         # PostgreSQL only — ticket-service has no MCP-server dependency
+docker compose up -d postgres   # PostgreSQL only (resolves the root compose file) — ticket-service has no MCP-server dependency
 export DB_URL=jdbc:postgresql://localhost:5432/spring_ai
 export MCP_AUTH_TOKEN=$(uuidgen)
 ./mvnw spring-boot:run       # :8081

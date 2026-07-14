@@ -4,6 +4,10 @@ spring:
       on-profile: test
 
   ai:
+    # Tests stay on the OpenAI beans (fake key, no real calls) — no Ollama needed on CI
+    model:
+      chat: openai
+      embedding: openai
     openai:
       api-key: test-key
       chat:

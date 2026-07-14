@@ -1,6 +1,7 @@
 package com.org.ticket.service;
 
 import com.org.ticket.TestcontainersConfiguration;
+import com.org.ticket.exception.InvalidStatusTransitionException;
 import com.org.ticket.exception.ResourceNotFoundException;
 import com.org.ticket.model.Ticket;
 import com.org.ticket.model.TicketPriority;
@@ -83,7 +84,7 @@ class TicketServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Throws IllegalArgumentException when the status transition is invalid")
+    @DisplayName("Throws InvalidStatusTransitionException when the status transition is invalid")
     void updateStatus_invalidTransition_throwsIllegalArgument() {
         Ticket ticket = ticketService.createTicket(
                 "Invalid transition test", null, TicketPriority.LOW, null);
@@ -91,7 +92,7 @@ class TicketServiceIntegrationTest {
 
         assertThatThrownBy(() ->
                 ticketService.updateStatus(ticket.getId(), TicketStatus.IN_PROGRESS))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidStatusTransitionException.class)
                 .hasMessageContaining("CLOSED");
     }
 

@@ -11,6 +11,9 @@ public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>("postgres:18");
+        return new PostgreSQLContainer<>("postgres:18")
+                .withDatabaseName("spring_ai")
+                .withUsername("postgres")
+                .withPassword("postgres");
     }
 }

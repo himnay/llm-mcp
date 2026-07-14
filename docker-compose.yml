@@ -1,6 +1,5 @@
 services:
   postgres:
-    # pgvector build of Postgres 18 — llm-mcp-client's V2 migration runs CREATE EXTENSION vector
     image: pgvector/pgvector:pg18
     container_name: postgres
     environment:
@@ -30,8 +29,6 @@ services:
       - ./docker/keycloak:/opt/keycloak/data/import:ro
     restart: unless-stopped
     healthcheck:
-      # Keycloak's first boot (Quarkus re-augmentation triggered by --import-realm) can take
-      # several minutes — start_period keeps those early failures from counting against retries.
       test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080" ]
       interval: 10s
       timeout: 5s
@@ -84,228 +81,23 @@ services:
     depends_on:
       - prometheus
       - tempo
-  hr-service:
-    build:
-      context: ./mcp-server-hr-service
-    container_name: hr-service
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-    ports:
-      - "8084:8084"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-  deployment-service:
-    build:
-      context: ./mcp-server-deployment-service
-    container_name: deployment-service
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-      MCP_OAUTH2_ISSUER_URI: http://keycloak:8080/realms/org-mcp
-    ports:
-      - "8082:8082"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-  notification-service:
-    build:
-      context: ./mcp-server-notification-service
-    container_name: notification-service
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-    ports:
-      - "8083:8083"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-  ticket-service:
-    build:
-      context: ./mcp-server-ticket-service
-    container_name: ticket-service
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-    ports:
-      - "8081:8081"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-  mcp-client:
-    build:
-      context: ./llm-mcp-client
-    container_name: mcp-client
-    environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      DB_URL: jdbc:postgresql://postgres:5432/spring_ai
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-      MCP_OAUTH2_TOKEN_URI: http://keycloak:8080/realms/org-mcp/protocol/openid-connect/token
-      MCP_OAUTH2_CLIENT_ID: llm-mcp-client
-      # Dev default matches docker/keycloak/realm-export.json; override in .env for anything non-local
-      MCP_OAUTH2_CLIENT_SECRET: ${MCP_OAUTH2_CLIENT_SECRET:-llm-mcp-client-secret}
-    ports:
-      - "8090:8090"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-      hr-service:
-        condition: service_started
-      deployment-service:
-        condition: service_started
-      ticket-service:
-        condition: service_started
-      notification-service:
-        condition: service_started
-      github-service:
-        condition: service_started
-      gmail-service:
-        condition: service_started
-      travel-service:
-        condition: service_started
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
   redis:
     # redis-stack: includes RediSearch, required by the client's Redis vector store (FT.* commands)
     image: redis/redis-stack-server:latest
     container_name: redis
+    environment:
+      # persistence + eviction (formerly in llm-mcp-client/docker-compose.yml)
+      REDIS_ARGS: "--appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru"
     restart: unless-stopped
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 5
-
-  github-service:
-    build:
-      context: ./mcp-server-github-service
-    container_name: github-service
-    environment:
-      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    ports:
-      - "8085:8085"
-    depends_on:
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-  gmail-service:
-    build:
-      context: ./mcp-server-gmail-service
-    container_name: gmail-service
-    environment:
-      GMAIL_ACCESS_TOKEN: ${GMAIL_ACCESS_TOKEN:-}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-    ports:
-      - "8086:8086"
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-  travel-service:
-    build:
-      context: ./mcp-server-travel-service
-    container_name: travel-service
-    environment:
-      SERVER_PORT: 8087
-      AMADEUS_CLIENT_ID: ${AMADEUS_CLIENT_ID}
-      AMADEUS_CLIENT_SECRET: ${AMADEUS_CLIENT_SECRET}
-      AMADEUS_BASE_URL: ${AMADEUS_BASE_URL:-https://test.api.amadeus.com}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
-    ports:
-      - "8087:8087"
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
   mcp-inspector:
     image: node:22-alpine
     container_name: mcp-inspector
@@ -328,5 +120,6 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   tempo-data:
   grafana-data:

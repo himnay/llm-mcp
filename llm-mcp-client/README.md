@@ -165,8 +165,8 @@ The Redis store's HNSW graph parameters (`spring.ai.vectorstore.redis.hnsw.m` /
 `ef-construction` / `ef-runtime`) are available but left at their library defaults; there is no
 direct Redis equivalent of pgvector's `dimensions`/`distance-type` properties — the embedding
 dimension is inferred from the embedding model, and RediSearch's vector field defaults to cosine
-distance, matching the previous pgvector configuration. The `docker-compose.yml` adds a plain
-`redis:latest` service (`llm-mcp-redis`, port 6379, AOF persistence) for this purpose. Postgres
+distance, matching the previous pgvector configuration. The root `docker-compose.yml` provides a
+`redis/redis-stack-server` service (`redis`, port 6379, AOF persistence, RediSearch included) for this purpose. Postgres
 (`pgvector/pgvector:pg18`) is still used for chat-memory persistence. Its `vector` extension is no
 longer needed by the (now Redis-backed) tool index; the existing
 `V2__enable_pgvector_extension.sql` Flyway migration is a harmless no-op
@@ -205,13 +205,14 @@ This module depends only on **PostgreSQL** (for conversation memory) and the **O
 downstream MCP servers are required to start the app, though tool calls will fail/circuit-break if they're
 unreachable.
 
-`docker-compose.yml` brings up just the module's dependencies — **PostgreSQL**, **Prometheus**, and **Grafana**
-(provisioned with the client's own dashboards via `../observability`) — so you can run the app itself on the
-host with hot reload (`./mvnw spring-boot:run`) while everything it needs lives in containers.
+The root `docker-compose.yml` brings up the module's dependencies — **PostgreSQL**, **Redis**, **Prometheus**, and
+**Grafana** (provisioned with the dashboards under `observability/`) — so you can run the app itself on the
+host with hot reload (`./mvnw spring-boot:run`) while everything it needs lives in containers. Name the
+services explicitly — a bare `docker compose up -d` resolves the root compose file and starts the whole stack:
 
 ```bash
 cd llm-mcp-client
-docker compose up -d                  # postgres (llm-postgres) :5432, prometheus :9090, grafana :3000 (admin/admin)
+docker compose up -d postgres redis prometheus grafana   # :5432, :6379, :9090, :3000 (admin/admin)
 export DB_URL=jdbc:postgresql://localhost:5432/spring_ai
 export OPENAI_API_KEY=sk-xxxx
 export MCP_AUTH_TOKEN=$(uuidgen)      # must match the token configured on the downstream MCP servers

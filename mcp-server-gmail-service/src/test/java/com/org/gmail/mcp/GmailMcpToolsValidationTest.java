@@ -1,5 +1,6 @@
 package com.org.gmail.mcp;
 
+import com.org.gmail.exception.InvalidToolArgumentException;
 import com.org.gmail.security.ActingUserContext;
 import com.org.gmail.security.RateLimiter;
 import com.org.gmail.security.SecurityProperties;
@@ -42,7 +43,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects getEmail call when messageId is blank")
     void getEmail_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.getEmail("", "full"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("messageId");
     }
 
@@ -50,7 +51,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects searchEmails call when query is blank")
     void searchEmails_rejectsBlankQuery() {
         assertThatThrownBy(() -> tools.searchEmails("", 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("query");
     }
 
@@ -58,7 +59,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects getEmailThread call when threadId is blank")
     void getEmailThread_rejectsBlankThreadId() {
         assertThatThrownBy(() -> tools.getEmailThread(""))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("threadId");
     }
 
@@ -66,7 +67,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects sendEmail call when recipient 'to' address is blank")
     void sendEmail_rejectsBlankTo() {
         assertThatThrownBy(() -> tools.sendEmail("", "subject", "body"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("to");
     }
 
@@ -74,7 +75,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects createDraft call when subject is blank")
     void createDraft_rejectsBlankSubject() {
         assertThatThrownBy(() -> tools.createDraft("to@example.com", "", "body"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("subject");
     }
 
@@ -82,7 +83,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects deleteEmail call when messageId is blank")
     void deleteEmail_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.deleteEmail(""))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("messageId");
     }
 
@@ -90,7 +91,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects markAsRead call when messageId is blank")
     void markAsRead_rejectsBlankMessageId() {
         assertThatThrownBy(() -> tools.markAsRead(""))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("messageId");
     }
 
@@ -98,7 +99,7 @@ class GmailMcpToolsValidationTest {
     @DisplayName("Rejects getEmailsByLabel call when labelId is blank")
     void getEmailsByLabel_rejectsBlankLabelId() {
         assertThatThrownBy(() -> tools.getEmailsByLabel("", 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("labelId");
     }
 }

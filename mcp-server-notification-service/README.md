@@ -80,7 +80,7 @@ Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered 
 
 ```bash
 cd mcp-server-notification-service
-docker compose up -d         # PostgreSQL only — no other MCP-server dependency
+docker compose up -d postgres   # PostgreSQL only (resolves the root compose file) — no other MCP-server dependency
 export DB_URL=jdbc:postgresql://localhost:5432/spring_ai
 export MCP_AUTH_TOKEN=$(uuidgen)
 ./mvnw spring-boot:run       # :8083

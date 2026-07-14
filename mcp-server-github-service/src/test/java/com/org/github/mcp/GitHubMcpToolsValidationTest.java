@@ -1,5 +1,6 @@
 package com.org.github.mcp;
 
+import com.org.github.exception.InvalidToolArgumentException;
 import com.org.github.security.ActingUserContext;
 import com.org.github.security.RateLimiter;
 import com.org.github.security.SecurityProperties;
@@ -42,7 +43,7 @@ class GitHubMcpToolsValidationTest {
     @DisplayName("Throws IllegalArgumentException when owner is blank")
     void getRepository_rejectsBlankOwner() {
         assertThatThrownBy(() -> tools.getRepository("", "spring-framework"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("owner");
     }
 
@@ -50,7 +51,7 @@ class GitHubMcpToolsValidationTest {
     @DisplayName("Throws IllegalArgumentException when repo is blank")
     void getRepository_rejectsBlankRepo() {
         assertThatThrownBy(() -> tools.getRepository("spring-projects", ""))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("repo");
     }
 
@@ -58,7 +59,7 @@ class GitHubMcpToolsValidationTest {
     @DisplayName("Throws IllegalArgumentException when since is blank")
     void getCommitMetrics_rejectsBlankSince() {
         assertThatThrownBy(() -> tools.getCommitMetrics("owner", "repo", "", "2024-12-31T23:59:59Z"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("since");
     }
 
@@ -66,7 +67,7 @@ class GitHubMcpToolsValidationTest {
     @DisplayName("Throws IllegalArgumentException when pull request state is invalid")
     void getPullRequests_rejectsInvalidState() {
         assertThatThrownBy(() -> tools.getPullRequests("owner", "repo", "invalid"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("state");
     }
 
@@ -74,7 +75,7 @@ class GitHubMcpToolsValidationTest {
     @DisplayName("Throws IllegalArgumentException when issue title is blank")
     void createIssue_rejectsBlankTitle() {
         assertThatThrownBy(() -> tools.createIssue("owner", "repo", "", null, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("title");
     }
 
@@ -82,7 +83,7 @@ class GitHubMcpToolsValidationTest {
     @DisplayName("Throws IllegalArgumentException when search query is blank")
     void searchRepositories_rejectsBlankQuery() {
         assertThatThrownBy(() -> tools.searchRepositories("", null, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("query");
     }
 }

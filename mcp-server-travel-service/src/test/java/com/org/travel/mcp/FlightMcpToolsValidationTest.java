@@ -1,5 +1,6 @@
 package com.org.travel.mcp;
 
+import com.org.travel.exception.InvalidToolArgumentException;
 import com.org.travel.config.McpOutputProperties;
 import com.org.travel.config.SecurityProperties;
 import com.org.travel.service.FlightSearchService;
@@ -34,7 +35,7 @@ class FlightMcpToolsValidationTest {
     @DisplayName("Throws when the origin code is blank")
     void rejectsBlankOriginCode() {
         assertThatThrownBy(() -> tools.searchFlights("", "MUC", "2025-08-01", 1, 5))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("originCode");
     }
 
@@ -42,7 +43,7 @@ class FlightMcpToolsValidationTest {
     @DisplayName("Throws when the destination code is blank")
     void rejectsBlankDestinationCode() {
         assertThatThrownBy(() -> tools.searchFlights("DUB", "", "2025-08-01", 1, 5))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("destinationCode");
     }
 
@@ -50,7 +51,7 @@ class FlightMcpToolsValidationTest {
     @DisplayName("Throws when the departure date is not in yyyy-MM-dd format")
     void rejectsInvalidDateFormat() {
         assertThatThrownBy(() -> tools.searchFlights("DUB", "MUC", "01-08-2025", 1, 5))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("yyyy-MM-dd");
     }
 
@@ -58,10 +59,10 @@ class FlightMcpToolsValidationTest {
     @DisplayName("Throws when the adults count is below or above the allowed range")
     void rejectsAdultsOutOfRange() {
         assertThatThrownBy(() -> tools.searchFlights("DUB", "MUC", "2025-08-01", 0, 5))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("adults");
         assertThatThrownBy(() -> tools.searchFlights("DUB", "MUC", "2025-08-01", 10, 5))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("adults");
     }
 
@@ -87,7 +88,7 @@ class FlightMcpToolsValidationTest {
     @DisplayName("Throws when the city or airport argument is blank")
     void rejectsBlankCityForAirportInfo() {
         assertThatThrownBy(() -> tools.getAirportInfo(""))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidToolArgumentException.class)
                 .hasMessageContaining("cityOrAirport");
     }
 
