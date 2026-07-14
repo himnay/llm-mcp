@@ -2,17 +2,17 @@
   "_type": "export",
   "__export_format": 4,
   "__export_date": "2026-07-14T00:00:00.000Z",
-  "__export_source": "insomnia.desktop.app:v12.0.0",
+  "__export_source": "insomnia.desktop.app:v13.0.0",
   "resources": [
     {
       "_id": "wrk_00000000000000000000000000000001",
       "_type": "workspace",
       "parentId": null,
       "name": "llm-mcp :: MCP Collection",
-      "description": "MCP JSON-RPC calls (initialize, tools/list, tools/call) for every MCP server",
+      "description": "MCP JSON-RPC calls for every MCP server. STREAMABLE servers (deployment, github, gmail) need the per-service Mcp-Session-Id env var filled from their initialize response.",
       "scope": "collection",
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "env_00000000000000000000000000000002",
@@ -20,26 +20,30 @@
       "parentId": "wrk_00000000000000000000000000000001",
       "name": "Base Environment",
       "data": {
+        "host": "localhost",
         "mcp_auth_token": "",
-        "mcp_session_id": "",
-        "host": "localhost"
+        "keycloak_token": "",
+        "mcp_session_id_deployment": "",
+        "mcp_session_id_github": "",
+        "mcp_session_id_gmail": "",
+        "keycloak_client_secret": "llm-mcp-client-secret"
       },
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "fld_00000000000000000000000000000003",
       "_type": "request_group",
       "parentId": "wrk_00000000000000000000000000000001",
-      "name": "HR Service (8084)",
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "name": "HR Service (8084) \u2014 STATELESS",
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000004",
       "_type": "request",
       "parentId": "fld_00000000000000000000000000000003",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
+      "name": "1. initialize",
       "method": "POST",
       "url": "http://{{ _.host }}:8084/mcp",
       "body": {
@@ -61,8 +65,8 @@
         }
       ],
       "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000005",
@@ -87,15 +91,11 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000006",
@@ -120,15 +120,11 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000007",
@@ -153,15 +149,11 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000008",
@@ -186,31 +178,27 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 400,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "fld_00000000000000000000000000000009",
       "_type": "request_group",
       "parentId": "wrk_00000000000000000000000000000001",
-      "name": "Deployment Service (8082)",
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "name": "Notification Service (8083) \u2014 STATELESS",
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000010",
       "_type": "request",
       "parentId": "fld_00000000000000000000000000000009",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
+      "name": "1. initialize",
       "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
+      "url": "http://{{ _.host }}:8083/mcp",
       "body": {
         "mimeType": "application/json",
         "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
@@ -230,8 +218,8 @@
         }
       ],
       "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000011",
@@ -239,7 +227,7 @@
       "parentId": "fld_00000000000000000000000000000009",
       "name": "2. notifications/initialized",
       "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
+      "url": "http://{{ _.host }}:8083/mcp",
       "body": {
         "mimeType": "application/json",
         "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}"
@@ -256,15 +244,11 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000012",
@@ -272,7 +256,7 @@
       "parentId": "fld_00000000000000000000000000000009",
       "name": "3. tools/list",
       "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
+      "url": "http://{{ _.host }}:8083/mcp",
       "body": {
         "mimeType": "application/json",
         "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}"
@@ -289,354 +273,16 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000013",
       "_type": "request",
       "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 getDeployments",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getDeployments\",\n    \"arguments\": {}\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000014",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 getDeployment",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getDeployment\",\n    \"arguments\": {\n      \"id\": 1\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 400,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000015",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 createDeployment",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"createDeployment\",\n    \"arguments\": {\n      \"serviceName\": \"payment-service\",\n      \"environment\": \"staging\",\n      \"scheduledTime\": \"2026-07-20T22:00:00\",\n      \"owner\": \"himansu.nayak\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 500,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000016",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 executeDeployment",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"executeDeployment\",\n    \"arguments\": {\n      \"id\": 1\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 600,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000017",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 assignOwner",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"assignOwner\",\n    \"arguments\": {\n      \"id\": 1,\n      \"newOwner\": \"himansu.nayak\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 700,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000018",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 rescheduleDeployment",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"rescheduleDeployment\",\n    \"arguments\": {\n      \"id\": 1,\n      \"newTime\": \"2026-07-21T22:00:00\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 800,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000019",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000009",
-      "name": "tools/call \u2014 cancelDeployment",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8082/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"cancelDeployment\",\n    \"arguments\": {\n      \"id\": 1\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 900,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "fld_00000000000000000000000000000020",
-      "_type": "request_group",
-      "parentId": "wrk_00000000000000000000000000000001",
-      "name": "Notification Service (8083)",
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000021",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000020",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8083/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        }
-      ],
-      "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000022",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000020",
-      "name": "2. notifications/initialized",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8083/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000023",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000020",
-      "name": "3. tools/list",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8083/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000024",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000020",
       "name": "tools/call \u2014 getNotifications",
       "method": "POST",
       "url": "http://{{ _.host }}:8083/mcp",
@@ -656,20 +302,16 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000025",
+      "_id": "req_00000000000000000000000000000014",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000020",
+      "parentId": "fld_00000000000000000000000000000009",
       "name": "tools/call \u2014 sendNotification",
       "method": "POST",
       "url": "http://{{ _.host }}:8083/mcp",
@@ -689,29 +331,546 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 400,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "fld_00000000000000000000000000000026",
+      "_id": "fld_00000000000000000000000000000015",
       "_type": "request_group",
       "parentId": "wrk_00000000000000000000000000000001",
-      "name": "GitHub Service (8085)",
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "name": "Travel Service (8087) \u2014 STATELESS",
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000016",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000015",
+      "name": "1. initialize",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8087/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.mcp_auth_token }}"
+        }
+      ],
+      "metaSortKey": 0,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000017",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000015",
+      "name": "2. notifications/initialized",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8087/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.mcp_auth_token }}"
+        }
+      ],
+      "metaSortKey": 100,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000018",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000015",
+      "name": "3. tools/list",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8087/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.mcp_auth_token }}"
+        }
+      ],
+      "metaSortKey": 200,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000019",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000015",
+      "name": "tools/call \u2014 searchFlights",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8087/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"searchFlights\",\n    \"arguments\": {\n      \"originCode\": \"LHR\",\n      \"destinationCode\": \"JFK\",\n      \"departureDate\": \"2026-08-01\",\n      \"adults\": 1,\n      \"maxResults\": 5\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.mcp_auth_token }}"
+        }
+      ],
+      "metaSortKey": 300,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000020",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000015",
+      "name": "tools/call \u2014 getAirportInfo",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8087/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getAirportInfo\",\n    \"arguments\": {\n      \"cityOrAirport\": \"London\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.mcp_auth_token }}"
+        }
+      ],
+      "metaSortKey": 400,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "fld_00000000000000000000000000000021",
+      "_type": "request_group",
+      "parentId": "wrk_00000000000000000000000000000001",
+      "name": "Deployment Service (8082) \u2014 STREAMABLE + OAuth2",
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000022",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "0. Keycloak token (copy access_token -> env keycloak_token)",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8180/realms/org-mcp/protocol/openid-connect/token",
+      "body": {
+        "mimeType": "application/x-www-form-urlencoded",
+        "params": [
+          {
+            "name": "grant_type",
+            "value": "client_credentials"
+          },
+          {
+            "name": "client_id",
+            "value": "llm-mcp-client"
+          },
+          {
+            "name": "client_secret",
+            "value": "{{ _.keycloak_client_secret }}"
+          }
+        ]
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/x-www-form-urlencoded"
+        }
+      ],
+      "metaSortKey": 0,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000023",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "1. initialize (copy Mcp-Session-Id resp header -> env mcp_session_id_deployment)",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        }
+      ],
+      "metaSortKey": 100,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000024",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "2. notifications/initialized",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 200,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000025",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "3. tools/list",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 300,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000026",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 getDeployments",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getDeployments\",\n    \"arguments\": {}\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 400,
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000027",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 getDeployment",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getDeployment\",\n    \"arguments\": {\n      \"id\": 1\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 500,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000028",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 createDeployment",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"createDeployment\",\n    \"arguments\": {\n      \"serviceName\": \"payment-service\",\n      \"environment\": \"staging\",\n      \"scheduledTime\": \"2026-07-20T22:00:00\",\n      \"owner\": \"himansu.nayak\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 600,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000029",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 executeDeployment",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"executeDeployment\",\n    \"arguments\": {\n      \"id\": 1\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 700,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000030",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 assignOwner",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"assignOwner\",\n    \"arguments\": {\n      \"id\": 1,\n      \"newOwner\": \"himansu.nayak\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 800,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000031",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 rescheduleDeployment",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"rescheduleDeployment\",\n    \"arguments\": {\n      \"id\": 1,\n      \"newTime\": \"2026-07-21T22:00:00\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 900,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000032",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000021",
+      "name": "tools/call \u2014 cancelDeployment",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8082/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"cancelDeployment\",\n    \"arguments\": {\n      \"id\": 1\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.keycloak_token }}"
+        },
+        {
+          "name": "Mcp-Session-Id",
+          "value": "{{ _.mcp_session_id_deployment }}"
+        }
+      ],
+      "metaSortKey": 1000,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "fld_00000000000000000000000000000033",
+      "_type": "request_group",
+      "parentId": "wrk_00000000000000000000000000000001",
+      "name": "GitHub Service (8085) \u2014 STREAMABLE",
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000034",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000033",
+      "name": "1. initialize (copy Mcp-Session-Id resp header -> env mcp_session_id_github)",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
       "body": {
@@ -733,13 +892,13 @@
         }
       ],
       "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000028",
+      "_id": "req_00000000000000000000000000000035",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "2. notifications/initialized",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -762,17 +921,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000029",
+      "_id": "req_00000000000000000000000000000036",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "3. tools/list",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -795,17 +954,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000030",
+      "_id": "req_00000000000000000000000000000037",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getRepository",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -828,17 +987,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000031",
+      "_id": "req_00000000000000000000000000000038",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getCommitHistory",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -861,17 +1020,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 400,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000032",
+      "_id": "req_00000000000000000000000000000039",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getCommitMetrics",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -894,17 +1053,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 500,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000033",
+      "_id": "req_00000000000000000000000000000040",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 listBranches",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -927,17 +1086,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 600,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000034",
+      "_id": "req_00000000000000000000000000000041",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getPullRequests",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -960,17 +1119,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 700,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000035",
+      "_id": "req_00000000000000000000000000000042",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getIssues",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -993,17 +1152,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 800,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000036",
+      "_id": "req_00000000000000000000000000000043",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getContributors",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1026,17 +1185,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 900,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000037",
+      "_id": "req_00000000000000000000000000000044",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getWorkflowRuns",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1059,17 +1218,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 1000,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000038",
+      "_id": "req_00000000000000000000000000000045",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getReleases",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1092,17 +1251,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 1100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000039",
+      "_id": "req_00000000000000000000000000000046",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 searchRepositories",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1125,17 +1284,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 1200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000040",
+      "_id": "req_00000000000000000000000000000047",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 getCodeFrequency",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1158,17 +1317,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 1300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000041",
+      "_id": "req_00000000000000000000000000000048",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 createIssue",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1191,17 +1350,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 1400,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000042",
+      "_id": "req_00000000000000000000000000000049",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000026",
+      "parentId": "fld_00000000000000000000000000000033",
       "name": "tools/call \u2014 summarizeRepositoryHealth",
       "method": "POST",
       "url": "http://{{ _.host }}:8085/mcp",
@@ -1224,26 +1383,26 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_github }}"
         }
       ],
       "metaSortKey": 1500,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "fld_00000000000000000000000000000043",
+      "_id": "fld_00000000000000000000000000000050",
       "_type": "request_group",
       "parentId": "wrk_00000000000000000000000000000001",
-      "name": "Gmail Service (8086)",
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "name": "Gmail Service (8086) \u2014 STREAMABLE",
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000044",
+      "_id": "req_00000000000000000000000000000051",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
+      "parentId": "fld_00000000000000000000000000000050",
+      "name": "1. initialize (copy Mcp-Session-Id resp header -> env mcp_session_id_gmail)",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
       "body": {
@@ -1265,13 +1424,13 @@
         }
       ],
       "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000045",
+      "_id": "req_00000000000000000000000000000052",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "2. notifications/initialized",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1294,17 +1453,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000046",
+      "_id": "req_00000000000000000000000000000053",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "3. tools/list",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1327,17 +1486,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000047",
+      "_id": "req_00000000000000000000000000000054",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 getGmailProfile",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1360,17 +1519,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000048",
+      "_id": "req_00000000000000000000000000000055",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 listLabels",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1393,17 +1552,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 400,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000049",
+      "_id": "req_00000000000000000000000000000056",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 listEmails",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1426,17 +1585,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 500,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000050",
+      "_id": "req_00000000000000000000000000000057",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 getEmail",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1459,17 +1618,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 600,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000051",
+      "_id": "req_00000000000000000000000000000058",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 searchEmails",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1492,17 +1651,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 700,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000052",
+      "_id": "req_00000000000000000000000000000059",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 getEmailThread",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1525,17 +1684,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 800,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000053",
+      "_id": "req_00000000000000000000000000000060",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 getEmailsByLabel",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1558,17 +1717,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 900,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000054",
+      "_id": "req_00000000000000000000000000000061",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 markAsRead",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1591,17 +1750,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 1000,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000055",
+      "_id": "req_00000000000000000000000000000062",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 markAsUnread",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1624,17 +1783,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 1100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000056",
+      "_id": "req_00000000000000000000000000000063",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 createDraft",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1657,17 +1816,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 1200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000057",
+      "_id": "req_00000000000000000000000000000064",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 sendEmail",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1690,17 +1849,17 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 1300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000058",
+      "_id": "req_00000000000000000000000000000065",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000043",
+      "parentId": "fld_00000000000000000000000000000050",
       "name": "tools/call \u2014 deleteEmail",
       "method": "POST",
       "url": "http://{{ _.host }}:8086/mcp",
@@ -1723,223 +1882,54 @@
         },
         {
           "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
+          "value": "{{ _.mcp_session_id_gmail }}"
         }
       ],
       "metaSortKey": 1400,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "fld_00000000000000000000000000000059",
+      "_id": "fld_00000000000000000000000000000066",
       "_type": "request_group",
       "parentId": "wrk_00000000000000000000000000000001",
-      "name": "Travel Service (8087)",
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000060",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000059",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8087/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        }
-      ],
-      "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000061",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000059",
-      "name": "2. notifications/initialized",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8087/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000062",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000059",
-      "name": "3. tools/list",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8087/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000063",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000059",
-      "name": "tools/call \u2014 searchFlights",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8087/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"searchFlights\",\n    \"arguments\": {\n      \"originCode\": \"LHR\",\n      \"destinationCode\": \"JFK\",\n      \"departureDate\": \"2026-08-01\",\n      \"adults\": 1,\n      \"maxResults\": 5\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000064",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000059",
-      "name": "tools/call \u2014 getAirportInfo",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8087/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getAirportInfo\",\n    \"arguments\": {\n      \"cityOrAirport\": \"London\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
-        }
-      ],
-      "metaSortKey": 400,
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "fld_00000000000000000000000000000065",
-      "_type": "request_group",
-      "parentId": "wrk_00000000000000000000000000000001",
-      "name": "Ticket Service (8081) \u2014 prompts",
-      "created": 1784059995557,
-      "modified": 1784059995557
-    },
-    {
-      "_id": "req_00000000000000000000000000000066",
-      "_type": "request",
-      "parentId": "fld_00000000000000000000000000000065",
-      "name": "1. initialize (copy Mcp-Session-Id resp header -> env)",
-      "method": "POST",
-      "url": "http://{{ _.host }}:8081/mcp",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        },
-        {
-          "name": "Accept",
-          "value": "application/json, text/event-stream"
-        },
-        {
-          "name": "Authorization",
-          "value": "Bearer {{ _.mcp_auth_token }}"
-        }
-      ],
-      "metaSortKey": 0,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "name": "Ticket Service (8081) \u2014 STATELESS, prompts only",
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
       "_id": "req_00000000000000000000000000000067",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000065",
+      "parentId": "fld_00000000000000000000000000000066",
+      "name": "1. initialize",
+      "method": "POST",
+      "url": "http://{{ _.host }}:8081/mcp",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"insomnia\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json, text/event-stream"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.mcp_auth_token }}"
+        }
+      ],
+      "metaSortKey": 0,
+      "created": 1784064041715,
+      "modified": 1784064041715
+    },
+    {
+      "_id": "req_00000000000000000000000000000068",
+      "_type": "request",
+      "parentId": "fld_00000000000000000000000000000066",
       "name": "2. notifications/initialized",
       "method": "POST",
       "url": "http://{{ _.host }}:8081/mcp",
@@ -1959,20 +1949,16 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 100,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000068",
+      "_id": "req_00000000000000000000000000000069",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000065",
+      "parentId": "fld_00000000000000000000000000000066",
       "name": "3. prompts/list",
       "method": "POST",
       "url": "http://{{ _.host }}:8081/mcp",
@@ -1992,20 +1978,16 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 200,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     },
     {
-      "_id": "req_00000000000000000000000000000069",
+      "_id": "req_00000000000000000000000000000070",
       "_type": "request",
-      "parentId": "fld_00000000000000000000000000000065",
+      "parentId": "fld_00000000000000000000000000000066",
       "name": "prompts/get \u2014 analyze-tickets",
       "method": "POST",
       "url": "http://{{ _.host }}:8081/mcp",
@@ -2025,15 +2007,11 @@
         {
           "name": "Authorization",
           "value": "Bearer {{ _.mcp_auth_token }}"
-        },
-        {
-          "name": "Mcp-Session-Id",
-          "value": "{{ _.mcp_session_id }}"
         }
       ],
       "metaSortKey": 300,
-      "created": 1784059995557,
-      "modified": 1784059995557
+      "created": 1784064041715,
+      "modified": 1784064041715
     }
   ]
 }
