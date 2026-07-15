@@ -9,6 +9,10 @@ mcp:
     default-user: system
     require-user-for-writes: true
     rate-limit-per-minute: 120
+    oauth2:
+      # Local-dev default: OFF — behaves like the other MCP servers (shared token only).
+      # Set MCP_OAUTH2_ENABLED=true to require Keycloak client-credentials JWTs.
+      enabled: ${MCP_OAUTH2_ENABLED:false}
 
 spring:
   application:

@@ -72,6 +72,9 @@ spring:
 
 mcp:
   oauth2:
+    # OFF by default — deployment-service is called with the shared token like the other
+    # servers. Turn on (both here and MCP_OAUTH2_ENABLED on deployment-service) for OAuth2.
+    enabled: ${MCP_OAUTH2_ENABLED:false}
     token-uri: ${MCP_OAUTH2_TOKEN_URI:http://localhost:8180/realms/org-mcp/protocol/openid-connect/token}
     client-id: ${MCP_OAUTH2_CLIENT_ID:llm-mcp-client}
     client-secret: ${MCP_OAUTH2_CLIENT_SECRET:llm-mcp-client-secret}

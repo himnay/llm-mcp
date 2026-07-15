@@ -514,12 +514,16 @@ currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer t
 | `DB_URL`                | `jdbc:postgresql://localhost:5432/spring_ai`  |
 | `DB_USERNAME`           | `postgres`                                    |
 | `DB_PASSWORD`           | `postgres`                                    |
-| `MCP_AUTH_TOKEN`        | *(unused — superseded by OAuth2 below)*       |
+| `MCP_AUTH_TOKEN`        | *(shared token, used when OAuth2 is off)*     |
+| `MCP_OAUTH2_ENABLED`    | `false` — OAuth2 off; behaves like the other servers |
 | `MCP_OAUTH2_ISSUER_URI` | `http://localhost:8180/realms/org-mcp`        |
 
-Calls to `/mcp` require a valid Keycloak-issued bearer JWT (scope `deployment-invoke`, audience
-`deployment-service`) — see [KEYCLOAK_OAUTH2.md](KEYCLOAK_OAUTH2.md). Set `mcp.security.oauth2.enabled=false` to
-fall back to no auth on this endpoint (used by the test profile).
+**Auth flag:** by default (`MCP_OAUTH2_ENABLED=false`) this service is protected exactly like the
+other MCP servers — the shared `MCP_AUTH_TOKEN` bearer via `McpAuthFilter`, open when that is empty.
+Set `MCP_OAUTH2_ENABLED=true` on **both** this server and `mcp-client` to require Keycloak-issued
+JWTs (scope `deployment-invoke`, audience `deployment-service`) — see
+[KEYCLOAK_OAUTH2.md](KEYCLOAK_OAUTH2.md). The client flag makes it fetch a client-credentials token
+for the `deployment` connection instead of the shared token.
 
 `mcp.security.*` properties are the same as HR Service.
 

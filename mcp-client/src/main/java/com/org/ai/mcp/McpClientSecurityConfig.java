@@ -33,12 +33,16 @@ public class McpClientSecurityConfig {
 
     @Bean
     public McpClientCustomizer<HttpClientStreamableHttpTransport.Builder> mcpAuthTransportCustomizer(
-            AssistantProperties properties, KeycloakTokenService keycloakTokenService) {
+            AssistantProperties properties, KeycloakTokenService keycloakTokenService,
+            KeycloakOAuth2Properties oauth2Properties) {
         McpSyncHttpClientRequestCustomizer oauth2Customizer = oauth2RequestCustomizer(keycloakTokenService);
         McpSyncHttpClientRequestCustomizer staticTokenCustomizer = staticBearerRequestCustomizer(properties);
 
+        // OAuth2 only when explicitly enabled (must match MCP_OAUTH2_ENABLED on deployment-service);
+        // otherwise every connection, deployment included, uses the shared bearer token.
         return (name, transportBuilder) -> transportBuilder.httpRequestCustomizer(
-                OAUTH2_CONNECTION_NAME.equals(name) ? oauth2Customizer : staticTokenCustomizer);
+                oauth2Properties.isEnabled() && OAUTH2_CONNECTION_NAME.equals(name)
+                        ? oauth2Customizer : staticTokenCustomizer);
     }
 
     private McpSyncHttpClientRequestCustomizer staticBearerRequestCustomizer(AssistantProperties properties) {

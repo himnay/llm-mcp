@@ -15,6 +15,9 @@ spring:
     locations: classpath:db/migration
     table: flyway_schema_history_hr
     baseline-on-migrate: true
+    # Shared spring_ai schema is never empty — without an explicit 0 baseline flyway
+    # baselines at 1 and silently skips V1__init_schema (other services already set this).
+    baseline-version: 0
   jpa:
     properties:
       jakarta:
