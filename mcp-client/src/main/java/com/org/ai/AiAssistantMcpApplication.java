@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @SpringBootApplication
 @EnableConfigurationProperties({AssistantProperties.class, KeycloakOAuth2Properties.class})
-public class AiAssistantMcpApplication {
+class AiAssistantMcpApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AiAssistantMcpApplication.class, args);
