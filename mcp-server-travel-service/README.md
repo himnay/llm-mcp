@@ -21,50 +21,50 @@ Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by 
 
 ## Best Practices Applied
 
-| Practice                     | Status | Notes                                                                                                                                                                      |
-|------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Centralised error handling   | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                           |
-| Meaningful 404s              | ✅      | `ResourceNotFoundException` for unresolvable routes/dates from the Amadeus API                                                                                             |
-| Input validation             | ✅      | Blank/date-format/range checks (`adults` 1–9, `maxResults` clamped 1–20) → `IllegalArgumentException` → HTTP 400                                                           |
-| Bearer token auth            | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset                                                 |
-| Acting-user propagation      | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                         |
-| Rate limiting                | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                    |
-| Audit logging                | ✅      | `[AUDIT] tool=searchFlights actingUser=… origin=… destination=… date=… adults=… outcome=success                                                                            |failure:<Exception> latencyMs=…` |
-| Output truncation            | ✅      | `ToolOutputUtil.cap` truncates flight-offer JSON beyond `mcp.output.max-chars` (`McpOutputProperties`, default 8 000)                                                      |
-| OAuth2 token caching         | ✅      | `AmadeusTokenService` caches the Amadeus client-credentials token and refreshes it 60 s before expiry under a `ReentrantLock`, avoiding a token round-trip on every search |
-| HTTP client timeouts         | ✅      | `amadeus.timeout-seconds` (default 10s) bounds connect+read time on `RestClientConfig`'s `amadeusRestClient`                                                               |
-| Graceful shutdown            | ✅      | `server.shutdown: graceful` + `spring.lifecycle.timeout-per-shutdown-phase: 30s`                                                                                           |
-| Externalised config          | ✅      | `AmadeusProperties` / `SecurityProperties` / `McpOutputProperties` (`@ConfigurationProperties`) — base URL, credentials, timeouts, tokens, limits all env-overridable      |
-| Structured logging           | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                    |
-| Distributed tracing          | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                  |
-| Prometheus metrics + SLOs    | ✅      | `micrometer-registry-prometheus` with `http.server.requests` percentile histograms and explicit SLO buckets (50ms…5s)                                                      |
-| Liveness/readiness probes    | ✅      | `management.endpoint.health.probes.enabled: true`                                                                                                                          |
-| Health/auth allow-list       | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                                                                               |
-| Non-root container           | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                                                                                       |
-| Write-operation gating       | ➖      | N/A — both tools are read-only (no `enforceWriteGate` needed)                                                                                                              |
-| Circuit breaker / resilience | ❌      | No Resilience4j — Amadeus API failures (including rate limits / sandbox quotas) surface directly as tool errors                                                            |
+| Practice                     | Status | Notes                                                                                                                                                                      |                                  |
+|------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| Centralised error handling   | ✅      | `GlobalExceptionHandler` (`@RestControllerAdvice`) — uniform `{status, error, message, details, timestamp}` body                                                           |                                  |
+| Meaningful 404s              | ✅      | `ResourceNotFoundException` for unresolvable routes/dates from the Amadeus API                                                                                             |                                  |
+| Input validation             | ✅      | Blank/date-format/range checks (`adults` 1–9, `maxResults` clamped 1–20) → `IllegalArgumentException` → HTTP 400                                                           |                                  |
+| Bearer token auth            | ✅      | `McpAuthFilter` validates `Authorization: Bearer <mcp.security.token>`; logs `WARN` and runs in insecure dev mode if unset                                                 |                                  |
+| Acting-user propagation      | ✅      | `X-Acting-User` header → `ActingUserContext` thread-local, defaults to `mcp.security.default-user`                                                                         |                                  |
+| Rate limiting                | ✅      | In-memory per-user fixed-window limiter (`RateLimiter`, default 120 req/min) → HTTP 429                                                                                    |                                  |
+| Audit logging                | ✅      | `[AUDIT] tool=searchFlights actingUser=… origin=… destination=… date=… adults=… outcome=success                                                                            | failure:<Exception> latencyMs=…` |
+| Output truncation            | ✅      | `ToolOutputUtil.cap` truncates flight-offer JSON beyond `mcp.output.max-chars` (`McpOutputProperties`, default 8 000)                                                      |                                  |
+| OAuth2 token caching         | ✅      | `AmadeusTokenService` caches the Amadeus client-credentials token and refreshes it 60 s before expiry under a `ReentrantLock`, avoiding a token round-trip on every search |                                  |
+| HTTP client timeouts         | ✅      | `amadeus.timeout-seconds` (default 10s) bounds connect+read time on `RestClientConfig`'s `amadeusRestClient`                                                               |                                  |
+| Graceful shutdown            | ✅      | `server.shutdown: graceful` + `spring.lifecycle.timeout-per-shutdown-phase: 30s`                                                                                           |                                  |
+| Externalised config          | ✅      | `AmadeusProperties` / `SecurityProperties` / `McpOutputProperties` (`@ConfigurationProperties`) — base URL, credentials, timeouts, tokens, limits all env-overridable      |                                  |
+| Structured logging           | ✅      | SLF4J/Lombok `@Slf4j`, application-tagged via `spring.application.name`                                                                                                    |                                  |
+| Distributed tracing          | ✅      | Micrometer Tracing → OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`) → Grafana Tempo                                                                                                  |                                  |
+| Prometheus metrics + SLOs    | ✅      | `micrometer-registry-prometheus` with `http.server.requests` percentile histograms and explicit SLO buckets (50ms…5s)                                                      |                                  |
+| Liveness/readiness probes    | ✅      | `management.endpoint.health.probes.enabled: true`                                                                                                                          |                                  |
+| Health/auth allow-list       | ✅      | `/actuator/health` and `/actuator/info` are exempt from auth + rate limiting                                                                                               |                                  |
+| Non-root container           | ✅      | Multi-stage Dockerfile runs as a dedicated system user on a `jre`-only runtime image                                                                                       |                                  |
+| Write-operation gating       | ➖      | N/A — both tools are read-only (no `enforceWriteGate` needed)                                                                                                              |                                  |
+| Circuit breaker / resilience | ❌      | No Resilience4j — Amadeus API failures (including rate limits / sandbox quotas) surface directly as tool errors                                                            |                                  |
 
 ---
 
 ## Design Patterns (GoF)
 
-| Pattern                     | Where                                                                 | Role                                                                                                    |
-|-----------------------------|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| **Adapter**                 | `AmadeusFlightClient` + `amadeus.model` DTOs                          | Adapts the Amadeus v2 flight-offers wire format to the domain types the tools consume                   |
-| **Proxy (caching)**         | `AmadeusTokenService`                                                 | Stands in for the OAuth2 token endpoint; caches the token and refreshes 60 s before expiry under a lock |
-| **Facade**                  | `FlightSearchService`                                                 | Single entry point coordinating token acquisition, search, and result shaping                           |
+| Pattern                     | Where                                                                                                                                             | Role                                                                                                    |
+|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| **Adapter**                 | `AmadeusFlightClient` + `amadeus.model` DTOs                                                                                                      | Adapts the Amadeus v2 flight-offers wire format to the domain types the tools consume                   |
+| **Proxy (caching)**         | `AmadeusTokenService`                                                                                                                             | Stands in for the OAuth2 token endpoint; caches the token and refreshes 60 s before expiry under a lock |
+| **Facade**                  | `FlightSearchService`                                                                                                                             | Single entry point coordinating token acquisition, search, and result shaping                           |
 | **Factory Method**          | `@Bean` methods in `RestClientConfig`; `McpServerAnnotationScannerAutoConfiguration` builds each `@McpTool` method into a `SyncToolSpecification` | Container/framework builds the qualified `RestClient`s and tool registrations                           |
-| **Builder**                 | `RestClient.builder()`                                                | Stepwise construction of configured HTTP clients                                                        |
-| **Singleton**               | All Spring beans                                                      | One shared instance per container (token cache is deliberately shared)                                  |
-| **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                          | Framework skeleton calls `doFilterInternal` hooks                                                       |
-| **Chain of Responsibility** | Servlet `FilterChain`                                                 | Auth → rate-limit → tools, each link handles or passes on                                               |
-| **Command**                 | `@McpTool` methods in `FlightMcpTools` reified as MCP tool callbacks  | Tool invocations dispatched by name+arguments through the MCP runtime                                   |
+| **Builder**                 | `RestClient.builder()`                                                                                                                            | Stepwise construction of configured HTTP clients                                                        |
+| **Singleton**               | All Spring beans                                                                                                                                  | One shared instance per container (token cache is deliberately shared)                                  |
+| **Template Method**         | `McpAuthFilter extends OncePerRequestFilter`                                                                                                      | Framework skeleton calls `doFilterInternal` hooks                                                       |
+| **Chain of Responsibility** | Servlet `FilterChain`                                                                                                                             | Auth → rate-limit → tools, each link handles or passes on                                               |
+| **Command**                 | `@McpTool` methods in `FlightMcpTools` reified as MCP tool callbacks                                                                              | Tool invocations dispatched by name+arguments through the MCP runtime                                   |
 
 ## Configuration
 
 | Property / Env Var                                    | Default                        | Description                                         |
 |-------------------------------------------------------|--------------------------------|-----------------------------------------------------|
-| `SERVER_PORT`                                         | `8087`                         | HTTP port          |
+| `SERVER_PORT`                                         | `8087`                         | HTTP port                                           |
 | `AMADEUS_CLIENT_ID` (`amadeus.client-id`)             | *(empty → 401 from Amadeus)*   | Amadeus self-service API client id                  |
 | `AMADEUS_CLIENT_SECRET` (`amadeus.client-secret`)     | *(empty)*                      | Amadeus self-service API client secret              |
 | `AMADEUS_BASE_URL` (`amadeus.base-url`)               | `https://test.api.amadeus.com` | Amadeus API base URL (test vs production)           |

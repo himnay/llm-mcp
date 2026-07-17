@@ -222,16 +222,16 @@ to `CS`, which the LLM relays to the user instead of the call ever reaching the 
 <a id="modules"></a>
 ## 2. 🏗️ Modules
 
-| Directory                         | Port  | Role       | MCP protocol | Spring App Name        |
-|-----------------------------------|-------|------------|--------------|------------------------|
-| `mcp-client`                  | 8080  | MCP client | —            | `ai-mcp-server`        |
-| `mcp-server-ticket-service`       | 8081  | MCP server | STATELESS    | `ticket-service`       |
-| `mcp-server-deployment-service`   | 8082  | MCP server | STREAMABLE   | `deployment-service`   |
-| `mcp-server-notification-service` | 8083  | MCP server | STATELESS    | `notification-service` |
-| `mcp-server-hr-service`           | 8084  | MCP server | STATELESS    | `mcp-hr-service`       |
-| `mcp-server-github-service`       | 8085  | MCP server | STREAMABLE   | `github-service`       |
-| `mcp-server-gmail-service`        | 8086  | MCP server | STREAMABLE   | `gmail-service`        |
-| `mcp-server-travel-service`       | 8087  | MCP server | STATELESS    | `travel-service`       |
+| Directory                         | Port | Role       | MCP protocol | Spring App Name        |
+|-----------------------------------|------|------------|--------------|------------------------|
+| `mcp-client`                      | 8080 | MCP client | —            | `ai-mcp-server`        |
+| `mcp-server-ticket-service`       | 8081 | MCP server | STATELESS    | `ticket-service`       |
+| `mcp-server-deployment-service`   | 8082 | MCP server | STREAMABLE   | `deployment-service`   |
+| `mcp-server-notification-service` | 8083 | MCP server | STATELESS    | `notification-service` |
+| `mcp-server-hr-service`           | 8084 | MCP server | STATELESS    | `mcp-hr-service`       |
+| `mcp-server-github-service`       | 8085 | MCP server | STREAMABLE   | `github-service`       |
+| `mcp-server-gmail-service`        | 8086 | MCP server | STREAMABLE   | `gmail-service`        |
+| `mcp-server-travel-service`       | 8087 | MCP server | STATELESS    | `travel-service`       |
 
 ---
 
@@ -360,15 +360,15 @@ Declared under `spring.ai.mcp.client.streamable-http.connections` in
 `mcp-client/src/main/resources/application.yaml`. As currently checked in, only two entries are actually
 uncommented — the rest exist in the same file as commented-out templates:
 
-| Server         | URL                      | Status (as shipped)                 |
-|----------------|--------------------------|-------------------------------------|
-| `deployment`   | `http://localhost:8082`  | ✅ Active                            |
-| `github`       | `http://localhost:8085`  | ✅ Active                            |
-| `hr`           | `http://localhost:8084`  | ✅ Active                            |
-| `ticket`       | `http://localhost:8081`  | ✅ Active                            |
-| `notification` | `http://localhost:8083`  | ✅ Active                            |
-| `gmail`        | `http://localhost:8086`  | ✅ Active                            |
-| `travel`       | `http://localhost:8087`  | ✅ Active                            |
+| Server         | URL                     | Status (as shipped) |
+|----------------|-------------------------|---------------------|
+| `deployment`   | `http://localhost:8082` | ✅ Active            |
+| `github`       | `http://localhost:8085` | ✅ Active            |
+| `hr`           | `http://localhost:8084` | ✅ Active            |
+| `ticket`       | `http://localhost:8081` | ✅ Active            |
+| `notification` | `http://localhost:8083` | ✅ Active            |
+| `gmail`        | `http://localhost:8086` | ✅ Active            |
+| `travel`       | `http://localhost:8087` | ✅ Active            |
 
 Uncomment (or add) a server's block and restart `mcp-client` to bring it into the live tool set — `AppConfig`
 picks up whatever `List<McpSyncClient>` Spring AI auto-configures from this file, initializes each reachable one, and
@@ -443,14 +443,14 @@ them was ever committed). The table is aspirational; see
 
 ### MCP Tools & Prompts
 
-| Name                 | Type                           | Description                                                |
-|----------------------|--------------------------------|------------------------------------------------------------|
-| `createTicket`       | ⚠️ REST only — not an MCP tool | Create a ticket (title, description, priority, assignee)   |
-| `getTickets`         | ⚠️ REST only — not an MCP tool | List all tickets                                           |
-| `getTicket`          | ⚠️ REST only — not an MCP tool | Get a ticket by id                                         |
-| `updateTicketStatus` | ⚠️ REST only — not an MCP tool | Update a ticket's status                                   |
-| `assignTicket`       | ⚠️ REST only — not an MCP tool | Assign a ticket to an employee                             |
-| `analyze-tickets`    | Prompt                         | Returns a pre-built prompt summarising open ticket load    |
+| Name                 | Type                           | Description                                              |
+|----------------------|--------------------------------|----------------------------------------------------------|
+| `createTicket`       | ⚠️ REST only — not an MCP tool | Create a ticket (title, description, priority, assignee) |
+| `getTickets`         | ⚠️ REST only — not an MCP tool | List all tickets                                         |
+| `getTicket`          | ⚠️ REST only — not an MCP tool | Get a ticket by id                                       |
+| `updateTicketStatus` | ⚠️ REST only — not an MCP tool | Update a ticket's status                                 |
+| `assignTicket`       | ⚠️ REST only — not an MCP tool | Assign a ticket to an employee                           |
+| `analyze-tickets`    | Prompt                         | Returns a pre-built prompt summarising open ticket load  |
 
 ### REST API
 
@@ -485,15 +485,15 @@ currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer t
 
 ### MCP Tools
 
-| Tool name               | Description                                                                                                                                                                                                                                                                                                                                          |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `getDeployments`        | Get all deployments                                                                                                                                                                                                                                                                                                                                  |
-| `getDeployment`         | Get a deployment by its id                                                                                                                                                                                                                                                                                                                           |
-| `createDeployment`      | Schedule a new deployment (service, environment, datetime, owner)                                                                                                                                                                                                                                                                                    |
-| `assignOwner`           | Assign a new owner to an existing deployment                                                                                                                                                                                                                                                                                                         |
-| `rescheduleDeployment`  | Reschedule a deployment to a new ISO datetime                                                                                                                                                                                                                                                                                                        |
-| `cancelDeployment`      | Cancel a deployment by id                                                                                                                                                                                                                                                                                                                            |
-| `executeDeployment`     | Execute (simulate) a scheduled deployment now, streaming MCP progress notifications through validate/deploy/verify stages; PROD deployments additionally require interactive confirmation from the connected client via MCP elicitation (`DeploymentInteractiveTools`, separate from the other six tools because it injects `McpSyncRequestContext`) |
+| Tool name              | Description                                                                                                                                                                                                                                                                                                                                          |
+|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `getDeployments`       | Get all deployments                                                                                                                                                                                                                                                                                                                                  |
+| `getDeployment`        | Get a deployment by its id                                                                                                                                                                                                                                                                                                                           |
+| `createDeployment`     | Schedule a new deployment (service, environment, datetime, owner)                                                                                                                                                                                                                                                                                    |
+| `assignOwner`          | Assign a new owner to an existing deployment                                                                                                                                                                                                                                                                                                         |
+| `rescheduleDeployment` | Reschedule a deployment to a new ISO datetime                                                                                                                                                                                                                                                                                                        |
+| `cancelDeployment`     | Cancel a deployment by id                                                                                                                                                                                                                                                                                                                            |
+| `executeDeployment`    | Execute (simulate) a scheduled deployment now, streaming MCP progress notifications through validate/deploy/verify stages; PROD deployments additionally require interactive confirmation from the connected client via MCP elicitation (`DeploymentInteractiveTools`, separate from the other six tools because it injects `McpSyncRequestContext`) |
 
 ### REST API
 
@@ -508,15 +508,15 @@ currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer t
 
 ### Environment Variables
 
-| Variable                | Default                                       |
-|-------------------------|-----------------------------------------------|
-| `SERVER_PORT`           | `8082`                                        |
-| `DB_URL`                | `jdbc:postgresql://localhost:5432/spring_ai`  |
-| `DB_USERNAME`           | `postgres`                                    |
-| `DB_PASSWORD`           | `postgres`                                    |
-| `MCP_AUTH_TOKEN`        | *(shared token, used when OAuth2 is off)*     |
+| Variable                | Default                                              |
+|-------------------------|------------------------------------------------------|
+| `SERVER_PORT`           | `8082`                                               |
+| `DB_URL`                | `jdbc:postgresql://localhost:5432/spring_ai`         |
+| `DB_USERNAME`           | `postgres`                                           |
+| `DB_PASSWORD`           | `postgres`                                           |
+| `MCP_AUTH_TOKEN`        | *(shared token, used when OAuth2 is off)*            |
 | `MCP_OAUTH2_ENABLED`    | `false` — OAuth2 off; behaves like the other servers |
-| `MCP_OAUTH2_ISSUER_URI` | `http://localhost:8180/realms/org-mcp`        |
+| `MCP_OAUTH2_ISSUER_URI` | `http://localhost:8180/realms/org-mcp`               |
 
 **Auth flag:** by default (`MCP_OAUTH2_ENABLED=false`) this service is protected exactly like the
 other MCP servers — the shared `MCP_AUTH_TOKEN` bearer via `McpAuthFilter`, open when that is empty.
@@ -622,13 +622,13 @@ disabled entirely at runtime via the `INJECTION_GUARD_ENABLED=false` environment
 
 Pattern categories in the default catalogue:
 
-| Category                       | Examples blocked                                                                  |
-|--------------------------------|-----------------------------------------------------------------------------------|
-| Instruction override           | "ignore previous instructions", "disregard your instructions"                     |
-| Roleplay / persona hijack      | "you are now DAN", "act as if you have no restrictions", "pretend you are"        |
-| System prompt exfiltration     | "reveal your system prompt", "what are your instructions"                         |
-| Structural delimiter injection | `[SYSTEM]`, `<system>`, ` ```system `, `### instruction`                          |
-| Jailbreak keywords             | "jailbreak", "developer mode", "DAN mode"                                         |
+| Category                       | Examples blocked                                                           |
+|--------------------------------|----------------------------------------------------------------------------|
+| Instruction override           | "ignore previous instructions", "disregard your instructions"              |
+| Roleplay / persona hijack      | "you are now DAN", "act as if you have no restrictions", "pretend you are" |
+| System prompt exfiltration     | "reveal your system prompt", "what are your instructions"                  |
+| Structural delimiter injection | `[SYSTEM]`, `<system>`, ` ```system `, `### instruction`                   |
+| Jailbreak keywords             | "jailbreak", "developer mode", "DAN mode"                                  |
 
 Streaming requests (`streamChat`) send an SSE `error` event with the block message and close the emitter immediately.
 
@@ -684,7 +684,7 @@ All 7 MCP servers and the client:
 
 | Module                            | Port | Protocol   | Tools / Purpose                                                                                                                                                                               |
 |-----------------------------------|------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `mcp-client`                  | 8080 | —          | Central chat assistant; orchestrates all downstream servers via Streamable HTTP                                                                                                               |
+| `mcp-client`                      | 8080 | —          | Central chat assistant; orchestrates all downstream servers via Streamable HTTP                                                                                                               |
 | `mcp-server-ticket-service`       | 8081 | STATELESS  | `analyze-tickets` prompt; REST-only ticket CRUD (createTicket, getTickets, getTicket, updateTicketStatus, assignTicket)                                                                       |
 | `mcp-server-deployment-service`   | 8082 | STREAMABLE | `getDeployments`, `getDeployment`, `createDeployment`, `assignOwner`, `rescheduleDeployment`, `cancelDeployment`, `executeDeployment` (progress + elicitation); OAuth2.1 (Keycloak) protected |
 | `mcp-server-notification-service` | 8083 | STATELESS  | `getNotifications`, `sendNotification` (channels: INTERNAL, EMAIL, SLACK)                                                                                                                     |
@@ -850,19 +850,19 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 
 ### Behavioral
 
-| Pattern                 | Status      | Where                                                                                                                                              |
-|-------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| Strategy                | ✅ In use    | `ChannelDeliveryStrategy` + per-channel implementations (notification); selected at runtime via `DeliveryStrategyRegistry`                         |
-| Template Method         | ✅ In use    | `ToolExecutionTemplate` (github) defines the invariant tool-execution skeleton once; `OncePerRequestFilter.doFilterInternal` in every auth filter  |
-| State                   | ✅ In use    | `TicketStatus` enum owns its legal transitions; `TicketService.updateStatus` rejects illegal lifecycle moves                                       |
-| Command                 | ✅ In use    | `@McpTool` methods reified as MCP tool callbacks; `Supplier<String>` actions handed to `ToolExecutionTemplate`                                     |
-| Chain of Responsibility | ✅ In use    | Servlet `FilterChain`: auth → acting-user → rate-limit → handler in every module                                                                   |
-| Observer                | ✅ In use    | `@EventListener(ContextRefreshedEvent)` startup checks (github/gmail); Micrometer counters/actuator events                                         |
-| Mediator                | ✅ In use    | `ChatService` + `BoundedToolCallingManager` (client) coordinate model, memory, prompts and tools without coupling them to each other               |
-| Memento                 | ✅ In use    | `PostgresConversationStore` externalises, persists and restores conversation state per turn                                                        |
-| Iterator                | ⚙ Framework | Java collections / Streams throughout                                                                                                              |
-| Interpreter             | ⚙ Framework | Spring AI `PromptTemplate` parses and evaluates the StringTemplate grammar in `prompts/system.st`                                                  |
-| Visitor                 | ✗ Not used  | Domain models are flat and stable; no double-dispatch over heterogeneous object structures is needed                                               |
+| Pattern                 | Status      | Where                                                                                                                                             |
+|-------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| Strategy                | ✅ In use    | `ChannelDeliveryStrategy` + per-channel implementations (notification); selected at runtime via `DeliveryStrategyRegistry`                        |
+| Template Method         | ✅ In use    | `ToolExecutionTemplate` (github) defines the invariant tool-execution skeleton once; `OncePerRequestFilter.doFilterInternal` in every auth filter |
+| State                   | ✅ In use    | `TicketStatus` enum owns its legal transitions; `TicketService.updateStatus` rejects illegal lifecycle moves                                      |
+| Command                 | ✅ In use    | `@McpTool` methods reified as MCP tool callbacks; `Supplier<String>` actions handed to `ToolExecutionTemplate`                                    |
+| Chain of Responsibility | ✅ In use    | Servlet `FilterChain`: auth → acting-user → rate-limit → handler in every module                                                                  |
+| Observer                | ✅ In use    | `@EventListener(ContextRefreshedEvent)` startup checks (github/gmail); Micrometer counters/actuator events                                        |
+| Mediator                | ✅ In use    | `ChatService` + `BoundedToolCallingManager` (client) coordinate model, memory, prompts and tools without coupling them to each other              |
+| Memento                 | ✅ In use    | `PostgresConversationStore` externalises, persists and restores conversation state per turn                                                       |
+| Iterator                | ⚙ Framework | Java collections / Streams throughout                                                                                                             |
+| Interpreter             | ⚙ Framework | Spring AI `PromptTemplate` parses and evaluates the StringTemplate grammar in `prompts/system.st`                                                 |
+| Visitor                 | ✗ Not used  | Domain models are flat and stable; no double-dispatch over heterogeneous object structures is needed                                              |
 
 ---
 
@@ -1370,15 +1370,15 @@ invoke tools during development and debugging.
 - **Connection Type:** `Via Proxy`
 - **URL** — one of:
 
-| Server | URL |
-|---|---|
-| ticket-service | `http://host.docker.internal:8081/mcp` |
-| deployment-service | `http://host.docker.internal:8082/mcp` (needs a Keycloak JWT under *Authentication*) |
-| notification-service | `http://host.docker.internal:8083/mcp` |
-| hr-service | `http://host.docker.internal:8084/mcp` |
-| github-service | `http://host.docker.internal:8085/mcp` |
-| gmail-service | `http://host.docker.internal:8086/mcp` |
-| travel-service | `http://host.docker.internal:8087/mcp` |
+| Server               | URL                                                                                  |
+|----------------------|--------------------------------------------------------------------------------------|
+| ticket-service       | `http://host.docker.internal:8081/mcp`                                               |
+| deployment-service   | `http://host.docker.internal:8082/mcp` (needs a Keycloak JWT under *Authentication*) |
+| notification-service | `http://host.docker.internal:8083/mcp`                                               |
+| hr-service           | `http://host.docker.internal:8084/mcp`                                               |
+| github-service       | `http://host.docker.internal:8085/mcp`                                               |
+| gmail-service        | `http://host.docker.internal:8086/mcp`                                               |
+| travel-service       | `http://host.docker.internal:8087/mcp`                                               |
 
 - **Authentication:** only needed when `MCP_AUTH_TOKEN` is set on the servers (Bearer token), or for
   `deployment-service` (OAuth2 — client-credentials JWT from Keycloak realm `org-mcp`).
@@ -1472,11 +1472,11 @@ operators instantly see which exact code revision is running in any environment 
 
 ### 20.1 The three actors: Host, Client, Server
 
-| Role | Definition | In this repo |
-|---|---|---|
-| **Host** | User-facing app that owns the conversation + LLM loop | `mcp-client` (`ChatService`: chat memory, system prompt, `ChatModel`) |
+| Role           | Definition                                                           | In this repo                                                                           |
+|----------------|----------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| **Host**       | User-facing app that owns the conversation + LLM loop                | `mcp-client` (`ChatService`: chat memory, system prompt, `ChatModel`)                  |
 | **MCP Client** | Protocol endpoint *inside* the host, connected to exactly one server | one `McpSyncClient` per entry under `spring.ai.mcp.client.streamable-http.connections` |
-| **MCP Server** | Process exposing tools / resources / prompts | each `mcp-server-*` module |
+| **MCP Server** | Process exposing tools / resources / prompts                         | each `mcp-server-*` module                                                             |
 
 - **Host : client = 1 : N** — seven YAML connections ⇒ seven MCP clients inside one host process.
 - **Client : server = 1 : 1** — always.
@@ -1491,17 +1491,17 @@ operators instantly see which exact code revision is running in any environment 
     - **Notification** — no `id`, fire-and-forget: `{"jsonrpc":"2.0","method":"notifications/initialized"}`
 - Methods this repo exercises:
 
-| Method | Direction | Purpose |
-|---|---|---|
-| `initialize` | client → server | handshake: version + capabilities |
-| `notifications/initialized` | client → server | confirms handshake done |
-| `tools/list` | client → server | discover tools (name, description, input JSON Schema) |
-| `tools/call` | client → server | invoke one tool |
-| `prompts/list` / `prompts/get` | client → server | discover / expand prompt templates (ticket-service) |
-| `resources/list` / `resources/read` | client → server | discover / read resources (not used here — 20.6) |
-| `sampling/createMessage` | **server → client** | server borrows the host's LLM (github, deployment) |
-| `elicitation/create` | **server → client** | server asks the user a question mid-call |
-| `notifications/progress` | server → client | progress updates for long calls |
+| Method                              | Direction           | Purpose                                               |
+|-------------------------------------|---------------------|-------------------------------------------------------|
+| `initialize`                        | client → server     | handshake: version + capabilities                     |
+| `notifications/initialized`         | client → server     | confirms handshake done                               |
+| `tools/list`                        | client → server     | discover tools (name, description, input JSON Schema) |
+| `tools/call`                        | client → server     | invoke one tool                                       |
+| `prompts/list` / `prompts/get`      | client → server     | discover / expand prompt templates (ticket-service)   |
+| `resources/list` / `resources/read` | client → server     | discover / read resources (not used here — 20.6)      |
+| `sampling/createMessage`            | **server → client** | server borrows the host's LLM (github, deployment)    |
+| `elicitation/create`                | **server → client** | server asks the user a question mid-call              |
+| `notifications/progress`            | server → client     | progress updates for long calls                       |
 
 - **Key idea**: after the handshake, *both sides can initiate*. `executeDeployment` can pause, ask "production deploy — confirm?", and resume. Plain REST can't do this; it's why the transport needs a streaming channel.
 
@@ -1532,11 +1532,11 @@ operators instantly see which exact code revision is running in any environment 
 
 ### 20.4 Transports
 
-| Transport | Channel | Use case | Status |
-|---|---|---|---|
-| **STDIO** | child process, JSON-RPC over stdin/stdout | local tools launched by desktop hosts | current |
-| **HTTP + SSE** | POST up, separate long-lived SSE GET down | original remote transport | **deprecated** |
-| **Streamable HTTP** | single `/mcp` endpoint, POST only | remote servers — used by this whole repo | current standard |
+| Transport           | Channel                                   | Use case                                 | Status           |
+|---------------------|-------------------------------------------|------------------------------------------|------------------|
+| **STDIO**           | child process, JSON-RPC over stdin/stdout | local tools launched by desktop hosts    | current          |
+| **HTTP + SSE**      | POST up, separate long-lived SSE GET down | original remote transport                | **deprecated**   |
+| **Streamable HTTP** | single `/mcp` endpoint, POST only         | remote servers — used by this whole repo | current standard |
 
 - **How Streamable HTTP works**:
     - client always POSTs with `Accept: application/json, text/event-stream`;
@@ -1649,11 +1649,11 @@ operators instantly see which exact code revision is running in any environment 
 - Example here: `TicketPromptProvider` (ticket-service) — `prompts/list` → `analyze-tickets`; `prompts/get` expands it with live ticket data.
 - The control matrix — who decides each primitive is used:
 
-| Primitive | Decider | Example here |
-|---|---|---|
-| Tool | **model** | `createDeployment` mid-conversation |
-| Resource | **host/app** | (not used — 20.6) |
-| Prompt | **user** | "Analyze tickets" workflow |
+| Primitive | Decider      | Example here                        |
+|-----------|--------------|-------------------------------------|
+| Tool      | **model**    | `createDeployment` mid-conversation |
+| Resource  | **host/app** | (not used — 20.6)                   |
+| Prompt    | **user**     | "Analyze tickets" workflow          |
 
 ### 20.8 Client side: from `tools/list` to a ChatModel tool call
 
@@ -1683,13 +1683,13 @@ Chain inside `mcp-client`, in execution order:
 
 ### 20.10 Debugging & testing toolchain
 
-| Tool | Gives you | How |
-|---|---|---|
+| Tool                        | Gives you                                                  | How                                                                                                     |
+|-----------------------------|------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
 | **MCP Inspector** (`:6274`) | interactive UI: connect, browse, call, watch notifications | compose service `mcp-inspector`; Streamable HTTP, *Via Proxy*, `http://host.docker.internal:<port>/mcp` |
-| **Insomnia collection** | raw JSON-RPC, folder per service, handshake + every tool | [`insomnia-collection.json`](insomnia-collection.json) |
-| **curl** | scriptable smoke tests | each service README, "curl Commands" |
-| **Unit tests** | validation logic, no Spring | `HrMcpToolsValidationTest` etc. — typed-exception assertions |
-| **Integration tests** | real DB via Testcontainers | `TestcontainersConfiguration` (`@ServiceConnection` Postgres) per module |
+| **Insomnia collection**     | raw JSON-RPC, folder per service, handshake + every tool   | [`insomnia-collection.json`](insomnia-collection.json)                                                  |
+| **curl**                    | scriptable smoke tests                                     | each service README, "curl Commands"                                                                    |
+| **Unit tests**              | validation logic, no Spring                                | `HrMcpToolsValidationTest` etc. — typed-exception assertions                                            |
+| **Integration tests**       | real DB via Testcontainers                                 | `TestcontainersConfiguration` (`@ServiceConnection` Postgres) per module                                |
 
 ### 20.11 Pitfalls (all hit in this repo)
 
@@ -1706,19 +1706,19 @@ Chain inside `mcp-client`, in execution order:
 
 ### 20.12 Glossary
 
-| Term | Meaning |
-|---|---|
-| **Host** | user-facing app owning the LLM loop (`mcp-client`) |
-| **MCP client** | protocol endpoint inside the host, 1:1 with a server (`McpSyncClient`) |
-| **MCP server** | process exposing tools/resources/prompts (`mcp-server-*`) |
-| **Tool** | model-invoked action with JSON-Schema'd inputs (`@McpTool`) |
-| **Resource** | application-selected read-only data addressed by URI |
-| **Prompt** | user-invoked message template (`prompts/get`) |
-| **Sampling** | server borrows the client's LLM (`sampling/createMessage`) |
-| **Elicitation** | server asks the user a question mid-tool-call |
-| **Streamable HTTP** | single-endpoint POST transport; responses may upgrade to SSE |
+| Term                       | Meaning                                                                    |
+|----------------------------|----------------------------------------------------------------------------|
+| **Host**                   | user-facing app owning the LLM loop (`mcp-client`)                         |
+| **MCP client**             | protocol endpoint inside the host, 1:1 with a server (`McpSyncClient`)     |
+| **MCP server**             | process exposing tools/resources/prompts (`mcp-server-*`)                  |
+| **Tool**                   | model-invoked action with JSON-Schema'd inputs (`@McpTool`)                |
+| **Resource**               | application-selected read-only data addressed by URI                       |
+| **Prompt**                 | user-invoked message template (`prompts/get`)                              |
+| **Sampling**               | server borrows the client's LLM (`sampling/createMessage`)                 |
+| **Elicitation**            | server asks the user a question mid-tool-call                              |
+| **Streamable HTTP**        | single-endpoint POST transport; responses may upgrade to SSE               |
 | **STATELESS / STREAMABLE** | Spring AI server modes: no session vs session + reverse-direction features |
-| **`Mcp-Session-Id`** | header correlating requests to a STREAMABLE session |
-| **`isError`** | tool-result flag: domain failure (model sees it) vs protocol error |
-| **Capability** | feature a side advertises during `initialize` (tools, sampling, …) |
-| **ToolCallback** | Spring AI bridge: remote MCP tool exposed to the `ChatModel` |
+| **`Mcp-Session-Id`**       | header correlating requests to a STREAMABLE session                        |
+| **`isError`**              | tool-result flag: domain failure (model sees it) vs protocol error         |
+| **Capability**             | feature a side advertises during `initialize` (tools, sampling, …)         |
+| **ToolCallback**           | Spring AI bridge: remote MCP tool exposed to the `ChatModel`               |

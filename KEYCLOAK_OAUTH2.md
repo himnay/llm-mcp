@@ -81,10 +81,10 @@ Decode the `access_token` (e.g. on https://jwt.io or `jwt -` if you have a CLI) 
 
 Two different URLs are needed, on two different sides — don't mix them up:
 
-| URL | Used by | Property | Points at |
-|-----|---------|----------|-----------|
+| URL            | Used by                                                                                          | Property                                               | Points at                                                                                                             |
+|----------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | **Issuer URI** | Resource server (`mcp-server-deployment-service`) — used for OIDC discovery (JWKS, issuer check) | `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `.../realms/org-mcp` (no `/protocol/...` suffix — Spring Security appends `/.well-known/openid-configuration` itself) |
-| **Token URI** | OAuth2 client (`mcp-client`) — used to actually request a token | `mcp.oauth2.token-uri` | `.../realms/org-mcp/protocol/openid-connect/token` (the full token endpoint) |
+| **Token URI**  | OAuth2 client (`mcp-client`) — used to actually request a token                                  | `mcp.oauth2.token-uri`                                 | `.../realms/org-mcp/protocol/openid-connect/token` (the full token endpoint)                                          |
 
 **`mcp-server-deployment-service/src/main/resources/application.yaml`:**
 
