@@ -12,11 +12,13 @@ import org.springframework.context.event.EventListener;
 @EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
+    /** Defines the rate limiter bean. */
     @Bean
     public RateLimiter rateLimiter(SecurityProperties props) {
         return new RateLimiter(props.getRateLimitPerMinute());
     }
 
+    /** Handles warn if insecure. */
     @EventListener(ContextRefreshedEvent.class)
     public void warnIfInsecure(ContextRefreshedEvent event) {
         SecurityProperties props = event.getApplicationContext().getBean(SecurityProperties.class);

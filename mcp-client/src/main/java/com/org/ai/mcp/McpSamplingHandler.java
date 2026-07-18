@@ -33,6 +33,7 @@ public class McpSamplingHandler {
 
     private final ChatModel chatModel;
 
+    /** Handles github sampling. */
     @McpSampling(clients = "github")
     public McpSchema.CreateMessageResult handleGithubSampling(McpSchema.CreateMessageRequest request) {
         List<Message> messages = new ArrayList<>();

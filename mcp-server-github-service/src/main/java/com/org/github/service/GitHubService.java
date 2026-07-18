@@ -63,6 +63,7 @@ public class GitHubService {
         }
     }
 
+    /** Lists branches. */
     @Cacheable(value = "github", key = "'branches:' + #owner + '/' + #repo")
     public String listBranches(String owner, String repo) {
         try {
@@ -145,6 +146,7 @@ public class GitHubService {
         }
     }
 
+    /** Searches repositories. */
     @Cacheable(value = "github", key = "'search:' + #query + ':' + #sort + ':' + #order")
     public String searchRepositories(String query, String sort, String order) {
         try {
@@ -189,6 +191,7 @@ public class GitHubService {
         return "[]";
     }
 
+    /** Creates issue. */
     public String createIssue(String owner, String repo, String title, String body, String labels) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("title", title);

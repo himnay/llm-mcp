@@ -29,24 +29,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
+    /** Handles not found. */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         log.warn("Resource not found | {}", ex.getMessage());
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), List.of());
     }
 
+    /** Handles invalid tool argument. */
     @ExceptionHandler(InvalidToolArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidToolArgument(InvalidToolArgumentException ex) {
         log.warn("Invalid tool argument | {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    /** Handles delivery configuration. */
     @ExceptionHandler(DeliveryConfigurationException.class)
     public ResponseEntity<Map<String, Object>> handleDeliveryConfiguration(DeliveryConfigurationException ex) {
         log.error("Delivery configuration error | {}", ex.getMessage());
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), List.of());
     }
 
+    /** Handles constraint violation. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         List<String> details = ex.getConstraintViolations().stream()
@@ -56,6 +60,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
+    /** Handles body validation. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleBodyValidation(MethodArgumentNotValidException ex) {
         List<String> details = ex.getBindingResult().getFieldErrors().stream()
@@ -65,6 +70,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
+    /** Handles bad request. */
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class,
@@ -75,6 +81,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    /** Handles generic. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

@@ -19,6 +19,7 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
 
+    /** Creates ticket. */
     public Ticket createTicket(String title,
                                String description,
                                TicketPriority priority,
@@ -46,6 +47,7 @@ public class TicketService {
         return ticketRepository.findAll();
     }
 
+    /** Updates status. */
     public Ticket updateStatus(Long id, TicketStatus status) {
         Ticket ticket = getTicket(id);
         if (!ticket.getStatus().canTransitionTo(status)) {
@@ -58,6 +60,7 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
+    /** Returns the assign ticket. */
     public Ticket assignTicket(Long id, String assignee) {
         Ticket ticket = getTicket(id);
         ticket.setAssignee(assignee);

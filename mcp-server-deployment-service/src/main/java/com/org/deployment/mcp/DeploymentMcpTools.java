@@ -148,6 +148,7 @@ class DeploymentMcpTools {
         }
     }
 
+    /** Creates deployment. */
     @McpTool(
             name = "createDeployment",
             description = "Create a new deployment. Provide serviceName, environment (DEV, QA, STAGING, PROD), "
@@ -184,6 +185,7 @@ class DeploymentMcpTools {
         }
     }
 
+    /** Returns the assign owner. */
     @McpTool(
             name = "assignOwner",
             description = "Assign a new owner to an existing deployment"
@@ -213,6 +215,7 @@ class DeploymentMcpTools {
         }
     }
 
+    /** Returns the reschedule deployment. */
     @McpTool(
             name = "rescheduleDeployment",
             description = "Reschedule a deployment to a new ISO datetime (yyyy-MM-ddTHH:mm:ss)"
@@ -244,6 +247,7 @@ class DeploymentMcpTools {
         }
     }
 
+    /** Cancels deployment. */
     @McpTool(
             name = "cancelDeployment",
             description = "Cancel a deployment by id"

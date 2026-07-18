@@ -13,6 +13,7 @@ public class RateLimiter {
         this.limitPerMinute = limitPerMinute;
     }
 
+    /** Returns the try acquire. */
     public boolean tryAcquire(String user) {
         return acquire(user, windows, limitPerMinute);
     }

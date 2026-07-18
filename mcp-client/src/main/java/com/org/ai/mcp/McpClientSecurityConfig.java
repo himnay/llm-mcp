@@ -31,6 +31,7 @@ public class McpClientSecurityConfig {
 
     private static final String OAUTH2_CONNECTION_NAME = "deployment";
 
+    /** Defines the mcp auth transport customizer bean. */
     @Bean
     public McpClientCustomizer<HttpClientStreamableHttpTransport.Builder> mcpAuthTransportCustomizer(
             AssistantProperties properties, KeycloakTokenService keycloakTokenService,

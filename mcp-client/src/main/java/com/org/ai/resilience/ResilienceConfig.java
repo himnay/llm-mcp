@@ -18,6 +18,7 @@ public class ResilienceConfig {
     private static final List<String> MCP_SERVERS =
             List.of("mcp-hr", "mcp-ticket", "mcp-deployment", "mcp-notification", "mcp-github", "mcp-gmail");
 
+    /** Defines the circuit breaker registry bean. */
     @Bean
     public CircuitBreakerRegistry circuitBreakerRegistry(MeterRegistry meterRegistry) {
         CircuitBreakerConfig config = CircuitBreakerConfig.custom()
@@ -43,6 +44,7 @@ public class ResilienceConfig {
         return registry;
     }
 
+    /** Defines the retry registry bean. */
     @Bean
     public RetryRegistry retryRegistry() {
         RetryConfig config = RetryConfig.custom()

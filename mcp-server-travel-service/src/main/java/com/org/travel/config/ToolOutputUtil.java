@@ -5,6 +5,7 @@ public final class ToolOutputUtil {
     private ToolOutputUtil() {
     }
 
+    /** Returns the cap. */
     public static String cap(String output, int maxChars) {
         if (output == null) return "";
         if (output.length() <= maxChars) return output;

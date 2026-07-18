@@ -32,6 +32,7 @@ public class McpElicitationHandler {
     @Value("${assistant.elicitation.auto-confirm:false}")
     private boolean autoConfirm;
 
+    /** Handles deployment elicitation. */
     @McpElicitation(clients = "deployment")
     public McpSchema.ElicitResult handleDeploymentElicitation(McpSchema.ElicitRequest request) {
         if (autoConfirm) {

@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 class GmailServiceApplication {
 
+    /** Application entry point. */
     public static void main(String[] args) {
         SpringApplication.run(GmailServiceApplication.class, args);
     }

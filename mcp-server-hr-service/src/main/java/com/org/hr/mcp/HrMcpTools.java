@@ -60,6 +60,7 @@ class HrMcpTools {
     // Helpers
     // -------------------------------------------------------------------------
 
+    /** Applies leave. */
     @McpTool(
             name = "applyLeave",
             description = "Apply leave for a user on a specific ISO-8601 date (yyyy-MM-dd)"
@@ -106,6 +107,7 @@ class HrMcpTools {
         }
     }
 
+    /** Finds replacement. */
     @McpTool(
             name = "findReplacement",
             description = "Find a replacement employee for a user on a specific date - ISO-8601 date format (yyyy-MM-dd)"

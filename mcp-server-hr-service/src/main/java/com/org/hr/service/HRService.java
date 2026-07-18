@@ -21,6 +21,7 @@ public class HRService {
     private final EmployeeRepository employeeRepository;
     private final LeaveRecordRepository leaveRecordRepository;
 
+    /** Applies leave. */
     @Transactional
     public LeaveRecord applyLeave(String username, LocalDate date) {
         return leaveRecordRepository
@@ -42,6 +43,7 @@ public class HRService {
                 .isPresent();
     }
 
+    /** Finds replacement. */
     public String findReplacement(String username, LocalDate date) {
         Employee current = employeeRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + username));

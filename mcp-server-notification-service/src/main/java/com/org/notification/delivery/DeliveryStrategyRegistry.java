@@ -30,6 +30,7 @@ public class DeliveryStrategyRegistry {
         }
     }
 
+    /** Returns the strategy for. */
     public ChannelDeliveryStrategy strategyFor(NotificationChannel channel) {
         return strategies.get(channel);
     }

@@ -17,6 +17,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final DeliveryStrategyRegistry deliveryStrategies;
 
+    /** Sends notification. */
     public Notification sendNotification(NotificationChannel channel,
                                          String recipient,
                                          String message) {

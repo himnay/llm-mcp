@@ -25,6 +25,7 @@ public class GmailClientConfig {
                 .build();
     }
 
+    /** Handles warn if no token. */
     @EventListener(ContextRefreshedEvent.class)
     public void warnIfNoToken(ContextRefreshedEvent event) {
         GmailProperties props = event.getApplicationContext().getBean(GmailProperties.class);

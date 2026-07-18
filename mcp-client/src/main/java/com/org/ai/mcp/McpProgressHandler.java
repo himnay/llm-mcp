@@ -23,6 +23,7 @@ public class McpProgressHandler {
     /** Latest observed progress per progressToken; entries are removed on completion (>= total). */
     private final Map<Object, McpSchema.ProgressNotification> latestByToken = new ConcurrentHashMap<>();
 
+    /** Handles deployment progress. */
     @McpProgress(clients = "deployment")
     public void handleDeploymentProgress(McpSchema.ProgressNotification notification) {
         double progress = notification.progress() != null ? notification.progress() : 0;

@@ -15,6 +15,7 @@ public class RestClientConfig {
         this.amadeusProperties = amadeusProperties;
     }
 
+    /** Defines the amadeus rest client bean. */
     @Bean("amadeusRestClient")
     public RestClient amadeusRestClient() {
         return RestClient.builder()

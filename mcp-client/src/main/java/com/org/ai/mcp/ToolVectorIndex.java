@@ -31,6 +31,7 @@ public class ToolVectorIndex {
     private final VectorStore vectorStore;
     private final ToolCallbackProvider toolCallbackProvider;
 
+    /** Indexes tools. */
     @EventListener(ApplicationReadyEvent.class)
     public void indexTools() {
         ToolCallback[] callbacks = toolCallbackProvider.getToolCallbacks();

@@ -19,6 +19,7 @@ public class PostgresConversationStore {
 
     private final ChatMessageRepository repository;
 
+    /** Loads messages. */
     @Transactional(readOnly = true)
     public List<Message> loadMessages(String conversationId, int limit) {
         return repository.findByConversationId(conversationId, PageRequest.of(0, limit))
@@ -32,12 +33,14 @@ public class PostgresConversationStore {
                 .toList();
     }
 
+    /** Saves exchange. */
     @Transactional
     public void saveExchange(String conversationId, String userText, String assistantText) {
         repository.save(new ChatMessageEntity(conversationId, "USER", userText));
         repository.save(new ChatMessageEntity(conversationId, "ASSISTANT", assistantText));
     }
 
+    /** Clears conversation. */
     @Transactional
     public void clearConversation(String conversationId) {
         repository.deleteByConversationId(conversationId);

@@ -21,6 +21,7 @@ class TicketPromptProvider {
     @Value("${mcp.output.max-chars:8000}")
     private int maxOutputChars;
 
+    /** Returns the analyze tickets prompt. */
     @McpPrompt(
             name = "analyze-tickets",
             description = "Instructions for analyzing Org support tickets."

@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 class TravelServiceApplication {
 
+    /** Application entry point. */
     public static void main(String[] args) {
         SpringApplication.run(TravelServiceApplication.class, args);
     }

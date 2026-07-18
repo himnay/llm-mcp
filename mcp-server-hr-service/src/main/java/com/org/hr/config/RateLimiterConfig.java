@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RateLimiterConfig {
 
+    /** Defines the rate limiter bean. */
     @Bean
     public RateLimiter rateLimiter(SecurityProperties securityProperties) {
         return new RateLimiter(securityProperties.getRateLimitPerMinute());

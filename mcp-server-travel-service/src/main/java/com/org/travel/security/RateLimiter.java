@@ -18,6 +18,7 @@ public class RateLimiter {
         this.maxPerMinute = maxPerMinute;
     }
 
+    /** Returns the try acquire. */
     public boolean tryAcquire(String key) {
         return acquire(key, counters, maxPerMinute);
     }

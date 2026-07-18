@@ -22,6 +22,7 @@ import java.time.Duration;
 @EnableConfigurationProperties(GitHubProperties.class)
 public class GitHubClientConfig {
 
+    /** Defines the cache manager bean. */
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory, GitHubProperties props) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
@@ -33,6 +34,7 @@ public class GitHubClientConfig {
                 .build();
     }
 
+    /** Defines the git hub rest client bean. */
     @Bean
     public RestClient gitHubRestClient(GitHubProperties props) {
         RestClient.Builder builder = RestClient.builder()
@@ -46,6 +48,7 @@ public class GitHubClientConfig {
         return builder.build();
     }
 
+    /** Handles warn if no token. */
     @EventListener(ContextRefreshedEvent.class)
     public void warnIfNoToken(ContextRefreshedEvent event) {
         GitHubProperties props = event.getApplicationContext().getBean(GitHubProperties.class);

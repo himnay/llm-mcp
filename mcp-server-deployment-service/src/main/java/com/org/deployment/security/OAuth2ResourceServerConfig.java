@@ -47,6 +47,7 @@ public class OAuth2ResourceServerConfig {
     private static final String REQUIRED_SCOPE_AUTHORITY = "SCOPE_deployment-invoke";
     private static final String REQUIRED_AUDIENCE = "deployment-service";
 
+    /** Defines the oauth2 resource server filter chain bean. */
     @Bean
     public SecurityFilterChain oauth2ResourceServerFilterChain(HttpSecurity http) throws Exception {
         http
@@ -59,6 +60,7 @@ public class OAuth2ResourceServerConfig {
         return http.build();
     }
 
+    /** Defines the jwt decoder bean. */
     @Bean
     public JwtDecoder jwtDecoder(
             @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuerUri) {

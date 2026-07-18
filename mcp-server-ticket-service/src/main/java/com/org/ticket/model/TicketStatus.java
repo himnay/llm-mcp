@@ -28,6 +28,7 @@ public enum TicketStatus {
         }
     };
 
+    /** Returns the allowed transitions. */
     public abstract Set<TicketStatus> allowedTransitions();
 
     /**

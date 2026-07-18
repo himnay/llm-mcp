@@ -21,6 +21,7 @@ public class SecurityConfig {
         this.securityProperties = securityProperties;
     }
 
+    /** Handles startup. */
     @EventListener(ContextRefreshedEvent.class)
     public void onStartup() {
         if (securityProperties.getToken() == null || securityProperties.getToken().isBlank()) {

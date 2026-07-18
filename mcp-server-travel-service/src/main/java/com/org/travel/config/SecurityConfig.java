@@ -21,11 +21,13 @@ public class SecurityConfig {
         this.amadeusProperties = amadeusProperties;
     }
 
+    /** Defines the rate limiter bean. */
     @Bean
     public RateLimiter rateLimiter() {
         return new RateLimiter(securityProperties.getRateLimitPerMinute());
     }
 
+    /** Handles startup. */
     @EventListener(ContextRefreshedEvent.class)
     public void onStartup() {
         if (securityProperties.getToken() == null || securityProperties.getToken().isBlank()) {

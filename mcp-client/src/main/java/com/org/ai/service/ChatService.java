@@ -38,6 +38,7 @@ public class ChatService {
     @Value("classpath:prompts/system.st")
     private Resource systemPromptTemplate;
 
+    /** Handles message. */
     public String handleMessage(String message) {
         if (!injectionGuard.isQuerySafe(message)) {
             return injectionGuard.blockMessage();
@@ -65,6 +66,7 @@ public class ChatService {
         return content;
     }
 
+    /** Streams chat. */
     public void streamChat(String conversationId, String message, SseEmitter emitter) {
         if (!injectionGuard.isQuerySafe(message)) {
             try {

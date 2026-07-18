@@ -29,6 +29,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
+    /** Handles body validation. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleBodyValidation(MethodArgumentNotValidException ex) {
         List<String> details = ex.getBindingResult().getFieldErrors().stream()
@@ -38,6 +39,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
+    /** Handles constraint violation. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         List<String> details = ex.getConstraintViolations().stream()
@@ -47,6 +49,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
+    /** Handles bad request. */
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class,
@@ -57,12 +60,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    /** Handles tool invocation. */
     @ExceptionHandler(ToolInvocationException.class)
     public ResponseEntity<Map<String, Object>> handleToolInvocation(ToolInvocationException ex) {
         log.error("Tool invocation failed", ex);
         return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), List.of());
     }
 
+    /** Handles generic. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

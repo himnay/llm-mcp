@@ -24,6 +24,7 @@ public class NoAuthSecurityConfig {
 
     private static final Logger log = LoggerFactory.getLogger(NoAuthSecurityConfig.class);
 
+    /** Defines the permit all filter chain bean. */
     @Bean
     public SecurityFilterChain permitAllFilterChain(HttpSecurity http) throws Exception {
         log.warn("OAuth2 resource server DISABLED (mcp.security.oauth2.enabled=false) — "

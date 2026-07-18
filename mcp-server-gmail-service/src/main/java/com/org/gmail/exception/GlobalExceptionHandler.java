@@ -29,24 +29,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
+    /** Handles not found. */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         log.warn("Resource not found | {}", ex.getMessage());
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), List.of());
     }
 
+    /** Handles invalid tool argument. */
     @ExceptionHandler(InvalidToolArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidToolArgument(InvalidToolArgumentException ex) {
         log.warn("Invalid tool argument | {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    /** Handles external service failure. */
     @ExceptionHandler(ExternalServiceException.class)
     public ResponseEntity<Map<String, Object>> handleExternalServiceFailure(ExternalServiceException ex) {
         log.error("External service call failed | {}", ex.getMessage());
         return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), List.of());
     }
 
+    /** Handles constraint violation. */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         List<String> details = ex.getConstraintViolations().stream()
@@ -55,6 +59,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
+    /** Handles body validation. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleBodyValidation(MethodArgumentNotValidException ex) {
         List<String> details = ex.getBindingResult().getFieldErrors().stream()
@@ -63,18 +68,21 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
+    /** Handles bad request. */
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class, IllegalArgumentException.class})
     public ResponseEntity<Map<String, Object>> handleBadRequest(Exception ex) {
         log.warn("Bad request | {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    /** Handles illegal state. */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
         log.warn("Write gate rejected | {}", ex.getMessage());
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
     }
 
+    /** Handles generic. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

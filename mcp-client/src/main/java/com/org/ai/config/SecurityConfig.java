@@ -35,6 +35,7 @@ public class SecurityConfig {
     @Value("${assistant.security.enabled:true}")
     private boolean securityEnabled;
 
+    /** Defines the security filter chain bean. */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

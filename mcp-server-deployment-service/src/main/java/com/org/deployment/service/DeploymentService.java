@@ -27,6 +27,7 @@ public class DeploymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Deployment not found: " + id));
     }
 
+    /** Creates deployment. */
     @Transactional
     public Deployment createDeployment(String serviceName,
                                        DeploymentEnvironment environment,
@@ -46,6 +47,7 @@ public class DeploymentService {
         return deploymentRepository.save(deployment);
     }
 
+    /** Returns the assign owner. */
     @Transactional
     public Deployment assignOwner(Long id, String newOwner) {
         Deployment deployment = getDeployment(id);
@@ -56,6 +58,7 @@ public class DeploymentService {
         return deploymentRepository.save(deployment);
     }
 
+    /** Returns the reschedule deployment. */
     @Transactional
     public Deployment rescheduleDeployment(Long id, LocalDateTime newTime) {
         Deployment deployment = getDeployment(id);
@@ -64,6 +67,7 @@ public class DeploymentService {
         return deploymentRepository.save(deployment);
     }
 
+    /** Cancels deployment. */
     @Transactional
     public Deployment cancelDeployment(Long id) {
         Deployment deployment = getDeployment(id);

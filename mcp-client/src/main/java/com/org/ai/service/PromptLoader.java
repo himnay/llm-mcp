@@ -14,6 +14,7 @@ class PromptLoader {
 
     private final List<McpSyncClient> mcpSyncClients;
 
+    /** Loads prompt. */
     public String loadPrompt(String message) {
 
         if (!message.startsWith("/")) {

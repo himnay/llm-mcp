@@ -12,14 +12,17 @@ public final class ActingUserContext {
     private ActingUserContext() {
     }
 
+    /** Handles set. */
     public static void set(String user) {
         HOLDER.set(user);
     }
 
+    /** Returns the get. */
     public static String get() {
         return HOLDER.get();
     }
 
+    /** Clears. */
     public static void clear() {
         HOLDER.remove();
     }

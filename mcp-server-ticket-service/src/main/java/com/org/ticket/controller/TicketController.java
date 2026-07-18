@@ -47,6 +47,7 @@ public class TicketController {
         return (System.nanoTime() - startNano) / 1_000_000L;
     }
 
+    /** Creates ticket. */
     @PostMapping
     public Ticket createTicket(@RequestParam @NotBlank String title,
                                @RequestParam @NotBlank String description,
@@ -80,6 +81,7 @@ public class TicketController {
         return ticketService.getTicket(id);
     }
 
+    /** Updates status. */
     @PutMapping("/{id}/status")
     public Ticket updateStatus(@PathVariable @Positive Long id,
                                @RequestParam @NotNull TicketStatus status) {
@@ -100,6 +102,7 @@ public class TicketController {
 
     // ─────────────────────────────── helpers ─────────────────────────────────
 
+    /** Returns the assign ticket. */
     @PutMapping("/{id}/assign")
     public Ticket assignTicket(@PathVariable @Positive Long id,
                                @RequestParam @NotBlank String assignee) {

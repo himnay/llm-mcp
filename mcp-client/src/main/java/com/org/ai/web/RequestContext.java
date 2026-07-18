@@ -13,6 +13,7 @@ public final class RequestContext {
     private RequestContext() {
     }
 
+    /** Handles set. */
     public static void set(String user, String conversationId, boolean allowWriteTools) {
         HOLDER.set(new Ctx(user, conversationId, allowWriteTools));
     }
@@ -26,21 +27,25 @@ public final class RequestContext {
         HOLDER.set(new Ctx(user, conversationId, allowWriteTools));
     }
 
+    /** Returns the user. */
     public static String user() {
         Ctx c = HOLDER.get();
         return c == null ? null : c.user();
     }
 
+    /** Returns the conversation id. */
     public static String conversationId() {
         Ctx c = HOLDER.get();
         return c == null ? null : c.conversationId();
     }
 
+    /** Returns the allow write tools. */
     public static boolean allowWriteTools() {
         Ctx c = HOLDER.get();
         return c != null && c.allowWriteTools();
     }
 
+    /** Clears. */
     public static void clear() {
         HOLDER.remove();
     }

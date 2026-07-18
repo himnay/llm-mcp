@@ -72,6 +72,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getCommitMetrics(owner, repo, since, until));
     }
 
+    /** Lists branches. */
     @McpTool(name = "listBranches",
             description = "List all branches in a GitHub repository with their latest commit SHA. Provide owner and repo.")
     public String listBranches(String owner, String repo) {
@@ -138,6 +139,7 @@ class GitHubMcpTools {
 
     // ── WRITE tools ───────────────────────────────────────────────────────────
 
+    /** Searches repositories. */
     @McpTool(name = "searchRepositories",
             description = "Search GitHub repositories by query string. Supports GitHub search qualifiers like language:java, "
                     + "stars:>100, topic:spring-boot. Provide query, sort (stars, forks, updated), and order (asc, desc).")
@@ -162,6 +164,7 @@ class GitHubMcpTools {
                 () -> gitHubService.getCodeFrequency(owner, repo));
     }
 
+    /** Creates issue. */
     @McpTool(name = "createIssue",
             description = "Create a new GitHub issue in a repository. Provide owner, repo, title, optional body, "
                     + "and optional comma-separated labels. Requires write access to the repository.")

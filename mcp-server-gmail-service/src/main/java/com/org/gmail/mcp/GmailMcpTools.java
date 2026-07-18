@@ -57,6 +57,7 @@ class GmailMcpTools {
 
     // ── READ tools ────────────────────────────────────────────────────────────
 
+    /** Lists emails. */
     @McpTool(name = "listEmails",
             description = "List emails from Gmail. Provide optional labelIds (e.g. INBOX, SENT, SPAM, TRASH or custom label ID) "
                     + "and optional maxResults (default: 20, max: 100). Returns message IDs and thread IDs.")
@@ -97,6 +98,7 @@ class GmailMcpTools {
         }
     }
 
+    /** Searches emails. */
     @McpTool(name = "searchEmails",
             description = "Search emails using Gmail query syntax. Examples: 'from:boss@example.com', 'subject:invoice', "
                     + "'is:unread', 'after:2024/01/01', 'has:attachment'. Provide query and optional maxResults.")
@@ -156,6 +158,7 @@ class GmailMcpTools {
         }
     }
 
+    /** Lists labels. */
     @McpTool(name = "listLabels",
             description = "List all Gmail labels (folders) for the authenticated user. Returns system labels like INBOX, SENT, "
                     + "TRASH, SPAM and any custom labels with their IDs, names, and message counts.")
@@ -197,6 +200,7 @@ class GmailMcpTools {
 
     // ── WRITE tools ───────────────────────────────────────────────────────────
 
+    /** Returns the mark as read. */
     @McpTool(name = "markAsRead",
             description = "Mark an email as read by removing the UNREAD label. Provide the messageId.")
     public String markAsRead(String messageId) {
@@ -216,6 +220,7 @@ class GmailMcpTools {
         }
     }
 
+    /** Returns the mark as unread. */
     @McpTool(name = "markAsUnread",
             description = "Mark an email as unread by adding the UNREAD label. Provide the messageId.")
     public String markAsUnread(String messageId) {
@@ -235,6 +240,7 @@ class GmailMcpTools {
         }
     }
 
+    /** Creates draft. */
     @McpTool(name = "createDraft",
             description = "Create a Gmail draft email. Provide to (recipient email address), subject, and body (plain text).")
     public String createDraft(String to, String subject, String body) {
@@ -256,6 +262,7 @@ class GmailMcpTools {
         }
     }
 
+    /** Sends email. */
     @McpTool(name = "sendEmail",
             description = "Send an email via Gmail. Provide to (recipient email), subject, and body (plain text). "
                     + "This immediately sends the email — use createDraft if you want to review first.")
@@ -278,6 +285,7 @@ class GmailMcpTools {
         }
     }
 
+    /** Deletes email. */
     @McpTool(name = "deleteEmail",
             description = "Move an email to Trash. Provide the messageId. The email can be permanently deleted from Trash later.")
     public String deleteEmail(String messageId) {

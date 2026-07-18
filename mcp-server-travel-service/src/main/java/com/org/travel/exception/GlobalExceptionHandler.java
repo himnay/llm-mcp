@@ -17,27 +17,32 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /** Handles not found. */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         return errorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    /** Handles bad request. */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleBadRequest(IllegalArgumentException ex) {
         return errorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
 
+    /** Handles invalid tool argument. */
     @ExceptionHandler(InvalidToolArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidToolArgument(InvalidToolArgumentException ex) {
         return errorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
 
+    /** Handles external service. */
     @ExceptionHandler(ExternalServiceException.class)
     public ResponseEntity<Map<String, Object>> handleExternalService(ExternalServiceException ex) {
         log.error("External service call failed", ex);
         return errorResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), null);
     }
 
+    /** Handles validation. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
@@ -48,12 +53,14 @@ public class GlobalExceptionHandler {
         return errorResponse(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
     }
 
+    /** Handles type mismatch. */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return errorResponse(HttpStatus.BAD_REQUEST,
                 "Invalid value for parameter '" + ex.getName() + "'", null);
     }
 
+    /** Handles all. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
         log.error("Unhandled exception", ex);

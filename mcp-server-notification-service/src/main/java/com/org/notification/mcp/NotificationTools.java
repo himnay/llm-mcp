@@ -79,6 +79,7 @@ class NotificationTools {
         }
     }
 
+    /** Sends notification. */
     @McpTool(
             name = "sendNotification",
             description = "Send a notification to a team using the specified channel"

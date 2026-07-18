@@ -37,6 +37,7 @@ public class AppConfig {
         }
     }
 
+    /** Defines the chat memory bean. */
     @Bean
     public ChatMemory chatMemory(JdbcChatMemoryRepository repository, AssistantProperties properties) {
         return MessageWindowChatMemory.builder()
@@ -45,6 +46,7 @@ public class AppConfig {
                 .build();
     }
 
+    /** Defines the chat client bean. */
     @Bean
     public ChatClient chatClient(ChatModel chatModel, ChatMemory chatMemory, AssistantProperties properties) {
         List<String> sensitiveWords = properties.getSensitiveWords().isEmpty()

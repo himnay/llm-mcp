@@ -24,6 +24,7 @@ public class FlightSearchService {
 
     private final AmadeusFlightClient flightClient;
 
+    /** Searches and format. */
     public String searchAndFormat(String origin, String destination,
                                   String departureDate, int adults, int maxResults) {
 

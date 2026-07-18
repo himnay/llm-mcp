@@ -73,6 +73,7 @@ class FlightMcpTools {
         return (System.nanoTime() - startNano) / 1_000_000L;
     }
 
+    /** Searches flights. */
     @McpTool(
             name = "searchFlights",
             description = """

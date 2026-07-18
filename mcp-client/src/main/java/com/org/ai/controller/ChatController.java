@@ -19,6 +19,7 @@ public class ChatController {
 
     private final ChatService chatService;
 
+    /** Chats. */
     @PostMapping
     @Operation(summary = "Send chat message")
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
@@ -28,6 +29,7 @@ public class ChatController {
         return new ChatResponse(result);
     }
 
+    /** Streams chat. */
     @Operation(summary = "Stream chat response")
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamChat(@RequestParam String conversationId,

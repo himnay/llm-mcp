@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties({AssistantProperties.class, KeycloakOAuth2Properties.class})
 class AiAssistantMcpApplication {
 
+    /** Application entry point. */
     public static void main(String[] args) {
         SpringApplication.run(AiAssistantMcpApplication.class, args);
     }

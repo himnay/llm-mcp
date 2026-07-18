@@ -45,6 +45,7 @@ public class GmailService {
         }
     }
 
+    /** Lists emails. */
     public String listEmails(String labelIds, int maxResults) {
         String userId = gmailProperties.getUserId();
         String labels = (labelIds != null && !labelIds.isBlank()) ? labelIds : "INBOX";
@@ -74,6 +75,7 @@ public class GmailService {
         }
     }
 
+    /** Searches emails. */
     public String searchEmails(String query, int maxResults) {
         String userId = gmailProperties.getUserId();
         try {
@@ -113,6 +115,7 @@ public class GmailService {
         }
     }
 
+    /** Lists labels. */
     public String listLabels() {
         String userId = gmailProperties.getUserId();
         try {
@@ -126,6 +129,7 @@ public class GmailService {
         }
     }
 
+    /** Returns the mark as read. */
     public String markAsRead(String messageId) {
         String userId = gmailProperties.getUserId();
         try {
@@ -141,6 +145,7 @@ public class GmailService {
         }
     }
 
+    /** Returns the mark as unread. */
     public String markAsUnread(String messageId) {
         String userId = gmailProperties.getUserId();
         try {
@@ -156,6 +161,7 @@ public class GmailService {
         }
     }
 
+    /** Creates draft. */
     public String createDraft(String to, String subject, String body) {
         String userId = gmailProperties.getUserId();
         String rawEmail = buildRawEmail(to, subject, body);
@@ -173,6 +179,7 @@ public class GmailService {
         }
     }
 
+    /** Sends email. */
     public String sendEmail(String to, String subject, String body) {
         String userId = gmailProperties.getUserId();
         String rawEmail = buildRawEmail(to, subject, body);
@@ -190,6 +197,7 @@ public class GmailService {
         }
     }
 
+    /** Deletes email. */
     public String deleteEmail(String messageId) {
         String userId = gmailProperties.getUserId();
         try {
