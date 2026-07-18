@@ -47,8 +47,8 @@ class GitHubAiInsightsTools {
                     + "Delegates the actual writing to the connected client's LLM via MCP sampling; falls back "
                     + "to a plain data digest if the client does not support sampling.")
     String summarizeRepositoryHealth(
-            @McpToolParam(description = "Repository owner (GitHub username or org)", required = true) String owner,
             @McpToolParam(description = "Repository name", required = true) String repo,
+            @McpToolParam(description = "Repository owner (GitHub username or org)", required = true) String owner,
             McpSyncRequestContext ctx) {
 
         requireNonBlank(owner, "owner");

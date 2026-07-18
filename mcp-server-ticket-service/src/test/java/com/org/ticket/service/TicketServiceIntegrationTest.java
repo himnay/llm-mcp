@@ -19,10 +19,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@Import(TestcontainersConfiguration.class)
 @Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@Import(TestcontainersConfiguration.class)
 @Testcontainers(disabledWithoutDocker = true)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class TicketServiceIntegrationTest {
 
     @Autowired

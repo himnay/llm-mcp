@@ -7,11 +7,11 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-@Table(name = "chat_message")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "chat_message")
 public class ChatMessageEntity {
 
     @Id

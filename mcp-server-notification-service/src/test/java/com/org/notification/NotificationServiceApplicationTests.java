@@ -6,8 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Import(TestcontainersConfiguration.class)
 @SpringBootTest
+@Import(TestcontainersConfiguration.class)
 @Testcontainers(disabledWithoutDocker = true)
 class NotificationServiceApplicationTests {
 

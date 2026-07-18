@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers(disabledWithoutDocker = true)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class HRServiceIntegrationTest {
 
     @Autowired

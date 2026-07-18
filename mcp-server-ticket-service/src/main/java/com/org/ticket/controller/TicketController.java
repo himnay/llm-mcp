@@ -35,8 +35,8 @@ import java.util.List;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/tickets")
 @RequiredArgsConstructor
+@RequestMapping("/tickets")
 public class TicketController {
 
     private final TicketService ticketService;

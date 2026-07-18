@@ -45,8 +45,8 @@ class GitHubServiceTest {
     }
 
     @Test
-    @DisplayName("Returns repository details as a JSON string from the GitHub API")
     @SuppressWarnings("unchecked")
+    @DisplayName("Returns repository details as a JSON string from the GitHub API")
     void getRepository_returnsJsonString() {
         String expectedJson = "{\"id\":123,\"name\":\"my-repo\",\"full_name\":\"owner/my-repo\"}";
 
@@ -63,8 +63,8 @@ class GitHubServiceTest {
     }
 
     @Test
-    @DisplayName("Returns the list of branches as a JSON array from the GitHub API")
     @SuppressWarnings("unchecked")
+    @DisplayName("Returns the list of branches as a JSON array from the GitHub API")
     void listBranches_returnsJsonArray() {
         String expectedJson = "[{\"name\":\"main\"},{\"name\":\"develop\"}]";
 

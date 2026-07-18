@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@Table(name = "deployment")
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "deployment")
 public class Deployment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

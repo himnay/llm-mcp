@@ -3,13 +3,13 @@ package com.org.hr.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Table(name = "employee")
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "employee")
 public class Employee {
 
     @Id

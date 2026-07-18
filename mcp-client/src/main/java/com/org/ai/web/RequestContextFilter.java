@@ -22,8 +22,8 @@ import java.util.UUID;
  * applies a per-user rate limit to the {@code /chat} endpoints. Always clears the
  * thread-local context in a finally block.
  */
-@Component("mcpRequestContextFilter")
 @RequiredArgsConstructor
+@Component("mcpRequestContextFilter")
 public class RequestContextFilter extends OncePerRequestFilter {
 
     private final AssistantProperties properties;

@@ -11,16 +11,16 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@Tag(name = "AI Assistant")
 @RestController
 @RequestMapping("/chat")
 @RequiredArgsConstructor
+@Tag(name = "AI Assistant")
 public class ChatController {
 
     private final ChatService chatService;
 
-    @Operation(summary = "Send chat message")
     @PostMapping
+    @Operation(summary = "Send chat message")
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
 
         String result = chatService.handleMessage(request.getMessage());

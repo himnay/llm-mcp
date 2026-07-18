@@ -18,8 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
  * by {@link McpAuthFilter}'s shared bearer token when {@code mcp.security.token} is set.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "mcp.security.oauth2", name = "enabled", havingValue = "false")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnProperty(prefix = "mcp.security.oauth2", name = "enabled", havingValue = "false")
 public class NoAuthSecurityConfig {
 
     private static final Logger log = LoggerFactory.getLogger(NoAuthSecurityConfig.class);

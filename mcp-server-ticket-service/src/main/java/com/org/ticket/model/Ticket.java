@@ -5,13 +5,13 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Table(name = "ticket")
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "ticket")
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
