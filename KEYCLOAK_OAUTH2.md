@@ -1,4 +1,4 @@
-# OAuth 2.1 MCP Security via Keycloak — Setup Guide
+# <span style="color:hsl(3,68%,44%)">OAuth 2.1 MCP Security via Keycloak — Setup Guide</span>
 
 This document covers the OAuth 2.1 authorization flow protecting `mcp-server-deployment-service` (the first MCP
 server migrated off the legacy shared-bearer-token scheme — see [`README.md`](README.md#spring-ai-20-mcp--feature-status)).
@@ -10,7 +10,7 @@ mcp-client  --(client_credentials)-->  Keycloak  --(JWT access token)-->  mcp-cl
 mcp-client  --(Bearer <JWT> on every MCP call)-->  mcp-server-deployment-service
 ```
 
-## Option A — automatic (what this repo does by default)
+## <span style="color:hsl(36,68%,44%)">Option A — automatic (what this repo does by default)</span>
 
 `docker-compose.yml` brings up Keycloak pre-configured: `docker/keycloak/realm-export.json` is mounted into the
 container and imported automatically on startup (`start-dev --import-realm`), so **no manual console clicking is
@@ -26,15 +26,15 @@ already exist — open the console only if you want to inspect or change what wa
 The rest of this document explains **how that realm was built**, step by step, in case you want to add a second
 protected server, change the scope/secret, or just understand what the JSON import did.
 
-## Option B — manual setup via the Keycloak Admin Console
+## <span style="color:hsl(68,68%,32%)">Option B — manual setup via the Keycloak Admin Console</span>
 
-### 1. Create the realm
+### <span style="color:hsl(101,68%,32%)">1. Create the realm</span>
 
 1. Log in to http://localhost:8180 as `admin` / `admin`.
 2. Top-left realm dropdown → **Create realm**.
 3. Realm name: `org-mcp` → **Create**.
 
-### 2. Create a client scope for deployment-service
+### <span style="color:hsl(134,68%,32%)">2. Create a client scope for deployment-service</span>
 
 A client scope is how we (a) get a custom value into the JWT's `scope` claim, and (b) stamp an `aud` (audience)
 claim onto the token so it can't be replayed against a different MCP server.
@@ -49,7 +49,7 @@ claim onto the token so it can't be replayed against a different MCP server.
 This is exactly what `protocolMappers` + `oidc-audience-mapper` does in `docker/keycloak/realm-export.json` — the
 console just has a friendlier UI for the same JSON.
 
-### 3. Create the client (service account for `mcp-client`)
+### <span style="color:hsl(167,68%,36%)">3. Create the client (service account for `mcp-client`)</span>
 
 1. **Clients** (left nav) → **Create client**.
 2. General settings: Client type `OpenID Connect`, Client ID `mcp-client` → **Next**.
@@ -63,7 +63,7 @@ console just has a friendlier UI for the same JSON.
 5. **Client scopes** tab on the client → confirm `deployment-invoke` is listed under **Default**. If you created
    the client before the scope existed, add it here as a **Default** (not Optional) scope.
 
-### 4. Verify by requesting a token directly
+### <span style="color:hsl(199,68%,36%)">4. Verify by requesting a token directly</span>
 
 ```bash
 curl -s http://localhost:8180/realms/org-mcp/protocol/openid-connect/token \
@@ -77,7 +77,7 @@ Decode the `access_token` (e.g. on https://jwt.io or `jwt -` if you have a CLI) 
 - `aud` contains `deployment-service`
 - `iss` is `http://localhost:8180/realms/org-mcp`
 
-## Wiring the URLs into `application.yaml`
+## <span style="color:hsl(232,68%,44%)">Wiring the URLs into `application.yaml`</span>
 
 Two different URLs are needed, on two different sides — don't mix them up:
 
@@ -118,7 +118,7 @@ blocks in `docker-compose.yml`.
 > (the container's own port, not the host-mapped one). Get this backwards and you'll see `UnknownHostException:
 > keycloak` (running locally) or connection refused on 8180 (running fully in Docker).
 
-## How the server actually enforces it
+## <span style="color:hsl(265,68%,44%)">How the server actually enforces it</span>
 
 `mcp-server-deployment-service`'s `OAuth2ResourceServerConfig` (`com.org.deployment.security`):
 
@@ -132,7 +132,7 @@ blocks in `docker-compose.yml`.
 - Set `mcp.security.oauth2.enabled=false` to drop this filter chain entirely (used in the test profile, and
   available as a manual kill switch if you need to run this service without Keycloak).
 
-## How the client actually presents it
+## <span style="color:hsl(298,68%,44%)">How the client actually presents it</span>
 
 `mcp-client`'s `KeycloakTokenService` (`com.org.ai.mcp`) fetches a token via `client_credentials`, caches it,
 and refreshes 60 seconds before expiry — the same shape as `AmadeusTokenService` in `mcp-server-travel-service`
@@ -140,7 +140,7 @@ and refreshes 60 seconds before expiry — the same shape as `AmadeusTokenServic
 token (instead of the legacy static bearer token) only on the connection named `deployment`; every other MCP
 connection keeps using `assistant.mcp-auth-token`.
 
-## Rolling this out to other servers
+## <span style="color:hsl(330,68%,44%)">Rolling this out to other servers</span>
 
 To protect a second server (say `mcp-server-github-service`) the same way:
 

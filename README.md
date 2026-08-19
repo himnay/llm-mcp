@@ -1,8 +1,8 @@
-# Spring AI MCP — Org Enterprise Assistant
+# <span style="color:hsl(194,68%,36%)">Spring AI MCP — Org Enterprise Assistant</span>
 
 <img src="image/mcp-logo.png" alt="logo" width="80"/>
 
-## Table of contents
+## <span style="color:hsl(197,68%,36%)">Table of contents</span>
 
 1. 🤖 [What Is MCP, and What Problem Does It Solve?](#what-is-mcp-and-what-problem-does-it-solve)
 2. 🏗️ [Modules](#modules)
@@ -52,9 +52,9 @@ backed by PostgreSQL; Travel, GitHub and Gmail wrap external APIs (Amadeus, GitH
 ---
 
 <a id="what-is-mcp-and-what-problem-does-it-solve"></a>
-## 1. 🤖 What Is MCP, and What Problem Does It Solve?
+## <span style="color:hsl(201,68%,44%)">1. 🤖 What Is MCP, and What Problem Does It Solve?</span>
 
-### The problem: bespoke function-calling per provider
+### <span style="color:hsl(204,68%,44%)">The problem: bespoke function-calling per provider</span>
 
 Before the Model Context Protocol, giving an LLM the ability to act on the outside world meant writing
 provider-specific glue code. OpenAI's `tools`/`functions` array, Anthropic's `tool_use` blocks, and Google's
@@ -67,7 +67,7 @@ the chat loop — there was no standard way to run "the GitHub tool" as an indep
 independently-scaled service that any compliant client could discover and call without prior knowledge of its
 internals.
 
-### The solution: a standard client/server protocol
+### <span style="color:hsl(208,68%,44%)">The solution: a standard client/server protocol</span>
 
 MCP (originally introduced by Anthropic, now an open, provider-agnostic specification) factors this problem in two
 directions at once:
@@ -88,7 +88,7 @@ In short: MCP turns "tool calling" from a per-model, per-integration problem int
 same way HTTP turned "how do I fetch this document" from a per-application problem into something every browser and
 server agrees on.
 
-### How this repo is shaped around that idea
+### <span style="color:hsl(211,68%,44%)">How this repo is shaped around that idea</span>
 
 This repo is a direct, from-scratch implementation of that client/server split using **Spring AI's MCP starters**:
 
@@ -122,7 +122,7 @@ This repo is a direct, from-scratch implementation of that client/server split u
 
 </ul>
 
-### Component diagram — client, servers, and external systems
+### <span style="color:hsl(214,68%,44%)">Component diagram — client, servers, and external systems</span>
 
 ```mermaid
 flowchart TB
@@ -162,7 +162,7 @@ flowchart TB
     CS --> PG
 ```
 
-### Sequence diagram — a representative end-to-end tool call
+### <span style="color:hsl(218,68%,44%)">Sequence diagram — a representative end-to-end tool call</span>
 
 The flow below traces a real tool in this codebase: the user asks about a GitHub repository, the LLM decides to call
 `getRepository`, and the call travels client → MCP server → external GitHub REST API → back to the LLM. This mirrors
@@ -220,7 +220,7 @@ to `CS`, which the LLM relays to the user instead of the call ever reaching the 
 ---
 
 <a id="modules"></a>
-## 2. 🏗️ Modules
+## <span style="color:hsl(221,68%,44%)">2. 🏗️ Modules</span>
 
 | Directory                         | Port | Role       | MCP protocol | Spring App Name        |
 |-----------------------------------|------|------------|--------------|------------------------|
@@ -236,7 +236,7 @@ to `CS`, which the LLM relays to the user instead of the call ever reaching the 
 ---
 
 <a id="tech-stack"></a>
-## 3. 🧰 Tech Stack
+## <span style="color:hsl(225,68%,44%)">3. 🧰 Tech Stack</span>
 
 All modules share the same stack:
 
@@ -271,7 +271,7 @@ All modules share the same stack:
 ---
 
 <a id="shared-database"></a>
-## 4. 🗄️ Shared Database
+## <span style="color:hsl(228,68%,44%)">4. 🗄️ Shared Database</span>
 
 All services connect to the **same** PostgreSQL instance (`spring_ai` database by default). Isolation is achieved via
 separate Flyway schema-history tables per service:
@@ -286,9 +286,9 @@ separate Flyway schema-history tables per service:
 ---
 
 <a id="running"></a>
-## 5. 🚀 Running
+## <span style="color:hsl(231,68%,44%)">5. 🚀 Running</span>
 
-### 0. Secrets
+### <span style="color:hsl(235,68%,44%)">0. Secrets</span>
 
 Copy `.env.example` to `.env` and fill in real values (`OPENAI_API_KEY`, `GITHUB_TOKEN`, etc.).
 `docker compose` reads `.env` automatically; the file is gitignored and must never be committed.
@@ -297,14 +297,14 @@ The Keycloak client secret defaults to the dev value baked into
 for any non-local deployment. Secret hygiene is enforced by `.gitleaks.toml`
 (run `gitleaks detect --source . --config .gitleaks.toml` locally or in CI).
 
-### 1. Start infrastructure
+### <span style="color:hsl(238,68%,44%)">1. Start infrastructure</span>
 
 ```bash
 # PostgreSQL + Prometheus + Tempo + Grafana
 docker compose up -d
 ```
 
-### 2. Start MCP servers (separate terminals)
+### <span style="color:hsl(242,68%,44%)">2. Start MCP servers (separate terminals)</span>
 
 ```bash
 cd mcp-server-hr-service && ./mvnw spring-boot:run           # :8084
@@ -316,20 +316,20 @@ cd mcp-server-gmail-service && ./mvnw spring-boot:run        # :8086 (needs GMAI
 cd mcp-server-travel-service && ./mvnw spring-boot:run       # :8087
 ```
 
-### Running the tests
+### <span style="color:hsl(245,68%,44%)">Running the tests</span>
 
 ```bash
 ./mvnw test            # all modules — no Docker/PostgreSQL/Redis/API keys required (H2 test profiles)
 ```
 
-### 3. Start MCP client
+### <span style="color:hsl(248,68%,44%)">3. Start MCP client</span>
 
 ```bash
 export OPENAI_API_KEY=sk-...
 cd mcp-client && ./mvnw spring-boot:run                  # :8080
 ```
 
-### 4. Send a chat request
+### <span style="color:hsl(252,68%,44%)">4. Send a chat request</span>
 
 ```bash
 curl -s localhost:8080/chat \
@@ -343,18 +343,18 @@ corresponding pre-defined prompt before being sent to the model.
 ---
 
 <a id="mcp-client--mcp-client"></a>
-## 6. 🤖 MCP Client — `mcp-client`
+## <span style="color:hsl(255,68%,44%)">6. 🤖 MCP Client — `mcp-client`</span>
 
 The orchestrating chat assistant. It has **no datasource** — it proxies user messages to OpenAI and dispatches tool
 calls to the downstream MCP servers over Streamable HTTP.
 
-### REST API
+### <span style="color:hsl(259,68%,44%)">REST API</span>
 
 | Method | Path    | Body                 | Description                     |
 |--------|---------|----------------------|---------------------------------|
 | `POST` | `/chat` | `{"message": "..."}` | Send a message to the assistant |
 
-### MCP server connections
+### <span style="color:hsl(262,68%,44%)">MCP server connections</span>
 
 Declared under `spring.ai.mcp.client.streamable-http.connections` in
 `mcp-client/src/main/resources/application.yaml`. As currently checked in, only two entries are actually
@@ -374,7 +374,7 @@ Uncomment (or add) a server's block and restart `mcp-client` to bring it into th
 picks up whatever `List<McpSyncClient>` Spring AI auto-configures from this file, initializes each reachable one, and
 skips (with a warning) any that refuse to connect.
 
-### `assistant.*` configuration properties
+### <span style="color:hsl(265,68%,44%)">`assistant.*` configuration properties</span>
 
 | Property                          | Default                   | Description                                               |
 |-----------------------------------|---------------------------|-----------------------------------------------------------|
@@ -391,18 +391,18 @@ skips (with a warning) any that refuse to connect.
 ---
 
 <a id="hr-service--mcp-server-hr-service-8084"></a>
-## 7. 🤖 HR Service — `mcp-server-hr-service` (:8084)
+## <span style="color:hsl(269,68%,44%)">7. 🤖 HR Service — `mcp-server-hr-service` (:8084)</span>
 
 Manages employee leave and replacement lookups.
 
-### MCP Tools
+### <span style="color:hsl(272,68%,44%)">MCP Tools</span>
 
 | Tool name         | Description                                                     |
 |-------------------|-----------------------------------------------------------------|
 | `applyLeave`      | Apply leave for a user on a specific ISO-8601 date (yyyy-MM-dd) |
 | `findReplacement` | Find a replacement employee for a user on a specific date       |
 
-### REST API
+### <span style="color:hsl(276,68%,44%)">REST API</span>
 
 | Method | Path                         | Description                      |
 |--------|------------------------------|----------------------------------|
@@ -410,7 +410,7 @@ Manages employee leave and replacement lookups.
 | `GET`  | `/hr/leave/{username}`       | Check whether a user is on leave |
 | `GET`  | `/hr/replacement/{username}` | Find an available replacement    |
 
-### Environment Variables
+### <span style="color:hsl(279,68%,44%)">Environment Variables</span>
 
 | Variable         | Default                                      |
 |------------------|----------------------------------------------|
@@ -420,7 +420,7 @@ Manages employee leave and replacement lookups.
 | `DB_PASSWORD`    | `postgres`                                   |
 | `MCP_AUTH_TOKEN` | *(empty → insecure dev mode)*                |
 
-### `mcp.security.*` properties
+### <span style="color:hsl(282,68%,44%)">`mcp.security.*` properties</span>
 
 | Property                               | Default   | Description                                              |
 |----------------------------------------|-----------|----------------------------------------------------------|
@@ -433,7 +433,7 @@ Manages employee leave and replacement lookups.
 ---
 
 <a id="ticket-service--mcp-server-ticket-service-8081"></a>
-## 8. 🤖 Ticket Service — `mcp-server-ticket-service` (:8081)
+## <span style="color:hsl(286,68%,44%)">8. 🤖 Ticket Service — `mcp-server-ticket-service` (:8081)</span>
 
 Manages support tickets. Exposes an `analyze-tickets` MCP prompt — **but, despite the table below, no MCP tools**:
 `createTicket`/`getTickets`/`getTicket`/`updateTicketStatus`/`assignTicket` exist only as REST endpoints on
@@ -441,7 +441,7 @@ Manages support tickets. Exposes an `analyze-tickets` MCP prompt — **but, desp
 them was ever committed). The table is aspirational; see
 [Spring AI 2.0 MCP — Feature Status](#spring-ai-20-mcp--feature-status) for the full note.
 
-### MCP Tools & Prompts
+### <span style="color:hsl(289,68%,44%)">MCP Tools & Prompts</span>
 
 | Name                 | Type                           | Description                                              |
 |----------------------|--------------------------------|----------------------------------------------------------|
@@ -452,7 +452,7 @@ them was ever committed). The table is aspirational; see
 | `assignTicket`       | ⚠️ REST only — not an MCP tool | Assign a ticket to an employee                           |
 | `analyze-tickets`    | Prompt                         | Returns a pre-built prompt summarising open ticket load  |
 
-### REST API
+### <span style="color:hsl(292,68%,44%)">REST API</span>
 
 | Method | Path                   | Description              |
 |--------|------------------------|--------------------------|
@@ -462,7 +462,7 @@ them was ever committed). The table is aspirational; see
 | `PUT`  | `/tickets/{id}/status` | Update a ticket's status |
 | `PUT`  | `/tickets/{id}/assign` | Assign a ticket          |
 
-### Environment Variables
+### <span style="color:hsl(296,68%,44%)">Environment Variables</span>
 
 | Variable         | Default                                      |
 |------------------|----------------------------------------------|
@@ -477,13 +477,13 @@ them was ever committed). The table is aspirational; see
 ---
 
 <a id="deployment-service--mcp-server-deployment-service-8082"></a>
-## 9. 🤖 Deployment Service — `mcp-server-deployment-service` (:8082)
+## <span style="color:hsl(299,68%,44%)">9. 🤖 Deployment Service — `mcp-server-deployment-service` (:8082)</span>
 
 Manages deployment scheduling. Uses **STREAMABLE** MCP protocol (others use STATELESS). The only server in this repo
 currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer token — see
 [KEYCLOAK_OAUTH2.md](KEYCLOAK_OAUTH2.md) for the full setup.
 
-### MCP Tools
+### <span style="color:hsl(303,68%,44%)">MCP Tools</span>
 
 | Tool name              | Description                                                                                                                                                                                                                                                                                                                                          |
 |------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -495,7 +495,7 @@ currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer t
 | `cancelDeployment`     | Cancel a deployment by id                                                                                                                                                                                                                                                                                                                            |
 | `executeDeployment`    | Execute (simulate) a scheduled deployment now, streaming MCP progress notifications through validate/deploy/verify stages; PROD deployments additionally require interactive confirmation from the connected client via MCP elicitation (`DeploymentInteractiveTools`, separate from the other six tools because it injects `McpSyncRequestContext`) |
 
-### REST API
+### <span style="color:hsl(306,68%,44%)">REST API</span>
 
 | Method | Path                           | Description           |
 |--------|--------------------------------|-----------------------|
@@ -506,7 +506,7 @@ currently protected by **OAuth 2.1 via Keycloak** instead of the shared bearer t
 | `PUT`  | `/deployments/{id}/reschedule` | Reschedule            |
 | `PUT`  | `/deployments/{id}/cancel`     | Cancel                |
 
-### Environment Variables
+### <span style="color:hsl(309,68%,44%)">Environment Variables</span>
 
 | Variable                | Default                                              |
 |-------------------------|------------------------------------------------------|
@@ -530,25 +530,25 @@ for the `deployment` connection instead of the shared token.
 ---
 
 <a id="notification-service--mcp-server-notification-service-8083"></a>
-## 10. 🤖 Notification Service — `mcp-server-notification-service` (:8083)
+## <span style="color:hsl(313,68%,44%)">10. 🤖 Notification Service — `mcp-server-notification-service` (:8083)</span>
 
 Sends and lists notifications across channels (INTERNAL, EMAIL, SLACK).
 
-### MCP Tools
+### <span style="color:hsl(316,68%,44%)">MCP Tools</span>
 
 | Tool name          | Description                                       |
 |--------------------|---------------------------------------------------|
 | `getNotifications` | Get all notifications                             |
 | `sendNotification` | Send a notification (channel, recipient, message) |
 
-### REST API
+### <span style="color:hsl(320,68%,44%)">REST API</span>
 
 | Method | Path             | Description                                             |
 |--------|------------------|---------------------------------------------------------|
 | `POST` | `/notifications` | Send a notification (`channel`, `recipient`, `message`) |
 | `GET`  | `/notifications` | List all notifications                                  |
 
-### Environment Variables
+### <span style="color:hsl(323,68%,44%)">Environment Variables</span>
 
 | Variable         | Default                                      |
 |------------------|----------------------------------------------|
@@ -564,11 +564,11 @@ Sends and lists notifications across channels (INTERNAL, EMAIL, SLACK).
 ---
 
 <a id="security--operations-mcp-servers"></a>
-## 11. 🔐 Security & Operations (MCP Servers)
+## <span style="color:hsl(326,68%,44%)">11. 🔐 Security & Operations (MCP Servers)</span>
 
 All seven servers share the same security model:
 
-### Bearer Token Authentication
+### <span style="color:hsl(330,68%,44%)">Bearer Token Authentication</span>
 
 Set `MCP_AUTH_TOKEN` to enable. Without it the service logs a `WARN` at startup and runs in **insecure dev mode**.
 
@@ -581,11 +581,11 @@ Error responses: `401 Unauthorized`, `429 Too Many Requests`.
 
 `/actuator/health` and `/actuator/info` are always exempt from auth and rate limiting.
 
-### Rate Limiting
+### <span style="color:hsl(333,68%,44%)">Rate Limiting</span>
 
 In-memory per-user fixed-window rate limiter (default 120 req/min). Returns `429` when exceeded.
 
-### Audit Logging
+### <span style="color:hsl(337,68%,44%)">Audit Logging</span>
 
 Every MCP tool invocation emits a structured `INFO` log line:
 
@@ -595,7 +595,7 @@ INFO  AUDIT createDeployment | user=jane serviceName=payments environment=PROD s
 
 Fields: tool name, acting user, sanitised arguments, outcome (SUCCESS / ERROR), latency in ms.
 
-### Actuator Endpoints
+### <span style="color:hsl(340,68%,44%)">Actuator Endpoints</span>
 
 MCP servers expose: `health`, `info`, `metrics`, `prometheus`  
 The client additionally exposes: `loggers`, `env`
@@ -605,11 +605,11 @@ Liveness/readiness probes are enabled on HR and Deployment services (`management
 ---
 
 <a id="prompt-injection-security"></a>
-## 12. 🔐 Prompt Injection Security
+## <span style="color:hsl(343,68%,44%)">12. 🔐 Prompt Injection Security</span>
 
 Three-layer defense is applied before any user message reaches the LLM or an MCP tool.
 
-### Layer 1 — Pre-LLM query guard (`PromptInjectionGuard`)
+### <span style="color:hsl(347,68%,44%)">Layer 1 — Pre-LLM query guard (`PromptInjectionGuard`)</span>
 
 Every user message passes through `PromptInjectionGuard.isQuerySafe()` in `ChatService` before any LLM or MCP tool
 call is made. If any configured regex pattern matches, the request is rejected immediately and the block message is
@@ -632,20 +632,20 @@ Pattern categories in the default catalogue:
 
 Streaming requests (`streamChat`) send an SSE `error` event with the block message and close the emitter immediately.
 
-### Layer 2 — Spring AI `SafeGuardAdvisor`
+### <span style="color:hsl(350,68%,44%)">Layer 2 — Spring AI `SafeGuardAdvisor`</span>
 
 `SafeGuardAdvisor` is registered at `order = Integer.MIN_VALUE` in the `ChatClient` advisor chain, ensuring it runs
 before the model is invoked. The sensitive-word list is driven by `assistant.sensitive-words` in `application.yaml`.
 This layer catches any injection that might arrive via processed prompts (e.g. after `PromptLoader` expansion) rather
 than raw user input.
 
-### Layer 3 — Per-server `McpAuthFilter` and rate limiting
+### <span style="color:hsl(354,68%,44%)">Layer 3 — Per-server `McpAuthFilter` and rate limiting</span>
 
 Each MCP server validates the incoming bearer token (`MCP_AUTH_TOKEN`) via `McpAuthFilter` and enforces per-client
 rate limits (default 120 req/min). This prevents indirect prompt injection via poisoned tool results: even if a
 malicious payload reaches a tool response, the per-server auth and rate limits contain lateral movement.
 
-### Adding new attack patterns
+### <span style="color:hsl(357,68%,44%)">Adding new attack patterns</span>
 
 Add entries to `application.yaml` — no code change or restart required if the application is re-run:
 
@@ -660,7 +660,7 @@ app:
 Patterns are standard Java regex strings compiled with `Pattern.compile`. Invalid patterns are skipped at startup with
 an `ERROR` log entry so a misconfigured pattern cannot prevent the application from starting.
 
-### Disabling the guard (dev / test)
+### <span style="color:hsl(0,68%,44%)">Disabling the guard (dev / test)</span>
 
 ```bash
 INJECTION_GUARD_ENABLED=false ./mvnw spring-boot:run
@@ -678,7 +678,7 @@ app:
 ---
 
 <a id="mcp-services-reference"></a>
-## 13. 📚 MCP Services Reference
+## <span style="color:hsl(4,68%,44%)">13. 📚 MCP Services Reference</span>
 
 All 7 MCP servers and the client:
 
@@ -696,7 +696,7 @@ All 7 MCP servers and the client:
 *Override `SERVER_PORT` for travel-service when running alongside gmail-service.
 
 <a id="streamable-http--mcp-protocol"></a>
-## 14. 📨 Streamable HTTP — MCP Protocol
+## <span style="color:hsl(7,68%,44%)">14. 📨 Streamable HTTP — MCP Protocol</span>
 
 All client-to-server communication uses the **MCP Streamable HTTP** transport (protocol version `2025-03-26`). Every tool call is a JSON-RPC 2.0 `POST` to the `/mcp` endpoint on each server. The protocol variant (STATELESS or STREAMABLE) is declared per-server in `application.yaml`:
 
@@ -721,7 +721,7 @@ The client connection is always Streamable HTTP (`spring.ai.mcp.client.streamabl
 ---
 
 <a id="observability"></a>
-## 15. 📈 Observability
+## <span style="color:hsl(11,68%,44%)">15. 📈 Observability</span>
 
 Full setup in [OBSERVABILITY.md](OBSERVABILITY.md).
 
@@ -749,7 +749,7 @@ turn.
 ---
 
 <a id="best-practices-applied"></a>
-## 16. ✅ Best Practices Applied
+## <span style="color:hsl(14,68%,44%)">16. ✅ Best Practices Applied</span>
 
 | Practice                        | Status | Notes                                                                                                                                       |
 |---------------------------------|--------|---------------------------------------------------------------------------------------------------------------------------------------------|
@@ -780,7 +780,7 @@ turn.
 ---
 
 <a id="spring-ai-20-mcp--feature-status"></a>
-## 17. 🤖 Spring AI 2.0 MCP — Feature Status
+## <span style="color:hsl(17,68%,44%)">17. 🤖 Spring AI 2.0 MCP — Feature Status</span>
 
 Spring AI 2.0 (`spring-ai-mcp-annotations`) adds a fully declarative way to implement MCP server/client behaviour on
 top of the protocol features this project already used in 1.x. The table below is a from-source audit (decompiled
@@ -818,7 +818,7 @@ building a way for a mid-flight tool call to surface a question back through `Ch
 ---
 
 <a id="design-patterns-gof"></a>
-## 18. 🏗️ Design Patterns (GoF)
+## <span style="color:hsl(21,68%,44%)">18. 🏗️ Design Patterns (GoF)</span>
 
 Each module README has a **Design Patterns (GoF)** section mapping patterns to the classes that implement them.
 The table below is the repo-wide catalog of all 23 Gang of Four patterns. Patterns are only *hand-implemented* where
@@ -826,7 +826,7 @@ they earn their place; several are satisfied by Spring/framework machinery the c
 deliberately **not used** because forcing them into a stateless CRUD/tool codebase would add indirection without
 benefit (that, too, is a GoF guideline: prefer the simplest design that solves the problem).
 
-### Creational
+### <span style="color:hsl(24,68%,44%)">Creational</span>
 
 | Pattern          | Status      | Where                                                                                                                                              |
 |------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -836,7 +836,7 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 | Abstract Factory | ⚙ Framework | Spring `BeanFactory`/`ApplicationContext` — families of related beans created without naming concrete classes                                      |
 | Prototype        | ✗ Not used  | All beans are stateless singletons; per-request mutable objects are plain `new`/builder calls. Prototype-scoped beans would add no value           |
 
-### Structural
+### <span style="color:hsl(28,68%,44%)">Structural</span>
 
 | Pattern   | Status      | Where                                                                                                                                                                                                                                            |
 |-----------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -848,7 +848,7 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 | Flyweight | ⚙ Framework | Enum constants (`TicketStatus`, `NotificationChannel`, …) and Redis-cached GitHub responses share immutable instances                                                                                                                            |
 | Composite | ✗ Not used  | No recursive part-whole structures in the domain (flat entities, flat tool lists)                                                                                                                                                                |
 
-### Behavioral
+### <span style="color:hsl(31,68%,44%)">Behavioral</span>
 
 | Pattern                 | Status      | Where                                                                                                                                             |
 |-------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -867,14 +867,14 @@ benefit (that, too, is a GoF guideline: prefer the simplest design that solves t
 ---
 
 <a id="technology-deep-dive"></a>
-## 19. 🧰 Technology Deep Dive
+## <span style="color:hsl(34,68%,44%)">19. 🧰 Technology Deep Dive</span>
 
 This section explains every significant library, framework, database, and infrastructure component used in this
 project — what each technology is, and exactly how this codebase uses it.
 
 ---
 
-### Java 25
+### <span style="color:hsl(38,68%,44%)">Java 25</span>
 
 **What it is:** The latest release of the Java platform (GA June 2025, Azul Zulu build). Builds on the virtual threads (
 Project Loom), record classes, pattern matching, and sealed types introduced in Java 21.
@@ -887,7 +887,7 @@ available on the Java 25 runtime and ready to enable via Spring Boot's `spring.t
 
 ---
 
-### Spring Boot 4.1.0
+### <span style="color:hsl(41,68%,32%)">Spring Boot 4.1.0</span>
 
 **What it is:** The opinionated, auto-configured application framework that bootstraps a Spring application with
 embedded Tomcat, sensible defaults, and a rich starter ecosystem. Version 4.x requires Java 17+ and aligns with Jakarta
@@ -901,7 +901,7 @@ observability, and exposes health/metrics via `spring-boot-starter-actuator`.
 
 ---
 
-### Spring MVC (spring-boot-starter-web / spring-boot-starter-webmvc)
+### <span style="color:hsl(45,68%,32%)">Spring MVC (spring-boot-starter-web / spring-boot-starter-webmvc)</span>
 
 **What it is:** Spring's servlet-based HTTP framework. It maps incoming HTTP requests to `@RestController` methods,
 handles content negotiation, runs `@ExceptionHandler` advice, and plugs into the servlet filter chain.
@@ -916,7 +916,7 @@ envelope with `status`, `error`, `message`, `details`, and `timestamp`.
 
 ---
 
-### Spring AI 2.0.0
+### <span style="color:hsl(48,68%,32%)">Spring AI 2.0.0</span>
 
 **What it is:** Anthropic's and the Spring team's framework for building AI-powered applications on the JVM. It provides
 abstractions over LLM providers (OpenAI, Anthropic, etc.), a `ChatClient` fluent API, tool/function calling, prompt
@@ -1025,7 +1025,7 @@ clients.
 
 ---
 
-### Model Context Protocol (MCP)
+### <span style="color:hsl(51,68%,32%)">Model Context Protocol (MCP)</span>
 
 **What it is:** An open standard (originally from Anthropic) that defines how AI assistants discover and call external "
 tools" hosted in separate processes. An MCP *client* (the assistant) connects over HTTP to MCP *servers* (domain
@@ -1073,7 +1073,7 @@ when dozens of tools are registered across all servers.
 
 ---
 
-### OpenAI API (GPT models)
+### <span style="color:hsl(55,68%,32%)">OpenAI API (GPT models)</span>
 
 **What it is:** The REST API provided by OpenAI that gives access to large language models (GPT-4o, GPT-4-turbo, etc.)
 capable of natural language understanding, generation, and structured function/tool calling.
@@ -1087,7 +1087,7 @@ by user and type.
 
 ---
 
-### Spring Data JPA + Hibernate
+### <span style="color:hsl(58,68%,32%)">Spring Data JPA + Hibernate</span>
 
 **What it is:** Spring Data JPA provides repository interfaces (`JpaRepository`) that generate CRUD SQL at runtime.
 Hibernate is the JPA provider that translates `@Entity` classes and JPQL queries into SQL and manages the persistence
@@ -1102,7 +1102,7 @@ lazy-loading through the web layer.
 
 ---
 
-### PostgreSQL 18
+### <span style="color:hsl(62,68%,32%)">PostgreSQL 18</span>
 
 **What it is:** A powerful, open-source relational database known for its standards compliance, JSON support, and
 reliability. Version 18 (used via the `postgres:18` Docker image) brings performance improvements and minor SQL
@@ -1116,7 +1116,7 @@ services and the MCP client. Each service gets its own schema namespace through 
 
 ---
 
-### Flyway
+### <span style="color:hsl(65,68%,32%)">Flyway</span>
 
 **What it is:** A database migration tool that applies versioned SQL scripts (`V1__...sql`, `V2__...sql`) to a database
 in order, recording which migrations have been applied in a history table. It guarantees reproducible schema evolution
@@ -1130,7 +1130,7 @@ distinct `flyway.table` (e.g. `flyway_schema_history_hr`) so their migration his
 
 ---
 
-### HikariCP
+### <span style="color:hsl(68,68%,32%)">HikariCP</span>
 
 **What it is:** The fastest and most widely used JDBC connection pool for the JVM. It maintains a ready pool of database
 connections, eliminating the latency of creating a new connection per request.
@@ -1142,7 +1142,7 @@ dev, staging, and production without code changes.
 
 ---
 
-### Spring Cache + Redis 7
+### <span style="color:hsl(72,68%,32%)">Spring Cache + Redis 7</span>
 
 **What it is:** Spring Cache is an abstraction layer for caching method return values using annotations like
 `@Cacheable`. Redis is an in-memory data store used here as the cache backend. Redis 7 (Alpine image) supports strings,
@@ -1157,7 +1157,7 @@ and port are externalised via `REDIS_HOST` / `REDIS_PORT` environment variables.
 
 ---
 
-### Resilience4j 2.3.0
+### <span style="color:hsl(75,68%,32%)">Resilience4j 2.3.0</span>
 
 **What it is:** A lightweight fault-tolerance library for Java, offering circuit breakers, rate limiters, bulkheads, and
 retries. A *circuit breaker* monitors call failure rates; if too many calls fail, it "opens" the circuit and rejects
@@ -1174,7 +1174,7 @@ via `TaggedCircuitBreakerMetrics`.
 
 ---
 
-### Micrometer + Prometheus
+### <span style="color:hsl(79,68%,32%)">Micrometer + Prometheus</span>
 
 **What it is:** Micrometer is a metrics instrumentation facade (analogous to SLF4J for logging) that lets you record
 counters, timers, and gauges once and publish them to any backend. Prometheus is a time-series monitoring system that
@@ -1190,7 +1190,7 @@ by service. `prometheus.yml` in the `observability/` directory scrapes all eight
 
 ---
 
-### Micrometer Tracing + OpenTelemetry + Grafana Tempo
+### <span style="color:hsl(82,68%,32%)">Micrometer Tracing + OpenTelemetry + Grafana Tempo</span>
 
 **What it is:** Distributed tracing assigns a unique trace ID to each request and propagates it across service
 boundaries, enabling you to see the full call graph — from the user's HTTP request through every downstream tool call.
@@ -1207,7 +1207,7 @@ trace visualization.
 
 ---
 
-### Grafana
+### <span style="color:hsl(85,68%,32%)">Grafana</span>
 
 **What it is:** An open-source observability and analytics platform for building dashboards from metrics, logs, and
 traces. It connects to data sources (Prometheus, Tempo, Loki, etc.) and renders panels, alerts, and annotations.
@@ -1220,7 +1220,7 @@ JVM heap usage, CPU load, thread counts, database connection pool usage, and GC 
 
 ---
 
-### Lombok
+### <span style="color:hsl(89,68%,32%)">Lombok</span>
 
 **What it is:** A Java annotation processor that generates boilerplate code (getters, setters, constructors, builders,
 `equals`/`hashCode`, `toString`, logging) at compile time so it never appears in source files.
@@ -1232,7 +1232,7 @@ on DTOs and response types. Lombok is declared `optional` in Maven and excluded 
 
 ---
 
-### Jakarta Bean Validation (Hibernate Validator)
+### <span style="color:hsl(92,68%,32%)">Jakarta Bean Validation (Hibernate Validator)</span>
 
 **What it is:** The Java standard for declarative constraint validation. You annotate model fields with constraints (
 `@NotBlank`, `@NotNull`, `@Positive`, `@Size`, etc.) and the framework validates them automatically at controller
@@ -1246,7 +1246,7 @@ service layer.
 
 ---
 
-### Spring Boot Actuator
+### <span style="color:hsl(96,68%,32%)">Spring Boot Actuator</span>
 
 **What it is:** A Spring Boot module that adds production-ready operational endpoints to any application: health checks,
 info, metrics, environment inspection, logger level management, and more.
@@ -1260,7 +1260,7 @@ except `health` and `info` are exempt from MCP bearer-token auth.
 
 ---
 
-### Spring Boot DevTools
+### <span style="color:hsl(99,68%,32%)">Spring Boot DevTools</span>
 
 **What it is:** A development-only Spring Boot module that enables automatic application restarts on classpath changes,
 live reload for templates, and relaxed property overrides to speed up the inner development loop.
@@ -1270,7 +1270,7 @@ running via `./mvnw spring-boot:run` or from an IDE in development mode and is e
 
 ---
 
-### H2 (In-Memory Database for Tests)
+### <span style="color:hsl(102,68%,32%)">H2 (In-Memory Database for Tests)</span>
 
 **What it is:** A lightweight, pure-Java relational database that can run entirely in memory. It is JPA- and
 JDBC-compatible and requires no installation.
@@ -1282,7 +1282,7 @@ Docker containers, PostgreSQL, or Redis — all eight test suites pass in a full
 
 ---
 
-### Spring RestClient
+### <span style="color:hsl(106,68%,32%)">Spring RestClient</span>
 
 **What it is:** Spring Framework 6.1's new synchronous HTTP client, a modern replacement for `RestTemplate`. It offers a
 fluent builder API with URI templating, default headers, response extraction, and error handling.
@@ -1303,7 +1303,7 @@ fluent builder API with URI templating, default headers, response extraction, an
 
 ---
 
-### Amadeus Flight API
+### <span style="color:hsl(109,68%,32%)">Amadeus Flight API</span>
 
 **What it is:** The Amadeus for Developers REST API providing real-time flight availability and pricing data. Access
 requires a client ID and secret; authentication uses the OAuth2 Client Credentials flow, returning a short-lived bearer
@@ -1319,7 +1319,7 @@ max-results limit. `FlightMcpTools` exposes two `@McpTool` methods: `searchFligh
 
 ---
 
-### GitHub REST API
+### <span style="color:hsl(112,68%,32%)">GitHub REST API</span>
 
 **What it is:** GitHub's REST API (v3) for programmatic access to repositories, commits, branches, pull requests,
 issues, actions workflows, contributors, releases, and more. Authenticated requests get 5,000 requests/hour vs 60/hour
@@ -1337,7 +1337,7 @@ health summary — see [MCP Sampling](#spring-ai-200) above.
 
 ---
 
-### Gmail REST API
+### <span style="color:hsl(116,68%,32%)">Gmail REST API</span>
 
 **What it is:** Google's Gmail API for reading, searching, labelling, drafting, sending, and deleting emails
 programmatically via REST. Authentication uses OAuth2 bearer tokens.
@@ -1350,7 +1350,7 @@ service, this uses STREAMABLE MCP protocol.
 
 ---
 
-### MCP Inspector
+### <span style="color:hsl(119,68%,32%)">MCP Inspector</span>
 
 **What it is:** The official Model Context Protocol debugging tool. It is a browser-based UI that can connect to any MCP
 server, enumerate its tools and prompts, and fire test calls to see raw inputs and outputs.
@@ -1391,7 +1391,7 @@ Connected to `hr-service`, the **Tools** tab lists `applyLeave` / `findReplaceme
 
 ---
 
-### Maven (Multi-Module Build)
+### <span style="color:hsl(123,68%,32%)">Maven (Multi-Module Build)</span>
 
 **What it is:** Apache Maven is the Java ecosystem's standard build tool. It manages dependencies via a central
 repository, enforces reproducible builds through a POM (Project Object Model), and runs lifecycle phases (compile, test,
@@ -1413,7 +1413,7 @@ needed. Additional Maven plugins used across modules:
 
 ---
 
-### Logback + logback-spring.xml
+### <span style="color:hsl(126,68%,32%)">Logback + logback-spring.xml</span>
 
 **What it is:** Logback is the default logging framework for Spring Boot. `logback-spring.xml` is the Spring-aware
 configuration file that can use Spring profiles and property placeholders. SLF4J is the logging facade; Lombok's
@@ -1427,7 +1427,7 @@ JSON-structured log output. Audit log lines are written at `INFO` level with a s
 
 ---
 
-### Docker Compose
+### <span style="color:hsl(129,68%,32%)">Docker Compose</span>
 
 **What it is:** A tool for defining and running multi-container Docker applications from a single `docker-compose.yml`
 file. It manages service startup order, networking, volume mounts, and environment variable injection.
@@ -1452,7 +1452,7 @@ running them locally via `./mvnw spring-boot:run` during development.
 
 ---
 
-### git-commit-id-maven-plugin
+### <span style="color:hsl(133,68%,32%)">git-commit-id-maven-plugin</span>
 
 **What it is:** A Maven plugin that reads Git metadata (branch, commit SHA, commit time, dirty flag) at build time and
 writes it to a `git.properties` file bundled in the JAR.
@@ -1465,12 +1465,12 @@ operators instantly see which exact code revision is running in any environment 
 ---
 
 <a id="mcp-deep-dive"></a>
-## 20. 📖 MCP Deep Dive — Concepts, Wire Protocol, and the Spring AI Implementation
+## <span style="color:hsl(136,68%,32%)">20. 📖 MCP Deep Dive — Concepts, Wire Protocol, and the Spring AI Implementation</span>
 
 > Self-contained study guide. Every concept points at the file in this repo that implements it; every wire example
 > can be replayed from [`insomnia-collection.json`](insomnia-collection.json).
 
-### 20.1 The three actors: Host, Client, Server
+### <span style="color:hsl(140,68%,32%)">20.1 The three actors: Host, Client, Server</span>
 
 | Role           | Definition                                                           | In this repo                                                                           |
 |----------------|----------------------------------------------------------------------|----------------------------------------------------------------------------------------|
@@ -1482,7 +1482,7 @@ operators instantly see which exact code revision is running in any environment 
 - **Client : server = 1 : 1** — always.
 - The LLM never speaks MCP; the servers never call the LLM directly (except via sampling, 20.5.3). The host translates between the two.
 
-### 20.2 The wire protocol: JSON-RPC 2.0
+### <span style="color:hsl(143,68%,32%)">20.2 The wire protocol: JSON-RPC 2.0</span>
 
 - Every MCP message, on every transport, is a [JSON-RPC 2.0](https://www.jsonrpc.org/specification) object.
 - Three message shapes:
@@ -1505,7 +1505,7 @@ operators instantly see which exact code revision is running in any environment 
 
 - **Key idea**: after the handshake, *both sides can initiate*. `executeDeployment` can pause, ask "production deploy — confirm?", and resume. Plain REST can't do this; it's why the transport needs a streaming channel.
 
-### 20.3 Lifecycle: initialize → initialized → operate
+### <span style="color:hsl(146,68%,32%)">20.3 Lifecycle: initialize → initialized → operate</span>
 
 - **Nothing works before the handshake.** Order (= request order in each Insomnia folder):
 
@@ -1530,7 +1530,7 @@ operators instantly see which exact code revision is running in any environment 
     - Only now are `tools/list` / `tools/call` legal.
     - Skipping this = the classic "why does my curl fail" mistake.
 
-### 20.4 Transports
+### <span style="color:hsl(150,68%,36%)">20.4 Transports</span>
 
 | Transport           | Channel                                   | Use case                                 | Status           |
 |---------------------|-------------------------------------------|------------------------------------------|------------------|
@@ -1552,12 +1552,12 @@ operators instantly see which exact code revision is running in any environment 
         - required by `DeploymentInteractiveTools` (elicitation) and `GitHubAiInsightsTools` (sampling)
 - **Rule of thumb**: start STATELESS; upgrade only when a tool needs reverse-direction messages.
 
-### 20.5 Server primitive #1 — Tools
+### <span style="color:hsl(153,68%,36%)">20.5 Server primitive #1 — Tools</span>
 
 - A tool = **name** + **description** + **input JSON Schema**.
 - The description is prompt engineering — the model *reads it* to choose tools. Write it like API docs, formats spelled out.
 
-#### 20.5.1 Declaring a tool
+#### <span style="color:hsl(157,68%,36%)">20.5.1 Declaring a tool</span>
 
 - From `HrMcpTools.java`:
 
@@ -1583,7 +1583,7 @@ operators instantly see which exact code revision is running in any environment 
 
 - Enum parameters become JSON-Schema enums — `sendNotification(NotificationChannel channel, …)` advertises `"enum":["EMAIL","SLACK","INTERNAL"]`.
 
-#### 20.5.2 The call and the result envelope
+#### <span style="color:hsl(160,68%,36%)">20.5.2 The call and the result envelope</span>
 
 - Request / response:
 
@@ -1604,7 +1604,7 @@ operators instantly see which exact code revision is running in any environment 
     - `"isError": true` in a *successful* response ⇒ *domain* failure ("invalid date", "no rows") — the **model** sees the text and can self-correct (fix args, retry, apologize).
     - That's why servers here throw typed exceptions (`InvalidToolArgumentException` → `GlobalExceptionHandler`) instead of leaking stack traces into content.
 
-#### 20.5.3 Context injection, sampling, elicitation, progress
+#### <span style="color:hsl(163,68%,36%)">20.5.3 Context injection, sampling, elicitation, progress</span>
 
 - A tool method may take an `McpSyncRequestContext` parameter:
     - injected by the framework, **excluded from the JSON Schema** — the model never sees it;
@@ -1618,7 +1618,7 @@ operators instantly see which exact code revision is running in any environment 
     - host collects the user's answer; the tool resumes.
 - **Progress**: long tools emit `notifications/progress` (`McpProgressHandler` logs them) — progress bar instead of spinner.
 
-#### 20.5.4 Validation & the trust boundary
+#### <span style="color:hsl(167,68%,36%)">20.5.4 Validation & the trust boundary</span>
 
 - `arguments` are **model-generated ⇒ untrusted**. Validate like user input:
 
@@ -1632,7 +1632,7 @@ operators instantly see which exact code revision is running in any environment 
     - write-tools require it (`requireUserForWrites`; `MissingActingUserException` if only the default user);
     - the LLM never gets to *be* somebody — the single most important security idea in this repo.
 
-### 20.6 Server primitive #2 — Resources
+### <span style="color:hsl(170,68%,36%)">20.6 Server primitive #2 — Resources</span>
 
 - Resources = **application-controlled, read-only data addressed by URI** (`file:///…`, `ticket://{id}`, custom schemes).
 - Tool ⇒ "the model may *do* this"; resource ⇒ "the host may *read* this into context".
@@ -1643,7 +1643,7 @@ operators instantly see which exact code revision is running in any environment 
     - you want subscription/update semantics.
 - Spring AI mirror of tools: `@McpResource(uri = "ticket://{id}", ...)` on a bean method.
 
-### 20.7 Server primitive #3 — Prompts
+### <span style="color:hsl(174,68%,36%)">20.7 Server primitive #3 — Prompts</span>
 
 - Prompts = **user-controlled, named, parameterized message templates** served by the server; hosts surface them as slash-commands/buttons.
 - Example here: `TicketPromptProvider` (ticket-service) — `prompts/list` → `analyze-tickets`; `prompts/get` expands it with live ticket data.
@@ -1655,7 +1655,7 @@ operators instantly see which exact code revision is running in any environment 
 | Resource  | **host/app** | (not used — 20.6)                   |
 | Prompt    | **user**     | "Analyze tickets" workflow          |
 
-### 20.8 Client side: from `tools/list` to a ChatModel tool call
+### <span style="color:hsl(177,68%,36%)">20.8 Client side: from `tools/list` to a ChatModel tool call</span>
 
 Chain inside `mcp-client`, in execution order:
 
@@ -1673,7 +1673,7 @@ Chain inside `mcp-client`, in execution order:
     - hard cap `assistant.max-tool-iterations` (default 5) — a confused model can't loop forever;
     - write-tools (name matches `assistant.write-tool-keywords`) get a confirmation gate.
 
-### 20.9 Security model recap
+### <span style="color:hsl(180,68%,36%)">20.9 Security model recap</span>
 
 - **Transport auth** — shared bearer `MCP_AUTH_TOKEN`, checked by each server's `McpAuthFilter` (constant-time compare; empty = disabled for local dev).
 - **Real OAuth2 where it matters** — `deployment-service` is an OAuth2 resource server validating Keycloak JWTs (realm `org-mcp`); client fetches tokens via client-credentials. Production pattern: every server a resource server, per-server scopes.
@@ -1681,7 +1681,7 @@ Chain inside `mcp-client`, in execution order:
 - **Prompt-injection defense** (§12) — tool *results* are untrusted too (a GitHub issue body can say "ignore previous instructions"): `PromptInjectionGuard` screens prompts, truncation limits blast radius, write-tools gate on confirmation.
 - **Rate limiting** — per-user token bucket in each server (`RateLimiter`) + per-user `/chat` limit in the client.
 
-### 20.10 Debugging & testing toolchain
+### <span style="color:hsl(184,68%,36%)">20.10 Debugging & testing toolchain</span>
 
 | Tool                        | Gives you                                                  | How                                                                                                     |
 |-----------------------------|------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
@@ -1691,7 +1691,7 @@ Chain inside `mcp-client`, in execution order:
 | **Unit tests**              | validation logic, no Spring                                | `HrMcpToolsValidationTest` etc. — typed-exception assertions                                            |
 | **Integration tests**       | real DB via Testcontainers                                 | `TestcontainersConfiguration` (`@ServiceConnection` Postgres) per module                                |
 
-### 20.11 Pitfalls (all hit in this repo)
+### <span style="color:hsl(187,68%,36%)">20.11 Pitfalls (all hit in this repo)</span>
 
 1. `tools/call` before the handshake ⇒ error. Always `initialize` → `notifications/initialized` first.
 2. Losing `Mcp-Session-Id` on a STREAMABLE server ⇒ treated as a stranger mid-conversation.
@@ -1704,7 +1704,7 @@ Chain inside `mcp-client`, in execution order:
 9. Port collisions (gmail vs travel both defaulted 8086) ⇒ one port per server, table in §13.
 10. Two method-security meta-annotations on one method breaks under Spring Security 7 ⇒ one `@PreAuthorize` per method.
 
-### 20.12 Glossary
+### <span style="color:hsl(191,68%,36%)">20.12 Glossary</span>
 
 | Term                       | Meaning                                                                    |
 |----------------------------|----------------------------------------------------------------------------|

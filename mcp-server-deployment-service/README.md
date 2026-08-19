@@ -1,4 +1,4 @@
-# Deployment Service — `mcp-server-deployment-service`
+# <span style="color:hsl(275,68%,44%)">Deployment Service — `mcp-server-deployment-service`</span>
 
 An MCP server that manages deployment scheduling, backed by PostgreSQL (Flyway-migrated). Runs on **`:8082`**,
 MCP protocol **STREAMABLE** (shared with `mcp-server-github-service` and `mcp-server-gmail-service`; HR, ticket,
@@ -7,7 +7,7 @@ notification, and travel use STATELESS instead). STREAMABLE is required here bec
 
 ---
 
-## MCP Tools
+## <span style="color:hsl(299,68%,44%)">MCP Tools</span>
 
 Six of the seven tools are defined in `DeploymentMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring
 AI's MCP annotation scanner (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
@@ -26,7 +26,7 @@ need:
 | `cancelDeployment`     | WRITE | Cancel a deployment by id                                                                                                                                                                                                                                                                                                                                           |
 | `executeDeployment`    | WRITE | Execute (simulate) a scheduled deployment now. Walks validate → deploy → verify stages, emitting an MCP progress notification (`ctx.progress(...)`) after each one. If the deployment's environment is `PROD`, it first calls `ctx.elicit(...)` to ask the connected client for structured confirmation (`{confirm, reason}`) and aborts if declined or unsupported |
 
-### MCP tool call flow for `executeDeployment`
+### <span style="color:hsl(323,68%,44%)">MCP tool call flow for `executeDeployment`</span>
 
 ```mermaid
 sequenceDiagram
@@ -65,7 +65,7 @@ logs each `notifications/progress` event and tracks the last-known percentage pe
 
 ---
 
-## Best Practices Applied
+## <span style="color:hsl(347,68%,44%)">Best Practices Applied</span>
 
 | Practice                     | Status | Notes                                                                                                                                                                              |                                      |
 |------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
@@ -92,7 +92,7 @@ logs each `notifications/progress` event and tracks the last-known percentage pe
 
 ---
 
-## Design Patterns (GoF)
+## <span style="color:hsl(11,68%,44%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                                                                           | Role                                                                  |
 |-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
@@ -105,7 +105,7 @@ logs each `notifications/progress` event and tracks the last-known percentage pe
 | **Chain of Responsibility** | Servlet `FilterChain`                                                                                                                           | Auth → rate-limit → tools, each link handles or passes on             |
 | **Command**                 | `@McpTool` methods (`createDeployment`, `cancelDeployment`, `executeDeployment`, …) reified as MCP tool callbacks                               | Tool invocations dispatched by name+arguments through the MCP runtime |
 
-## Configuration
+## <span style="color:hsl(35,68%,44%)">Configuration</span>
 
 | Property / Env Var                      | Default                                      | Description                                          |
 |-----------------------------------------|----------------------------------------------|------------------------------------------------------|
@@ -122,7 +122,7 @@ logs each `notifications/progress` event and tracks the last-known percentage pe
 
 ---
 
-## Running in Isolation
+## <span style="color:hsl(59,68%,32%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-deployment-service
@@ -134,12 +134,12 @@ export MCP_AUTH_TOKEN=$(uuidgen)
 
 ---
 
-## curl Commands
+## <span style="color:hsl(83,68%,32%)">curl Commands</span>
 
 > MCP requests are JSON-RPC 2.0 over the streamable-HTTP endpoint `/mcp`. Replace `$TOKEN` with your
 > `MCP_AUTH_TOKEN`.
 
-### List available tools
+### <span style="color:hsl(107,68%,32%)">List available tools</span>
 
 ```bash
 curl -s http://localhost:8082/mcp \
@@ -148,7 +148,7 @@ curl -s http://localhost:8082/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-### List / get deployments
+### <span style="color:hsl(131,68%,32%)">List / get deployments</span>
 
 ```bash
 curl -s http://localhost:8082/mcp \
@@ -162,7 +162,7 @@ curl -s http://localhost:8082/mcp \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"getDeployment","arguments":{"id":1}}}'
 ```
 
-### Create a deployment (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)
+### <span style="color:hsl(155,68%,36%)">Create a deployment (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
 
 ```bash
 curl -s http://localhost:8082/mcp \
@@ -178,7 +178,7 @@ curl -s http://localhost:8082/mcp \
       }'
 ```
 
-### Reassign owner
+### <span style="color:hsl(179,68%,36%)">Reassign owner</span>
 
 ```bash
 curl -s http://localhost:8082/mcp \
@@ -188,7 +188,7 @@ curl -s http://localhost:8082/mcp \
   -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"assignOwner","arguments":{"id":1,"newOwner":"mark.ops"}}}'
 ```
 
-### Reschedule
+### <span style="color:hsl(203,68%,44%)">Reschedule</span>
 
 ```bash
 curl -s http://localhost:8082/mcp \
@@ -198,7 +198,7 @@ curl -s http://localhost:8082/mcp \
   -d '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"rescheduleDeployment","arguments":{"id":1,"newTime":"2026-06-11T09:00:00"}}}'
 ```
 
-### Cancel
+### <span style="color:hsl(227,68%,44%)">Cancel</span>
 
 ```bash
 curl -s http://localhost:8082/mcp \
@@ -208,7 +208,7 @@ curl -s http://localhost:8082/mcp \
   -d '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"cancelDeployment","arguments":{"id":1}}}'
 ```
 
-### Actuator
+### <span style="color:hsl(251,68%,44%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8082/actuator/health | jq
