@@ -1,11 +1,11 @@
-# <span style="color:hsl(292,68%,44%)">Notification Service — `mcp-server-notification-service`</span>
+# <span style="color:hsl(292,80%,58%)">Notification Service — `mcp-server-notification-service`</span>
 
 An MCP server that sends and lists notifications across channels (INTERNAL, EMAIL, SLACK), backed by PostgreSQL
 (Flyway-migrated). Runs on **`:8083`**, MCP protocol **STATELESS**.
 
 ---
 
-## <span style="color:hsl(325,68%,44%)">MCP Tools</span>
+## <span style="color:hsl(70,80%,50%)">MCP Tools</span>
 
 Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
 (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
@@ -18,7 +18,7 @@ Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered 
 
 ---
 
-## <span style="color:hsl(357,68%,44%)">Best Practices Applied</span>
+## <span style="color:hsl(207,80%,58%)">Best Practices Applied</span>
 
 | Practice                          | Status | Notes                                                                                                                                                                                                                                                                                                           |                                                     |
 |-----------------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
@@ -44,7 +44,7 @@ Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered 
 
 ---
 
-## <span style="color:hsl(30,68%,44%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(345,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                                      | Role                                                                                                        |
 |-----------------------------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
@@ -59,7 +59,7 @@ Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered 
 | **Chain of Responsibility** | Servlet `FilterChain`                                                                                      | Auth → rate-limit → tools, each link handles or passes on                                                   |
 | **Command**                 | `@McpTool` methods (`getNotifications`, `sendNotification`) reified as MCP tool callbacks                  | Tool invocations dispatched by name+arguments through the MCP runtime                                       |
 
-## <span style="color:hsl(63,68%,32%)">Configuration</span>
+## <span style="color:hsl(122,80%,58%)">Configuration</span>
 
 | Property / Env Var                      | Default                                      | Description                                                 |
 |-----------------------------------------|----------------------------------------------|-------------------------------------------------------------|
@@ -76,7 +76,7 @@ Defined in `NotificationTools` as `@McpTool`-annotated methods, auto-registered 
 
 ---
 
-## <span style="color:hsl(96,68%,32%)">Running in Isolation</span>
+## <span style="color:hsl(260,80%,58%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-notification-service
@@ -88,12 +88,12 @@ export MCP_AUTH_TOKEN=$(uuidgen)
 
 ---
 
-## <span style="color:hsl(128,68%,32%)">curl Commands</span>
+## <span style="color:hsl(37,80%,58%)">curl Commands</span>
 
 > MCP requests are JSON-RPC 2.0 over the streamable-HTTP endpoint `/mcp`. Replace `$TOKEN` with your
 > `MCP_AUTH_TOKEN`.
 
-### <span style="color:hsl(161,68%,36%)">List available tools</span>
+### <span style="color:hsl(175,80%,58%)">List available tools</span>
 
 ```bash
 curl -s http://localhost:8083/mcp \
@@ -102,7 +102,7 @@ curl -s http://localhost:8083/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-### <span style="color:hsl(194,68%,36%)">List notifications</span>
+### <span style="color:hsl(312,80%,58%)">List notifications</span>
 
 ```bash
 curl -s http://localhost:8083/mcp \
@@ -111,7 +111,7 @@ curl -s http://localhost:8083/mcp \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"getNotifications","arguments":{}}}'
 ```
 
-### <span style="color:hsl(227,68%,44%)">Send a notification (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
+### <span style="color:hsl(90,80%,58%)">Send a notification (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
 
 ```bash
 curl -s http://localhost:8083/mcp \
@@ -127,7 +127,7 @@ curl -s http://localhost:8083/mcp \
       }'
 ```
 
-### <span style="color:hsl(259,68%,44%)">Actuator</span>
+### <span style="color:hsl(227,80%,58%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8083/actuator/health | jq

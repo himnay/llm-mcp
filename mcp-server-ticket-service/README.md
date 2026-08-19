@@ -1,4 +1,4 @@
-# <span style="color:hsl(114,68%,32%)">Ticket Service — `mcp-server-ticket-service`</span>
+# <span style="color:hsl(114,80%,58%)">Ticket Service — `mcp-server-ticket-service`</span>
 
 An MCP server that manages support tickets, backed by PostgreSQL (Flyway-migrated). Runs on **`:8081`**, MCP
 protocol **STATELESS**.
@@ -12,7 +12,7 @@ protocol **STATELESS**.
 
 ---
 
-## <span style="color:hsl(147,68%,32%)">REST API</span>
+## <span style="color:hsl(252,80%,58%)">REST API</span>
 
 | Method | Path                   | Params                                   | Description                      |
 |--------|------------------------|------------------------------------------|----------------------------------|
@@ -24,7 +24,7 @@ protocol **STATELESS**.
 
 `priority` ∈ `TicketPriority`, `status` ∈ `TicketStatus` (see `model/`).
 
-## <span style="color:hsl(179,68%,36%)">MCP Prompts</span>
+## <span style="color:hsl(29,80%,58%)">MCP Prompts</span>
 
 | Name              | Description                                                                                                                                                                                                                    |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -32,7 +32,7 @@ protocol **STATELESS**.
 
 ---
 
-## <span style="color:hsl(212,68%,44%)">Best Practices Applied</span>
+## <span style="color:hsl(167,80%,58%)">Best Practices Applied</span>
 
 | Practice                     | Status | Notes                                                                                                                                                                    |                                       |                                               |
 |------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|-----------------------------------------------|
@@ -59,7 +59,7 @@ protocol **STATELESS**.
 
 ---
 
-## <span style="color:hsl(245,68%,44%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(304,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                   | Role                                                                                                                             |
 |-----------------------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -73,7 +73,7 @@ protocol **STATELESS**.
 | **Chain of Responsibility** | Servlet `FilterChain`                                                                   | Auth → rate-limit → controller, each link handles or passes on                                                                   |
 | **Command**                 | `@McpPrompt` provider (`TicketPromptProvider`) registered as an invokable MCP primitive | Prompt generation reified as a dispatchable object                                                                               |
 
-## <span style="color:hsl(278,68%,44%)">Configuration</span>
+## <span style="color:hsl(82,80%,58%)">Configuration</span>
 
 | Property / Env Var                      | Default                                      | Description                                                 |
 |-----------------------------------------|----------------------------------------------|-------------------------------------------------------------|
@@ -90,7 +90,7 @@ protocol **STATELESS**.
 
 ---
 
-## <span style="color:hsl(310,68%,44%)">Running in Isolation</span>
+## <span style="color:hsl(219,80%,58%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-ticket-service
@@ -102,9 +102,9 @@ export MCP_AUTH_TOKEN=$(uuidgen)
 
 ---
 
-## <span style="color:hsl(343,68%,44%)">curl Commands</span>
+## <span style="color:hsl(357,80%,58%)">curl Commands</span>
 
-### <span style="color:hsl(16,68%,44%)">REST API</span>
+### <span style="color:hsl(134,80%,58%)">REST API</span>
 
 ```bash
 TOKEN=<your MCP_AUTH_TOKEN>
@@ -132,7 +132,7 @@ curl -s -X PUT "http://localhost:8081/tickets/1/assign?assignee=mark.ops" \
   -H "Authorization: Bearer $TOKEN" -H 'X-Acting-User: jane.doe'
 ```
 
-### <span style="color:hsl(49,68%,32%)">MCP — discovery & prompt</span>
+### <span style="color:hsl(272,80%,58%)">MCP — discovery & prompt</span>
 
 ```bash
 # List tools (expect an empty/near-empty list — see note above)
@@ -154,7 +154,7 @@ curl -s http://localhost:8081/mcp \
   -d '{"jsonrpc":"2.0","id":3,"method":"prompts/get","params":{"name":"analyze-tickets"}}'
 ```
 
-### <span style="color:hsl(81,68%,32%)">Actuator</span>
+### <span style="color:hsl(49,80%,50%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8081/actuator/health | jq

@@ -1,4 +1,4 @@
-# <span style="color:hsl(47,68%,32%)">Travel Service — `mcp-server-travel-service`</span>
+# <span style="color:hsl(47,80%,50%)">Travel Service — `mcp-server-travel-service`</span>
 
 An MCP server that exposes flight-availability lookups via the **Amadeus** self-service API. Runs on **`:8087`**
 (locally and in the root compose stack) (see [`docker-compose.yml`](../docker-compose.yml#L142)), MCP
@@ -6,7 +6,7 @@ protocol **STATELESS**, no datasource — Spring app name `mcp-travel-service`.
 
 ---
 
-## <span style="color:hsl(80,68%,32%)">MCP Tools</span>
+## <span style="color:hsl(185,80%,58%)">MCP Tools</span>
 
 Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
 (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
@@ -19,7 +19,7 @@ Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by 
 
 ---
 
-## <span style="color:hsl(112,68%,32%)">Best Practices Applied</span>
+## <span style="color:hsl(322,80%,58%)">Best Practices Applied</span>
 
 | Practice                     | Status | Notes                                                                                                                                                                      |                                  |
 |------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
@@ -46,7 +46,7 @@ Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by 
 
 ---
 
-## <span style="color:hsl(145,68%,32%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(100,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                                                                             | Role                                                                                                    |
 |-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
@@ -60,7 +60,7 @@ Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by 
 | **Chain of Responsibility** | Servlet `FilterChain`                                                                                                                             | Auth → rate-limit → tools, each link handles or passes on                                               |
 | **Command**                 | `@McpTool` methods in `FlightMcpTools` reified as MCP tool callbacks                                                                              | Tool invocations dispatched by name+arguments through the MCP runtime                                   |
 
-## <span style="color:hsl(178,68%,36%)">Configuration</span>
+## <span style="color:hsl(237,80%,58%)">Configuration</span>
 
 | Property / Env Var                                    | Default                        | Description                                         |
 |-------------------------------------------------------|--------------------------------|-----------------------------------------------------|
@@ -78,7 +78,7 @@ Defined in `FlightMcpTools` as `@McpTool`-annotated methods, auto-registered by 
 
 ---
 
-## <span style="color:hsl(211,68%,44%)">Running in Isolation</span>
+## <span style="color:hsl(15,80%,58%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-travel-service
@@ -99,12 +99,12 @@ AMADEUS_CLIENT_ID=xxxx AMADEUS_CLIENT_SECRET=xxxx docker compose up
 
 ---
 
-## <span style="color:hsl(243,68%,44%)">curl Commands</span>
+## <span style="color:hsl(152,80%,58%)">curl Commands</span>
 
 > MCP requests are JSON-RPC 2.0 over the streamable-HTTP endpoint `/mcp`. Replace `$TOKEN` with your
 > `MCP_AUTH_TOKEN`.
 
-### <span style="color:hsl(276,68%,44%)">List available tools</span>
+### <span style="color:hsl(290,80%,58%)">List available tools</span>
 
 ```bash
 curl -s http://localhost:8087/mcp \
@@ -113,7 +113,7 @@ curl -s http://localhost:8087/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-### <span style="color:hsl(309,68%,44%)">Look up an airport code</span>
+### <span style="color:hsl(67,80%,50%)">Look up an airport code</span>
 
 ```bash
 curl -s http://localhost:8087/mcp \
@@ -125,7 +125,7 @@ curl -s http://localhost:8087/mcp \
       }'
 ```
 
-### <span style="color:hsl(342,68%,44%)">Search flights</span>
+### <span style="color:hsl(205,80%,58%)">Search flights</span>
 
 ```bash
 curl -s http://localhost:8087/mcp \
@@ -140,7 +140,7 @@ curl -s http://localhost:8087/mcp \
       }'
 ```
 
-### <span style="color:hsl(14,68%,44%)">Actuator</span>
+### <span style="color:hsl(342,80%,58%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8087/actuator/health | jq

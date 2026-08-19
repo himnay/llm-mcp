@@ -1,4 +1,4 @@
-# <span style="color:hsl(39,68%,44%)">AI MCP Client — `mcp-client`</span>
+# <span style="color:hsl(39,80%,58%)">AI MCP Client — `mcp-client`</span>
 
 The **MCP client / chat orchestrator** of the stack. Exposes a single `POST /chat` endpoint backed by an
 OpenAI-powered `ChatClient` that dispatches tool calls to downstream MCP servers (ticket, deployment, notification,
@@ -16,7 +16,7 @@ message additionally passes through `PromptInjectionGuard` before the LLM or any
 
 ---
 
-## <span style="color:hsl(65,68%,32%)">MCP Server Connections</span>
+## <span style="color:hsl(177,80%,58%)">MCP Server Connections</span>
 
 Configured under `spring.ai.mcp.client.streamable-http.connections` in `application.yaml` — one `McpSyncClient` per
 downstream server, each secured and load-balanced through `ResilientToolCallbackProvider`. `ResilienceConfig`
@@ -41,7 +41,7 @@ reachable via `PromptLoader`. `travel` is not present in this file at all.
 
 ---
 
-## <span style="color:hsl(90,68%,32%)">Chat API</span>
+## <span style="color:hsl(314,80%,58%)">Chat API</span>
 
 | Method | Path    | Body                         | Description                                                                                                                                                                          |
 |--------|---------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -52,7 +52,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 
 ---
 
-## <span style="color:hsl(116,68%,32%)">Best Practices Applied</span>
+## <span style="color:hsl(92,80%,58%)">Best Practices Applied</span>
 
 | Practice                        | Status | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                    |
 |---------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
@@ -81,7 +81,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 
 ---
 
-## <span style="color:hsl(142,68%,32%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(229,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                           | Role                                                                                                                                    |
 |-----------------------------|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
@@ -97,7 +97,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 | **Interpreter** (framework) | `PromptTemplate` rendering `prompts/system.st`                                                  | StringTemplate grammar is parsed and evaluated to produce the system prompt                                                             |
 | **Singleton**               | All Spring beans                                                                                | One shared, stateless instance per container                                                                                            |
 
-## <span style="color:hsl(168,68%,36%)">Semantic Tool Selection (Redis)</span>
+## <span style="color:hsl(7,80%,58%)">Semantic Tool Selection (Redis)</span>
 
 With many MCP servers each exposing dozens of tools, stuffing every tool definition into every LLM
 call would blow past the context window and degrade response quality. Instead, `mcp-client` uses
@@ -141,7 +141,7 @@ ToolCallbackProvider                     user query
 > it only fails on `Connection to localhost:5432 refused` — the expected "good failure" when no
 > Postgres is running locally.
 
-### <span style="color:hsl(193,68%,36%)">Key components</span>
+### <span style="color:hsl(144,80%,58%)">Key components</span>
 
 | Class                                                                          | Role                                                                                                                                                                                       |
 |--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -149,7 +149,7 @@ ToolCallbackProvider                     user query
 | `SemanticToolSelector`                                                         | Per-request: embeds the user query, calls `VectorStore.similaritySearch(topK)`, maps hit names back to `ToolCallback` objects; falls back to all tools if the vector store returns nothing |
 | `RedisVectorStore` (auto-configured by `spring-ai-starter-vector-store-redis`) | HNSW index (RediSearch), 1536-dimension OpenAI `text-embedding-3-small` embeddings, index name `tool_embeddings`                                                                           |
 
-### <span style="color:hsl(219,68%,44%)">Configuration</span>
+### <span style="color:hsl(282,80%,58%)">Configuration</span>
 
 | Property                                        | Default                  | Description                                                          |
 |-------------------------------------------------|--------------------------|----------------------------------------------------------------------|
@@ -175,7 +175,7 @@ since rewriting applied Flyway history is out of scope for this change.
 
 ---
 
-## <span style="color:hsl(245,68%,44%)">Configuration</span>
+## <span style="color:hsl(59,80%,50%)">Configuration</span>
 
 | Property / Env Var                             | Default                                                                                                         | Description                                                             |
 |------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
@@ -199,7 +199,7 @@ since rewriting applied Flyway history is out of scope for this change.
 
 ---
 
-## <span style="color:hsl(270,68%,44%)">Running in Isolation</span>
+## <span style="color:hsl(197,80%,58%)">Running in Isolation</span>
 
 This module depends only on **PostgreSQL** (for conversation memory) and the **OpenAI API** — none of the
 downstream MCP servers are required to start the app, though tool calls will fail/circuit-break if they're
@@ -227,9 +227,9 @@ To exercise the full flow, also start the downstream MCP servers (see each servi
 
 ---
 
-## <span style="color:hsl(296,68%,44%)">curl Commands</span>
+## <span style="color:hsl(334,80%,58%)">curl Commands</span>
 
-### <span style="color:hsl(322,68%,44%)">Send a chat message</span>
+### <span style="color:hsl(112,80%,58%)">Send a chat message</span>
 
 ```bash
 curl -s -X POST http://localhost:8080/chat \
@@ -238,7 +238,7 @@ curl -s -X POST http://localhost:8080/chat \
   -d '{"message":"What deployments are scheduled for this week?"}'
 ```
 
-### <span style="color:hsl(348,68%,44%)">Use an MCP-prompt shorthand (expanded by `PromptLoader` before the LLM call)</span>
+### <span style="color:hsl(249,80%,58%)">Use an MCP-prompt shorthand (expanded by `PromptLoader` before the LLM call)</span>
 
 ```bash
 curl -s -X POST http://localhost:8080/chat \
@@ -247,7 +247,7 @@ curl -s -X POST http://localhost:8080/chat \
   -d '{"message":"/analyze-tickets"}'
 ```
 
-### <span style="color:hsl(13,68%,44%)">Actuator (health includes per-MCP-server reachability via `McpClientHealthIndicator`)</span>
+### <span style="color:hsl(27,80%,58%)">Actuator (health includes per-MCP-server reachability via `McpClientHealthIndicator`)</span>
 
 ```bash
 curl -s http://localhost:8080/actuator/health | jq

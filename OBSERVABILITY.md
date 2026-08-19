@@ -1,10 +1,10 @@
-# <span style="color:hsl(359,68%,44%)">Observability Setup — Metrics & Distributed Tracing</span>
+# <span style="color:hsl(359,80%,58%)">Observability Setup — Metrics & Distributed Tracing</span>
 
 Every service is instrumented for **metrics** (Micrometer → Prometheus) and **distributed tracing** (Micrometer
 Tracing → OTLP → Grafana Tempo). The `docker-compose.yml` at the repo root provides PostgreSQL plus the full
 observability backend.
 
-## <span style="color:hsl(59,68%,32%)">Stack</span>
+## <span style="color:hsl(137,80%,58%)">Stack</span>
 
 | Component  | Purpose                                    | URL                                 |
 |------------|--------------------------------------------|-------------------------------------|
@@ -13,7 +13,7 @@ observability backend.
 | Tempo      | Receives OTLP traces (HTTP `:4318`)        | http://localhost:3200               |
 | Grafana    | Dashboards + Tempo/Prometheus datasources  | http://localhost:3000 (admin/admin) |
 
-## <span style="color:hsl(119,68%,32%)">Quick start</span>
+## <span style="color:hsl(274,80%,58%)">Quick start</span>
 
 ```bash
 # 1. Start Postgres + observability backend
@@ -27,7 +27,7 @@ cd hr-service         && ./mvnw spring-boot:run   # :8084
 cd ai-assistant-mcp            && OPENAI_API_KEY=sk-... ./mvnw spring-boot:run  # :8080
 ```
 
-## <span style="color:hsl(179,68%,36%)">How tracing is wired</span>
+## <span style="color:hsl(52,80%,50%)">How tracing is wired</span>
 
 Each service's `application.yaml`:
 
@@ -49,12 +49,12 @@ Metrics are exposed at `/actuator/prometheus` and scraped per
 `observability/prometheus.yml`. View them in Grafana → Explore → **Prometheus**,
 or browse targets at http://localhost:9090/targets.
 
-## <span style="color:hsl(239,68%,44%)">Endpoints exposed per service</span>
+## <span style="color:hsl(189,80%,58%)">Endpoints exposed per service</span>
 
 `health`, `info`, `metrics`, `prometheus`, `loggers`, `env` — e.g.
 `GET http://localhost:8082/actuator/health`.
 
-## <span style="color:hsl(299,68%,44%)">Overriding for a real collector</span>
+## <span style="color:hsl(327,80%,58%)">Overriding for a real collector</span>
 
 Point every service at a shared collector without editing YAML:
 

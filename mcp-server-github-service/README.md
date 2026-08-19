@@ -1,4 +1,4 @@
-# <span style="color:hsl(241,68%,44%)">GitHub Service — `mcp-server-github-service`</span>
+# <span style="color:hsl(241,80%,58%)">GitHub Service — `mcp-server-github-service`</span>
 
 An MCP server that exposes GitHub repository intelligence (commits, PRs, issues, releases, workflow runs, …) as
 tools for the `mcp-client` assistant, backed by the GitHub REST API. Runs on **`:8085`**, MCP protocol
@@ -6,7 +6,7 @@ tools for the `mcp-client` assistant, backed by the GitHub REST API. Runs on **`
 
 ---
 
-## <span style="color:hsl(257,68%,44%)">MCP Tools</span>
+## <span style="color:hsl(19,80%,58%)">MCP Tools</span>
 
 Twelve plain tools are defined in `GitHubMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's
 MCP annotation scanner (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
@@ -41,7 +41,7 @@ On the client, `McpSamplingHandler` (`@McpSampling(clients = "github")`) receive
 `McpSchema.CreateMessageResult` — the completion happens on the client's model, not a second one configured on the
 server. Because this requires a stateful session, it only works because this server is **STREAMABLE**.
 
-### <span style="color:hsl(272,68%,44%)">MCP sampling flow for `summarizeRepositoryHealth`</span>
+### <span style="color:hsl(156,80%,58%)">MCP sampling flow for `summarizeRepositoryHealth`</span>
 
 ```mermaid
 sequenceDiagram
@@ -73,7 +73,7 @@ sequenceDiagram
 
 ---
 
-## <span style="color:hsl(288,68%,44%)">Best Practices Applied</span>
+## <span style="color:hsl(294,80%,58%)">Best Practices Applied</span>
 
 | Practice                     | Status | Notes                                                                                                                                                                                                                                                     |                                                                  |
 |------------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
@@ -99,7 +99,7 @@ sequenceDiagram
 
 ---
 
-## <span style="color:hsl(304,68%,44%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(71,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                         | Where                                                                                                                                                                                   | Role                                                                                                                                                                          |
 |---------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -114,7 +114,7 @@ sequenceDiagram
 | **Template Method** (framework) | `McpAuthFilter extends OncePerRequestFilter`                                                                                                                                            | Framework skeleton calls `doFilterInternal` hooks                                                                                                                             |
 | **Chain of Responsibility**     | Servlet `FilterChain`                                                                                                                                                                   | Auth → rate-limit → tools, each link handles or passes on                                                                                                                     |
 
-## <span style="color:hsl(319,68%,44%)">Configuration</span>
+## <span style="color:hsl(209,80%,58%)">Configuration</span>
 
 | Property / Env Var | Default | Description |
 |-------------------------------=----------|----------------------------------|----------------------------------------------------------|
@@ -139,7 +139,7 @@ Tempo)                             |
 
 ---
 
-## <span style="color:hsl(335,68%,44%)">Running in Isolation</span>
+## <span style="color:hsl(346,80%,58%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-github-service
@@ -160,12 +160,12 @@ An Insomnia collection covering MCP discovery and every tool call for all servic
 
 ---
 
-## <span style="color:hsl(351,68%,44%)">curl Commands</span>
+## <span style="color:hsl(124,80%,58%)">curl Commands</span>
 
 > MCP requests are JSON-RPC 2.0 over the streamable-HTTP endpoint `/mcp`. Replace `$TOKEN` with your
 > `MCP_AUTH_TOKEN` (defaults to `019ea153-01b5-73a3-9db1-ee5d05381838` per `application.yaml`).
 
-### <span style="color:hsl(6,68%,44%)">List available tools</span>
+### <span style="color:hsl(261,80%,58%)">List available tools</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -174,7 +174,7 @@ curl -s http://localhost:8085/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-### <span style="color:hsl(22,68%,44%)">Repository metadata</span>
+### <span style="color:hsl(39,80%,58%)">Repository metadata</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -186,7 +186,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(38,68%,44%)">Commit history</span>
+### <span style="color:hsl(176,80%,58%)">Commit history</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -198,7 +198,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(53,68%,32%)">Commit metrics over a date range</span>
+### <span style="color:hsl(314,80%,58%)">Commit metrics over a date range</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -210,7 +210,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(69,68%,32%)">Branches</span>
+### <span style="color:hsl(91,80%,58%)">Branches</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -222,7 +222,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(84,68%,32%)">Open pull requests</span>
+### <span style="color:hsl(229,80%,58%)">Open pull requests</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -234,7 +234,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(100,68%,32%)">Issues by label</span>
+### <span style="color:hsl(6,80%,58%)">Issues by label</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -246,7 +246,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(116,68%,32%)">Contributors</span>
+### <span style="color:hsl(144,80%,58%)">Contributors</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -258,7 +258,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(131,68%,32%)">Workflow runs</span>
+### <span style="color:hsl(281,80%,58%)">Workflow runs</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -270,7 +270,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(147,68%,32%)">Releases</span>
+### <span style="color:hsl(59,80%,50%)">Releases</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -282,7 +282,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(163,68%,36%)">Search repositories</span>
+### <span style="color:hsl(196,80%,58%)">Search repositories</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -294,7 +294,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(178,68%,36%)">Code frequency</span>
+### <span style="color:hsl(334,80%,58%)">Code frequency</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -306,7 +306,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(194,68%,36%)">Create an issue (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
+### <span style="color:hsl(111,80%,58%)">Create an issue (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -324,7 +324,7 @@ curl -s http://localhost:8085/mcp \
       }'
 ```
 
-### <span style="color:hsl(210,68%,44%)">Summarize repository health (MCP sampling — requires a client that implements `sampling/createMessage`)</span>
+### <span style="color:hsl(249,80%,58%)">Summarize repository health (MCP sampling — requires a client that implements `sampling/createMessage`)</span>
 
 ```bash
 curl -s http://localhost:8085/mcp \
@@ -339,7 +339,7 @@ curl -s http://localhost:8085/mcp \
 > Calling this tool directly with `curl` will only succeed if the caller also implements the client side of MCP
 > sampling; in this repo that role is played by `mcp-client`'s `McpSamplingHandler`, not a plain HTTP client.
 
-### <span style="color:hsl(225,68%,44%)">Actuator</span>
+### <span style="color:hsl(26,80%,58%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8085/actuator/health | jq

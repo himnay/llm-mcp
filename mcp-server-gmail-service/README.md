@@ -1,4 +1,4 @@
-# <span style="color:hsl(197,68%,36%)">Gmail Service — `mcp-server-gmail-service`</span>
+# <span style="color:hsl(197,80%,58%)">Gmail Service — `mcp-server-gmail-service`</span>
 
 An MCP server that exposes Gmail inbox operations (search, read, label, draft, send, delete) as tools for the
 `mcp-client` assistant, backed by the Gmail REST API. Runs on **`:8086`**, MCP protocol **STREAMABLE**, no
@@ -6,7 +6,7 @@ datasource — it is a thin, stateless proxy over `gmail.googleapis.com`.
 
 ---
 
-## <span style="color:hsl(216,68%,44%)">MCP Tools</span>
+## <span style="color:hsl(335,80%,58%)">MCP Tools</span>
 
 Defined in `GmailMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
 (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
@@ -29,7 +29,7 @@ Defined in `GmailMcpTools` as `@McpTool`-annotated methods, auto-registered by S
 
 ---
 
-## <span style="color:hsl(235,68%,44%)">Best Practices Applied</span>
+## <span style="color:hsl(112,80%,58%)">Best Practices Applied</span>
 
 | Practice                     | Status | Notes                                                                                                                                                                                           |                                                          |
 |------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
@@ -55,7 +55,7 @@ Defined in `GmailMcpTools` as `@McpTool`-annotated methods, auto-registered by S
 
 ---
 
-## <span style="color:hsl(254,68%,44%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(250,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                                                                              | Role                                                                                       |
 |-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
@@ -68,7 +68,7 @@ Defined in `GmailMcpTools` as `@McpTool`-annotated methods, auto-registered by S
 | **Chain of Responsibility** | Servlet `FilterChain`                                                                                                                              | Auth → rate-limit → tools, each link handles or passes on                                  |
 | **Command**                 | `@McpTool` methods (`listEmails`, `sendEmail`, …) reified as MCP tool callbacks                                                                    | Tool invocations dispatched by name+arguments through the MCP runtime                      |
 
-## <span style="color:hsl(273,68%,44%)">Configuration</span>
+## <span style="color:hsl(27,80%,58%)">Configuration</span>
 
 | Property / Env Var                          | Default                                 | Description                                                       |
 |---------------------------------------------|-----------------------------------------|-------------------------------------------------------------------|
@@ -87,7 +87,7 @@ Defined in `GmailMcpTools` as `@McpTool`-annotated methods, auto-registered by S
 
 ---
 
-## <span style="color:hsl(292,68%,44%)">Running in Isolation</span>
+## <span style="color:hsl(165,80%,58%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-gmail-service
@@ -104,12 +104,12 @@ docker compose up gmail-service
 
 ---
 
-## <span style="color:hsl(311,68%,44%)">curl Commands</span>
+## <span style="color:hsl(302,80%,58%)">curl Commands</span>
 
 > MCP requests are JSON-RPC 2.0 over the streamable-HTTP endpoint `/mcp`. Replace `$TOKEN` with your
 > `MCP_AUTH_TOKEN`.
 
-### <span style="color:hsl(330,68%,44%)">List available tools</span>
+### <span style="color:hsl(80,80%,58%)">List available tools</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -118,7 +118,7 @@ curl -s http://localhost:8086/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-### <span style="color:hsl(349,68%,44%)">List recent inbox emails</span>
+### <span style="color:hsl(217,80%,58%)">List recent inbox emails</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -130,7 +130,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(8,68%,44%)">Get a single email</span>
+### <span style="color:hsl(355,80%,58%)">Get a single email</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -142,7 +142,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(26,68%,44%)">Search using Gmail query syntax</span>
+### <span style="color:hsl(132,80%,58%)">Search using Gmail query syntax</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -154,7 +154,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(45,68%,32%)">Get a thread</span>
+### <span style="color:hsl(270,80%,58%)">Get a thread</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -166,7 +166,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(64,68%,32%)">Profile / labels</span>
+### <span style="color:hsl(47,80%,50%)">Profile / labels</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -180,7 +180,7 @@ curl -s http://localhost:8086/mcp \
   -d '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"listLabels","arguments":{}}}'
 ```
 
-### <span style="color:hsl(83,68%,32%)">Emails by label</span>
+### <span style="color:hsl(185,80%,58%)">Emails by label</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -192,7 +192,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(102,68%,32%)">Mark read / unread (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
+### <span style="color:hsl(322,80%,58%)">Mark read / unread (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -208,7 +208,7 @@ curl -s http://localhost:8086/mcp \
   -d '{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"markAsUnread","arguments":{"messageId":"18d4f2a9b7c3e1f0"}}}'
 ```
 
-### <span style="color:hsl(121,68%,32%)">Create a draft (write)</span>
+### <span style="color:hsl(100,80%,58%)">Create a draft (write)</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -224,7 +224,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(140,68%,32%)">Send an email (write)</span>
+### <span style="color:hsl(237,80%,58%)">Send an email (write)</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -240,7 +240,7 @@ curl -s http://localhost:8086/mcp \
       }'
 ```
 
-### <span style="color:hsl(159,68%,36%)">Delete (move to Trash) — write</span>
+### <span style="color:hsl(15,80%,58%)">Delete (move to Trash) — write</span>
 
 ```bash
 curl -s http://localhost:8086/mcp \
@@ -250,7 +250,7 @@ curl -s http://localhost:8086/mcp \
   -d '{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"deleteEmail","arguments":{"messageId":"18d4f2a9b7c3e1f0"}}}'
 ```
 
-### <span style="color:hsl(178,68%,36%)">Actuator</span>
+### <span style="color:hsl(152,80%,58%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8086/actuator/health | jq

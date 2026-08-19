@@ -1,11 +1,11 @@
-# <span style="color:hsl(102,68%,32%)">HR Service — `mcp-server-hr-service`</span>
+# <span style="color:hsl(102,80%,58%)">HR Service — `mcp-server-hr-service`</span>
 
 An MCP server that manages employee leave and replacement lookups, backed by PostgreSQL (Flyway-migrated). Runs
 on **`:8084`**, MCP protocol **STATELESS**, Spring app name `mcp-hr-service`.
 
 ---
 
-## <span style="color:hsl(135,68%,32%)">MCP Tools</span>
+## <span style="color:hsl(240,80%,58%)">MCP Tools</span>
 
 Defined in `HrMcpTools` as `@McpTool`-annotated methods, auto-registered by Spring AI's MCP annotation scanner
 (`McpServerAnnotationScannerAutoConfiguration`) — there is no `McpToolConfig` bean and no
@@ -18,7 +18,7 @@ Defined in `HrMcpTools` as `@McpTool`-annotated methods, auto-registered by Spri
 
 ---
 
-## <span style="color:hsl(167,68%,36%)">Best Practices Applied</span>
+## <span style="color:hsl(17,80%,58%)">Best Practices Applied</span>
 
 | Practice                     | Status | Notes                                                                                                                         |                                  |
 |------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
@@ -45,7 +45,7 @@ Defined in `HrMcpTools` as `@McpTool`-annotated methods, auto-registered by Spri
 
 ---
 
-## <span style="color:hsl(200,68%,44%)">Design Patterns (GoF)</span>
+## <span style="color:hsl(155,80%,58%)">Design Patterns (GoF)</span>
 
 | Pattern                     | Where                                                                                                                                              | Role                                                                                  |
 |-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
@@ -57,7 +57,7 @@ Defined in `HrMcpTools` as `@McpTool`-annotated methods, auto-registered by Spri
 | **Chain of Responsibility** | Servlet `FilterChain` (`McpAuthFilter` → MVC)                                                                                                      | Each filter handles or passes the request along                                       |
 | **Command**                 | `@McpTool` methods (`applyLeave`, `findReplacement`) reified as MCP tool callbacks                                                                 | Tool invocations dispatched by name+arguments through the MCP runtime                 |
 
-## <span style="color:hsl(233,68%,44%)">Configuration</span>
+## <span style="color:hsl(292,80%,58%)">Configuration</span>
 
 | Property / Env Var                      | Default                                      | Description                                           |
 |-----------------------------------------|----------------------------------------------|-------------------------------------------------------|
@@ -75,7 +75,7 @@ Defined in `HrMcpTools` as `@McpTool`-annotated methods, auto-registered by Spri
 
 ---
 
-## <span style="color:hsl(266,68%,44%)">Running in Isolation</span>
+## <span style="color:hsl(70,80%,50%)">Running in Isolation</span>
 
 ```bash
 cd mcp-server-hr-service
@@ -89,12 +89,12 @@ export MCP_AUTH_TOKEN=$(uuidgen)
 
 ---
 
-## <span style="color:hsl(298,68%,44%)">curl Commands</span>
+## <span style="color:hsl(207,80%,58%)">curl Commands</span>
 
 > MCP requests are JSON-RPC 2.0 over the streamable-HTTP endpoint `/mcp`. Replace `$TOKEN` with your
 > `MCP_AUTH_TOKEN`.
 
-### <span style="color:hsl(331,68%,44%)">List available tools</span>
+### <span style="color:hsl(345,80%,58%)">List available tools</span>
 
 ```bash
 curl -s http://localhost:8084/mcp \
@@ -103,7 +103,7 @@ curl -s http://localhost:8084/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-### <span style="color:hsl(4,68%,44%)">Apply leave (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
+### <span style="color:hsl(122,80%,58%)">Apply leave (write — pass `X-Acting-User` if `require-user-for-writes` is enabled)</span>
 
 ```bash
 curl -s http://localhost:8084/mcp \
@@ -116,7 +116,7 @@ curl -s http://localhost:8084/mcp \
       }'
 ```
 
-### <span style="color:hsl(37,68%,44%)">Find a replacement</span>
+### <span style="color:hsl(260,80%,58%)">Find a replacement</span>
 
 ```bash
 curl -s http://localhost:8084/mcp \
@@ -128,7 +128,7 @@ curl -s http://localhost:8084/mcp \
       }'
 ```
 
-### <span style="color:hsl(69,68%,32%)">Actuator</span>
+### <span style="color:hsl(37,80%,58%)">Actuator</span>
 
 ```bash
 curl -s http://localhost:8084/actuator/health | jq
