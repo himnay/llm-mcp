@@ -16,7 +16,8 @@ import java.util.List;
 public class ResilienceConfig {
 
     private static final List<String> MCP_SERVERS =
-            List.of("mcp-hr", "mcp-ticket", "mcp-deployment", "mcp-notification", "mcp-github", "mcp-gmail");
+            List.of("mcp-hr", "mcp-ticket", "mcp-deployment", "mcp-notification", "mcp-github", "mcp-gmail",
+                    "mcp-travel");
 
     /** Defines the circuit breaker registry bean. */
     @Bean

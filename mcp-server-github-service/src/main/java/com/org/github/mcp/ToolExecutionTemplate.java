@@ -3,12 +3,16 @@ package com.org.github.mcp;
 import com.org.github.security.ActingUserContext;
 import com.org.github.security.RateLimiter;
 import com.org.github.security.SecurityProperties;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.function.Supplier;
@@ -51,9 +55,24 @@ class ToolExecutionTemplate {
         return execute(toolName, args, true, false, action);
     }
 
+    /**
+     * Only a GitHub outage (circuit open, 5xx, network failure, GitHub's own 429) becomes the
+     * "temporarily unavailable" answer. Everything else — the write gate, our write rate limit, a
+     * 404, a bad argument — is rethrown so the caller sees the real reason instead of an outage.
+     */
     String githubFallback(String toolName, String args, Supplier<String> action, Throwable t) {
-        log.warn("GitHub API circuit breaker open for tool={} — returning fallback. cause={}", toolName, t.getMessage());
+        if (!isGitHubOutage(t)) {
+            throw t instanceof RuntimeException runtime ? runtime : new IllegalStateException(t);
+        }
+        log.warn("GitHub API unavailable for tool={} — returning fallback. cause={}", toolName, t.getMessage());
         return "GitHub API is temporarily unavailable. Please try again later.";
+    }
+
+    static boolean isGitHubOutage(Throwable t) {
+        return t instanceof CallNotPermittedException
+                || t instanceof HttpServerErrorException
+                || t instanceof ResourceAccessException
+                || t instanceof HttpClientErrorException.TooManyRequests;
     }
 
     private String execute(String toolName, String args, boolean write, boolean capOutput,

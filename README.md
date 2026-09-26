@@ -243,30 +243,20 @@ All modules share the same stack:
 | Concern       | Technology                                                                    |
 |---------------|-------------------------------------------------------------------------------|
 | Language      | Java 25                                                                       |
-| Framework     | Spring Boot 4.1.0                                                             |
+| Framework     | Spring Boot 4.1.1                                                             |
 | Web           | Spring MVC                                                                    |
-| AI / MCP      | Spring AI 2.0.0 (MCP server + client)                                         |
+| AI / MCP      | Spring AI 2.0.1 (MCP server + client)                                         |
 | Persistence   | Spring Data JPA + PostgreSQL + Flyway                                         |
 | Validation    | Jakarta Bean Validation                                                       |
 | Observability | Spring Boot Actuator + Micrometer + Prometheus + OTLP Tracing → Grafana Tempo |
 | Build         | Maven (each module has its own `./mvnw` wrapper)                              |
 
-> **Migration note:** all eight modules (the seven MCP servers plus `mcp-client`) now build on
-> Java 25 with the Spring AI 2.0.0 BOM, inherited transitively from `super-pom` / `llm-bom` (shared
-> across `llm-chat`, `llm-gateway`, `llm-mcp`, `llm-rag`) — no module overrides `java.version`,
-> `maven.compiler.release`, or `spring-ai.version`. Every module's multi-stage `Dockerfile` was
-> bumped from `eclipse-temurin:21-jdk`/`21-jre` to `eclipse-temurin:25-jdk`/`25-jre` to match
-> (build/extract/runtime stage structure unchanged). `mvn -o compile` succeeds for all eight modules
-> under a JDK 25 toolchain; `mvn -o test` passes for `mcp-client`, `mcp-server-hr-service`,
-> `mcp-server-ticket-service`, `mcp-server-notification-service`, and `mcp-server-travel-service` —
-> `mcp-server-deployment-service`, `mcp-server-github-service`, and `mcp-server-gmail-service` have
-> pre-existing test/source drift unrelated to this migration (each module's `*McpTools`/
-> `ToolExecutionTemplate` constructor already takes a `RateLimiter` parameter that its corresponding
-> test predates). `mcp-client` additionally needed `springdoc-openapi-starter-webmvc-ui` bumped
-> from `2.8.9` to `3.0.3` — the older version referenced a Spring Data class that moved package in
-> Spring Boot 4.1, which crashed startup with `NoClassDefFoundError` before any DB/Redis connection
-> was even attempted; see `mcp-client/README.md` for details. With that fix, `mcp-client`
-> boots cleanly up to (and only stops at) the expected missing-Postgres-connection failure.
+> **Build note:** all eight modules (the seven MCP servers plus `mcp-client`) build on Java 25 with Spring Boot 4.1.1
+> and the Spring AI 2.0.1 BOM, inherited from `super-pom` 1.1.3 / `learning-bom` 3.0.1 — no module overrides
+> `java.version`, `maven.compiler.release` or `spring-ai.version`. Integration tests use Testcontainers 2.x
+> (`testcontainers-postgresql`, `org.testcontainers.postgresql.PostgreSQLContainer`), and `mvn verify` passes for every
+> module (153 tests; the Postgres-backed ones need Docker). Every module's multi-stage `Dockerfile` uses
+> `eclipse-temurin:25-jdk`/`25-jre`.
 
 ---
 
@@ -385,7 +375,7 @@ skips (with a warning) any that refuse to connect.
 | `assistant.max-tool-iterations`   | `5`                       | Max tool-call rounds per chat turn before forcing a reply |
 | `assistant.max-tool-result-chars` | `8000`                    | Tool result strings are truncated beyond this length      |
 | `assistant.rate-limit-per-minute` | `30`                      | Per-user request cap                                      |
-| `assistant.write-tool-keywords`   | apply, create, update, …  | Keywords that classify a tool call as a write operation   |
+| `assistant.write-tool-keywords`   | apply, create, update, …  | Leading verbs that classify a tool as a write (no retry)  |
 | `assistant.sensitive-words`       | *(empty)*                 | Words that are masked before being sent to the model      |
 
 ---
@@ -887,11 +877,11 @@ available on the Java 25 runtime and ready to enable via Spring Boot's `spring.t
 
 ---
 
-### <span style="color:hsl(302,80%,58%)">Spring Boot 4.1.0</span>
+### <span style="color:hsl(302,80%,58%)">Spring Boot 4.1.1</span>
 
 **What it is:** The opinionated, auto-configured application framework that bootstraps a Spring application with
 embedded Tomcat, sensible defaults, and a rich starter ecosystem. Version 4.x requires Java 17+ and aligns with Jakarta
-EE 10 (the `javax.*` → `jakarta.*` namespace migration is complete).
+EE 11 (the `javax.*` → `jakarta.*` namespace migration is complete).
 
 **How it's used here:** All eight modules declare `spring-boot-starter-parent` version 4.1.0 as their parent POM. This
 single declaration pulls in: dependency-management (no version clashes), the Maven wrapper configuration, the default
@@ -916,9 +906,9 @@ envelope with `status`, `error`, `message`, `details`, and `timestamp`.
 
 ---
 
-### <span style="color:hsl(217,80%,58%)">Spring AI 2.0.0</span>
+### <span style="color:hsl(217,80%,58%)">Spring AI 2.0.1</span>
 
-**What it is:** Anthropic's and the Spring team's framework for building AI-powered applications on the JVM. It provides
+**What it is:** The Spring team's framework for building AI-powered applications on the JVM. It provides
 abstractions over LLM providers (OpenAI, Anthropic, etc.), a `ChatClient` fluent API, tool/function calling, prompt
 templating, and — crucially for this project — the full Model Context Protocol (MCP) implementation for both servers and
 clients.
@@ -1333,7 +1323,7 @@ exposes twelve `@McpTool` methods (repositories, commits, metrics, branches, PRs
 runs, releases, search, code frequency, create issue) to the AI assistant. A thirteenth tool,
 `summarizeRepositoryHealth` (`GitHubAiInsightsTools`, a separate class so its `McpSyncRequestContext` parameter isn't
 mixed in with the plain tools), uses **MCP sampling** to have the connected chat client's LLM write a narrative
-health summary — see [MCP Sampling](#spring-ai-200) above.
+health summary — see [MCP Sampling](#spring-ai-201) above.
 
 ---
 
@@ -1482,6 +1472,15 @@ operators instantly see which exact code revision is running in any environment 
 - **Client : server = 1 : 1** — always.
 - The LLM never speaks MCP; the servers never call the LLM directly (except via sampling, 20.5.3). The host translates between the two.
 
+The same split as Spring AI draws it — one host application, one MCP client per server, each server fronting its
+own data or API:
+
+<p align="center">
+  <img src="image/spring-ai-mcp-architecture.jpg" alt="A Spring AI application with one MCP client per MCP server; servers front web APIs, local folders and databases" width="620"/>
+</p>
+
+<p align="center"><sub>Diagram: <a href="https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html">Spring AI MCP overview</a>, Apache-2.0.</sub></p>
+
 ### <span style="color:hsl(107,80%,58%)">20.2 The wire protocol: JSON-RPC 2.0</span>
 
 - Every MCP message, on every transport, is a [JSON-RPC 2.0](https://www.jsonrpc.org/specification) object.
@@ -1551,6 +1550,14 @@ operators instantly see which exact code revision is running in any environment 
         - keeps `Mcp-Session-Id` session + SSE upgrade path
         - required by `DeploymentInteractiveTools` (elicitation) and `GitHubAiInsightsTools` (sampling)
 - **Rule of thumb**: start STATELESS; upgrade only when a tool needs reverse-direction messages.
+
+<p align="center">
+  <img src="image/mcp-server-transports.jpg" alt="Remote MCP server shared by several client processes over HTTP, versus STDIO servers launched inside each client process" width="720"/>
+</p>
+
+<p align="center"><sub>Remote (HTTP) server shared by many clients vs. STDIO servers living inside each client process — this repo
+uses the remote shape, over Streamable HTTP rather than the older SSE transport pictured. Diagram:
+<a href="https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html">Spring AI MCP overview</a>, Apache-2.0.</sub></p>
 
 ### <span style="color:hsl(160,80%,58%)">20.5 Server primitive #1 — Tools</span>
 
@@ -1671,7 +1678,7 @@ Chain inside `mcp-client`, in execution order:
 5. **Loop** — `ChatService` sends message + history + selected schemas to the `ChatModel`:
     - model answers with a tool call ⇒ `BoundedToolCallingManager` executes it (MCP client → `tools/call` → server), feeds result back, repeats;
     - hard cap `assistant.max-tool-iterations` (default 5) — a confused model can't loop forever;
-    - write-tools (name matches `assistant.write-tool-keywords`) get a confirmation gate.
+    - write tools (leading verb in `assistant.write-tool-keywords`, e.g. `createIssue`) are never retried; destructive server tools such as `executeDeployment` ask for confirmation over MCP elicitation, answered by `McpElicitationHandler`.
 
 ### <span style="color:hsl(180,80%,58%)">20.9 Security model recap</span>
 

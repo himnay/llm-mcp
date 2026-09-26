@@ -14,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,7 +23,7 @@ import java.util.Map;
 /**
  * Security + rate-limit filter applied to every request.
  * <ul>
- *   <li>Skips {@code /actuator/health} and {@code /actuator/info} entirely.</li>
+ *   <li>Skips {@code /actuator/health}, {@code /actuator/info} and {@code /actuator/prometheus} entirely.</li>
  *   <li>When {@code mcp.security.token} is non-blank, enforces Bearer auth.</li>
  *   <li>Extracts {@code X-Acting-User} header into {@link ActingUserContext}.</li>
  *   <li>Applies per-user fixed-window rate limiting.</li>
@@ -43,7 +45,8 @@ public class McpAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/actuator/health") || path.startsWith("/actuator/info");
+        return path.startsWith("/actuator/health") || path.startsWith("/actuator/info")
+                || path.equals("/actuator/prometheus"); // scraped without credentials; env/loggers stay protected
     }
 
     @Override
@@ -61,7 +64,10 @@ public class McpAuthFilter extends OncePerRequestFilter {
                 return;
             }
             String provided = authHeader.substring(BEARER_PREFIX.length());
-            if (!token.equals(provided)) {
+            // Constant-time comparison: String.equals returns at the first differing byte, so response
+            // timing would reveal how much of a guessed token was right.
+            if (!MessageDigest.isEqual(token.getBytes(StandardCharsets.UTF_8),
+                    provided.getBytes(StandardCharsets.UTF_8))) {
                 writeError(response, HttpStatus.UNAUTHORIZED, "Invalid MCP auth token");
                 return;
             }

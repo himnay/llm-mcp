@@ -56,9 +56,9 @@ public class AssistantProperties {
     private List<String> sensitiveWords = new ArrayList<>();
 
     /**
-     * Tool-name substrings treated as write/destructive; gated unless the request opts in.
+     * Leading verbs of write/destructive tools (createIssue -> create): never retried.
      */
     private List<String> writeToolKeywords = new ArrayList<>(List.of(
-            "apply", "create", "update", "delete", "send", "deploy",
-            "trigger", "rollback", "cancel", "remove", "approve", "assign", "reschedule"));
+            "apply", "create", "update", "delete", "send", "deploy", "execute",
+            "trigger", "rollback", "cancel", "remove", "approve", "assign", "reschedule", "mark"));
 }

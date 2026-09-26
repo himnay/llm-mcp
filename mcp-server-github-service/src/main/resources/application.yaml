@@ -77,6 +77,11 @@ resilience4j:
         sliding-window-size: 10
         failure-rate-threshold: 50
         wait-duration-in-open-state: 60s
+        # Only GitHub-side failures count; write-gate refusals, 404s and bad arguments don't trip it.
+        record-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpClientErrorException$TooManyRequests
 
 logging:
   level:

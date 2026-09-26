@@ -7,6 +7,13 @@ spring:
     hibernate:
       ddl-auto: create-drop
   ai:
+    # This file shadows src/main/resources/application.yaml on the test classpath, so the main
+    # file's provider choice (Ollama) is not loaded. Without an explicit choice both the OpenAI and
+    # the Ollama starter register a ChatModel and ChatClient can't pick one. Tests use OpenAI with a
+    # fake key (no real calls, no local Ollama needed on CI).
+    model:
+      chat: openai
+      embedding: openai
     openai:
       api-key: test-key
     mcp:
@@ -17,3 +24,7 @@ management:
   tracing:
     sampling:
       probability: 0.0
+
+assistant:
+  security:
+    api-key: test-api-key   # auth stays on in tests; the app refuses to start with auth on and no key

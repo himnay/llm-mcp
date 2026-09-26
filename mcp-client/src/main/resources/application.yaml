@@ -140,13 +140,14 @@ assistant:
   - "act as if"
   - "pretend you are"
   - "DAN"
-  write-tool-keywords:
+  write-tool-keywords:     # leading verb of a tool name (createIssue -> create); such tools are never retried
   - apply
   - create
   - update
   - delete
   - send
   - deploy
+  - execute
   - trigger
   - rollback
   - cancel
@@ -154,6 +155,7 @@ assistant:
   - approve
   - assign
   - reschedule
+  - mark
   tool-selector:
     top-k: 10
 

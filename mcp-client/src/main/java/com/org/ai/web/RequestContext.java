@@ -1,5 +1,7 @@
 package com.org.ai.web;
 
+import java.util.concurrent.Callable;
+
 /**
  * Per-request context propagated on the request thread. Holds the acting user
  * (so it can be forwarded to downstream MCP servers as {@code X-Acting-User}),
@@ -48,6 +50,32 @@ public final class RequestContext {
     /** Clears. */
     public static void clear() {
         HOLDER.remove();
+    }
+
+    /**
+     * Wraps {@code task} so it runs with the calling thread's context. A thread-local is not
+     * inherited by a pooled or virtual worker thread, so without this a task handed to an executor
+     * sees no acting user at all.
+     */
+    public static <T> Callable<T> propagate(Callable<T> task) {
+        Ctx captured = HOLDER.get();
+        return () -> {
+            Ctx previous = HOLDER.get();
+            if (captured == null) {
+                HOLDER.remove();
+            } else {
+                HOLDER.set(captured);
+            }
+            try {
+                return task.call();
+            } finally {
+                if (previous == null) {
+                    HOLDER.remove();
+                } else {
+                    HOLDER.set(previous);
+                }
+            }
+        };
     }
 
     private record Ctx(String user, String conversationId, boolean allowWriteTools) {

@@ -1,9 +1,9 @@
 # <span style="color:hsl(39,80%,58%)">AI MCP Client — `mcp-client`</span>
 
-The **MCP client / chat orchestrator** of the stack. Exposes a single `POST /chat` endpoint backed by an
-OpenAI-powered `ChatClient` that dispatches tool calls to downstream MCP servers (ticket, deployment, notification,
-hr, github, gmail are all pre-wired as named connections — see the table below for which are actually enabled by
-default), persists conversation history in PostgreSQL, and wraps every outbound call with resilience, rate-limiting,
+The **MCP client / chat orchestrator** of the stack. Exposes `POST /chat` (and a streaming `GET /chat/stream`) backed
+by a `ChatClient` (Ollama by default, OpenAI with `spring.ai.model.chat=openai`) that dispatches tool calls to the seven
+downstream MCP servers (ticket, deployment, notification, hr, github, gmail, travel — all configured as named
+connections, see the table below), persists conversation history in PostgreSQL, and wraps every outbound call with resilience, rate-limiting,
 truncation and observability controls. Beyond plain tool calling, it also plays the *client* side of three optional
 MCP capabilities that a connected STREAMABLE server can invoke mid-call: `McpSamplingHandler` (lets a server ask this
 client's LLM to run a completion on its behalf — used by `mcp-server-github-service`'s `summarizeRepositoryHealth`),
@@ -19,36 +19,37 @@ message additionally passes through `PromptInjectionGuard` before the LLM or any
 ## <span style="color:hsl(177,80%,58%)">MCP Server Connections</span>
 
 Configured under `spring.ai.mcp.client.streamable-http.connections` in `application.yaml` — one `McpSyncClient` per
-downstream server, each secured and load-balanced through `ResilientToolCallbackProvider`. `ResilienceConfig`
-pre-creates a circuit breaker for all six named downstream servers regardless of which are actually wired up:
+downstream server, each wrapped by `ResilientToolCallbackProvider` (per-server circuit breaker, retry for read tools
+only, timeout, audit). `ResilienceConfig` pre-creates a circuit breaker for all seven servers so their metrics exist from
+startup, and each tool is routed to its server's breaker from that server's own `tools/list` at boot:
 
-| Connection name | URL                     | Downstream service                | Circuit breaker    | Wired up in `application.yaml`? |
-|-----------------|-------------------------|-----------------------------------|--------------------|---------------------------------|
-| `deployment`    | `http://localhost:8082` | `mcp-server-deployment-service`   | `mcp-deployment`   | ✅ active                        |
-| `github`        | `http://localhost:8085` | `mcp-server-github-service`       | `mcp-github`       | ✅ active                        |
-| `ticket`        | `http://localhost:8081` | `mcp-server-ticket-service`       | `mcp-ticket`       | ⏸ commented out                 |
-| `notification`  | `http://localhost:8083` | `mcp-server-notification-service` | `mcp-notification` | ⏸ commented out                 |
-| `hr`            | `http://localhost:8084` | `mcp-server-hr-service`           | `mcp-hr`           | ⏸ commented out                 |
-| `gmail`         | `http://localhost:8086` | `mcp-server-gmail-service`        | `mcp-gmail`        | ⏸ commented out                 |
+| Connection name | URL                     | Downstream service                | Circuit breaker    |
+|-----------------|-------------------------|-----------------------------------|--------------------|
+| `ticket`        | `http://localhost:8081` | `mcp-server-ticket-service`       | `mcp-ticket`       |
+| `deployment`    | `http://localhost:8082` | `mcp-server-deployment-service`   | `mcp-deployment`   |
+| `notification`  | `http://localhost:8083` | `mcp-server-notification-service` | `mcp-notification` |
+| `hr`            | `http://localhost:8084` | `mcp-server-hr-service`           | `mcp-hr`           |
+| `github`        | `http://localhost:8085` | `mcp-server-github-service`       | `mcp-github`       |
+| `gmail`         | `http://localhost:8086` | `mcp-server-gmail-service`        | `mcp-gmail`        |
+| `travel`        | `http://localhost:8087` | `mcp-server-travel-service`       | `mcp-travel`       |
 
-As currently checked in, only `deployment` and `github` are uncommented, so only those two servers' tools are
-actually reachable from a running `/chat` call — the other four blocks exist in the same YAML file, ready to
-uncomment. `AppConfig` builds the aggregated `ToolCallbackProvider` from whichever `List<McpSyncClient>` Spring AI
-auto-configures from that file — the model only ever sees tools from servers that are both configured *and*
-reachable at startup. The `ticket` connection, even if enabled, currently exposes no `@McpTool`s (see
-[ticket-service README](../mcp-server-ticket-service/README.md)) — only its `analyze-tickets` MCP prompt is
-reachable via `PromptLoader`. `travel` is not present in this file at all.
+`AppConfig` initialises each client individually at startup and skips servers that are down, so the model only ever
+sees tools from servers that are both configured *and* reachable at boot. The `ticket` connection currently exposes no
+`@McpTool`s (see the [ticket-service README](../mcp-server-ticket-service/README.md)) — only its `analyze-tickets` MCP
+prompt is reachable via `PromptLoader`.
 
 ---
 
 ## <span style="color:hsl(314,80%,58%)">Chat API</span>
 
-| Method | Path    | Body                         | Description                                                                                                                                                                          |
-|--------|---------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POST` | `/chat` | `{"message": "<user text>"}` | Send a message; returns `{"reply": "<assistant text>"}`. Supports `/promptName arg1 arg2` shorthand to expand a downstream MCP prompt before sending to the LLM (see `PromptLoader`) |
+| Method | Path           | Body / params                               | Description                                                                                                                                                                             |
+|--------|----------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST` | `/chat`        | `{"message": "<user text>"}`                | Send a message; returns `{"response": "<assistant text>"}`. Supports `/promptName arg1 arg2` shorthand to expand a downstream MCP prompt before sending to the LLM (see `PromptLoader`) |
+| `GET`  | `/chat/stream` | `?conversationId=<id>&message=<user text>` | Server-sent events: one `token` event per chunk. The conversation is scoped to the acting user (`<user>:<conversationId>`), so one user cannot read another's memory                    |
 
-Headers: `X-User-Id` resolves the acting/conversation user (defaults to `assistant.default-user`); forwarded
-downstream as `X-Acting-User` by `McpClientSecurityConfig`.
+Headers: `X-API-Key` is required (see [Security](#security) below). `X-User-Id` resolves the acting/conversation user
+(defaults to `assistant.default-user`); it reaches the MCP servers as `X-Acting-User` — including from tool calls that
+run on the worker thread used for the per-tool timeout, and from the streaming endpoint.
 
 ---
 
@@ -61,7 +62,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 | Bearer token auth (outbound)    | ✅      | `McpClientSecurityConfig` installs an `McpSyncHttpClientRequestCustomizer` that attaches `Authorization: Bearer ${assistant.mcp-auth-token}` to every downstream MCP call                                                                                                                                                                                                                                                                                                                                                                             |                                                                                                    |
 | Acting-user propagation         | ✅      | `RequestContextFilter` resolves the user from `X-User-Id` (or `assistant.default-user`) into `RequestContext` (thread-local), forwarded downstream as `X-Acting-User`                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                    |
 | Rate limiting                   | ✅      | `RequestContextFilter` + `RateLimiter` (in-memory per-user fixed-window, `assistant.rate-limit-per-minute=30`) → HTTP 429 on `/chat*`                                                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                    |
-| Bounded tool-calling loops      | ✅      | `BoundedToolCallingManager` caps tool-execution rounds per request at `assistant.max-tool-iterations=5`, throwing `IllegalStateException` beyond that — guards against runaway agent loops                                                                                                                                                                                                                                                                                                                                                            |                                                                                                    |
+| Bounded tool-calling loops      | ✅      | `BoundedToolCallingManager` wraps Spring AI's `ToolCallingManager` and caps tool-execution rounds per request at `assistant.max-tool-iterations=5`, throwing `ToolInvocationException` beyond that — guards against runaway agent loops                                                                                                                                                                                                                                                                                                                                                            |                                                                                                    |
 | Output / context-stuffing guard | ✅      | `TruncatingToolCallback` caps each tool result at `assistant.max-tool-result-chars=8000` chars with a `…[truncated]` marker before it re-enters the model context                                                                                                                                                                                                                                                                                                                                                                                     |                                                                                                    |
 | Circuit breaker / resilience    | ✅      | `ResilienceConfig` registers six named Resilience4j circuit breakers (`mcp-hr`, `mcp-ticket`, `mcp-deployment`, `mcp-notification`, `mcp-github`, `mcp-gmail`) — count-based sliding window (10 calls), 50% failure-rate / 80% slow-call-rate thresholds, 5 s slow-call duration, 30 s open-state wait, 3 permitted half-open calls, auto-transition; `ResilientToolCallbackProvider` wraps every tool callback per its owning server and returns a structured `{"error": "<server> is temporarily unavailable …"}` fallback when the circuit is open |                                                                                                    |
 | Conversation memory             | ✅      | `PostgresConversationStore` persists each user/assistant exchange to `chat_message` (Flyway-migrated) and replays the last `assistant.memory-window=20` messages as history on each turn                                                                                                                                                                                                                                                                                                                                                              |                                                                                                    |
@@ -76,7 +77,7 @@ downstream as `X-Acting-User` by `McpClientSecurityConfig`.
 | Prometheus metrics              | ✅      | `micrometer-registry-prometheus`, scraped at `/actuator/prometheus`, tagged with `application: ${spring.application.name}`                                                                                                                                                                                                                                                                                                                                                                                                                            |                                                                                                    |
 | Externalised config             | ✅      | `AssistantProperties` (`@ConfigurationProperties(prefix = "assistant")`) — name, default user, auth token, memory window, iteration/result caps, rate limit, sensitive words, write-tool keywords all env/property overridable                                                                                                                                                                                                                                                                                                                        |                                                                                                    |
 | Write-action awareness          | ⚠️     | `assistant.write-tool-keywords` (apply/create/update/delete/send/deploy/…) and `assistant.sensitive-words` are bound and available on `RequestContext.allowWriteTools()`, but enforcement of write-gating ultimately lives server-side (`enforceWriteGate` in each MCP server) — the client surfaces the signal rather than blocking centrally                                                                                                                                                                                                        |                                                                                                    |
-| Bearer token auth (inbound)     | ❌      | `/chat` itself has no inbound authentication/authorization — only `X-User-Id` for identity resolution; add a `SecurityFilterChain` if exposing beyond a trusted network                                                                                                                                                                                                                                                                                                                                                                               |                                                                                                    |
+| API-key auth (inbound)          | ✅      | `SecurityConfig` requires `X-API-Key` on everything except `/actuator/health` and `/actuator/info` (constant-time compare); the app refuses to start with auth on and no key. `X-User-Id` is trusted as-is, so put the service behind a gateway that sets it                                                                                                                                                                                                                                                                                                                                                                               |                                                                                                    |
 | Non-root container / Dockerfile | ✅      | Multi-stage `Dockerfile`, runs as a non-root `spring` user — matches the MCP server modules                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                                                                                    |
 
 ---
@@ -131,15 +132,9 @@ ToolCallbackProvider                     user query
 > `VectorStore`/`Document`/`SearchRequest` API, so swapping the backend required no code changes —
 > only the Maven dependency and `application.yaml` config changed.
 
-> **Java 25 / Spring Boot 4.1 boot fix:** this module pinned `springdoc-openapi-starter-webmvc-ui`
-> at `2.8.9`, which predates Spring Boot 4.1's Spring Data repackaging (`TypeInformation` moved from
-> `...data.util` to `...data.core` in `spring-data-commons:4.1.0`). Because this is the only `llm-mcp`
-> module combining JPA + springdoc, it was the only one to hit `NoClassDefFoundError` at startup —
-> before ever touching Redis or Postgres. Bumped to `springdoc-openapi-starter-webmvc-ui:3.0.3`
-> (current release, built against Spring Boot 4.x) and confirmed the service now boots past that
-> point cleanly: Tomcat starts, Hibernate/JPA and Spring Data Redis repository scanning succeed, and
-> it only fails on `Connection to localhost:5432 refused` — the expected "good failure" when no
-> Postgres is running locally.
+> **Java 25 / Spring Boot 4.1 boot fix:** the old `springdoc-openapi-starter-webmvc-ui:2.8.9` pin predated Spring
+> Boot 4.1's Spring Data repackaging (`TypeInformation` moved from `...data.util` to `...data.core`) and crashed startup
+> with `NoClassDefFoundError`. The version is no longer pinned here: it comes from `learning-bom` (currently 3.1.1).
 
 ### <span style="color:hsl(144,80%,58%)">Key components</span>
 
@@ -177,25 +172,46 @@ since rewriting applied Flyway history is out of scope for this change.
 
 ## <span style="color:hsl(59,80%,50%)">Configuration</span>
 
-| Property / Env Var                             | Default                                                                                                         | Description                                                             |
-|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| `DB_URL`                                       | `jdbc:postgresql://localhost:5432/spring_ai`                                                                    | PostgreSQL JDBC URL for conversation memory                             |
-| `DB_USERNAME`                                  | `postgres`                                                                                                      | DB username                                                             |
-| `DB_PASSWORD`                                  | `postgres`                                                                                                      | DB password                                                             |
-| `OPENAI_API_KEY` (`spring.ai.openai.api-key`)  | *(required)*                                                                                                    | OpenAI API key for the chat model                                       |
-| `MCP_AUTH_TOKEN` (`assistant.mcp-auth-token`)  | *(empty)*                                                                                                       | Shared bearer token attached to every outbound MCP call                 |
-| `assistant.name`                               | `Enterprise AI Assistant`                                                                                       | Assistant persona name, rendered into the system prompt                 |
-| `assistant.default-user`                       | `himansu.nayak`                                                                                                 | Fallback acting/conversation user when `X-User-Id` is absent            |
-| `assistant.memory-window`                      | `20`                                                                                                            | Number of past messages replayed as conversation history per turn       |
-| `assistant.max-tool-iterations`                | `5`                                                                                                             | Hard cap on tool-execution rounds per chat request                      |
-| `assistant.max-tool-result-chars`              | `8000`                                                                                                          | Max characters of a single tool result fed back into the model          |
-| `assistant.rate-limit-per-minute`              | `30`                                                                                                            | Per-user `/chat` requests allowed per minute                            |
-| `assistant.sensitive-words`                    | `[]`                                                                                                            | Words that, if present in a prompt, should be blocked                   |
-| `assistant.write-tool-keywords`                | `[apply, create, update, delete, send, deploy, trigger, rollback, cancel, remove, approve, assign, reschedule]` | Tool-name substrings treated as write/destructive                       |
-| `assistant.tool-selector.top-k`                | `10`                                                                                                            | Number of semantically relevant tools retrieved from pgvector per query |
-| `mcp.client.streamable-http.connections.*.url` | *(see table above)*                                                                                             | Per-server downstream MCP base URLs                                     |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`                  | `http://localhost:4318`                                                                                         | OTLP traces endpoint (Tempo)                                            |
-| `TRACING_SAMPLING`                             | `1.0`                                                                                                           | Trace sampling probability                                              |
+| Property / Env Var                                       | Default                                                                                                                        | Description                                                                            |
+|----------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| `API_AUTH_ENABLED` (`assistant.security.enabled`)        | `true`                                                                                                                         | Require `X-API-Key` on every non-health endpoint                                       |
+| `API_KEY` (`assistant.security.api-key`)                 | *(none — required while auth is on)*                                                                                           | The key clients send in `X-API-Key`; startup fails if auth is on and this is empty     |
+| `DB_URL`                                                 | `jdbc:postgresql://localhost:5432/spring_ai`                                                                                   | PostgreSQL JDBC URL for conversation memory                                            |
+| `DB_USERNAME`                                            | `postgres`                                                                                                                     | DB username                                                                            |
+| `DB_PASSWORD`                                            | `postgres`                                                                                                                     | DB password                                                                            |
+| `spring.ai.model.chat` / `.embedding`                    | `ollama`                                                                                                                       | Chat/embedding provider: `ollama` (local, default) or `openai`                         |
+| `OLLAMA_BASE_URL` (`spring.ai.ollama.base-url`)          | `http://localhost:11434`                                                                                                       | Ollama endpoint (models `qwen3:4b` and `nomic-embed-text`)                             |
+| `OPENAI_API_KEY` (`spring.ai.openai.api-key`)            | *(empty)*                                                                                                                      | OpenAI API key — needed only with `spring.ai.model.chat=openai`                        |
+| `MCP_AUTH_TOKEN` (`assistant.mcp-auth-token`)            | *(empty)*                                                                                                                      | Shared bearer token attached to every outbound MCP call                                |
+| `assistant.name`                                         | `Enterprise AI Assistant`                                                                                                      | Assistant persona name, rendered into the system prompt                                |
+| `DEFAULT_USER` (`assistant.default-user`)                | `anonymous`                                                                                                                    | Fallback acting/conversation user when `X-User-Id` is absent                           |
+| `assistant.memory-window`                                | `20`                                                                                                                           | Number of past messages replayed as conversation history per turn                      |
+| `assistant.max-tool-iterations`                          | `5`                                                                                                                            | Hard cap on tool-execution rounds per chat request                                     |
+| `assistant.max-tool-result-chars`                        | `8000`                                                                                                                         | Max characters of a single tool result fed back into the model                         |
+| `assistant.rate-limit-per-minute`                        | `30`                                                                                                                           | Per-user `/chat` requests allowed per minute                                           |
+| `assistant.sensitive-words`                              | `[]`                                                                                                                           | Words that, if present in a prompt, should be blocked                                  |
+| `assistant.write-tool-keywords`                          | `[apply, create, update, delete, send, deploy, execute, trigger, rollback, cancel, remove, approve, assign, reschedule, mark]` | Leading verbs of write tools (`createIssue` → `create`) — such tools are never retried |
+| `assistant.tool-selector.top-k`                          | `10`                                                                                                                           | Number of semantically relevant tools retrieved from the Redis vector index per query  |
+| `spring.ai.mcp.client.streamable-http.connections.*.url` | *(see table above)*                                                                                                            | Per-server downstream MCP base URLs                                                    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`                            | `http://localhost:4318`                                                                                                        | OTLP traces endpoint (Tempo)                                                           |
+| `TRACING_SAMPLING`                                       | `1.0`                                                                                                                          | Trace sampling probability                                                             |
+
+
+## <span style="color:hsl(0,80%,58%)">Security</span>
+
+<ul>
+
+- **Inbound:** every endpoint except `/actuator/health` and `/actuator/info` needs `X-API-Key: <API_KEY>`. With
+  `API_AUTH_ENABLED=true` (the default) and no `API_KEY`, the app refuses to start rather than silently accepting every
+  caller; set `API_AUTH_ENABLED=false` only for local experiments.
+- **Identity:** `X-User-Id` is trusted as sent — it names the chat-memory conversation and is forwarded to the MCP
+  servers as `X-Acting-User`. Expose the service only behind something that sets that header for the real user.
+- **Outbound:** each MCP call carries `Authorization: Bearer <MCP_AUTH_TOKEN>` (or a Keycloak client-credentials token
+  for `deployment` when `MCP_OAUTH2_ENABLED=true`) plus `X-Acting-User`.
+- **Tool safety:** tool rounds are capped per request, write tools are never retried, and every prompt passes the
+  prompt-injection guard before any model or tool call.
+
+</ul>
 
 ---
 
@@ -214,8 +230,9 @@ services explicitly — a bare `docker compose up -d` resolves the root compose 
 cd mcp-client
 docker compose up -d postgres redis prometheus grafana   # :5432, :6379, :9090, :3000 (admin/admin)
 export DB_URL=jdbc:postgresql://localhost:5432/spring_ai
-export OPENAI_API_KEY=sk-xxxx
+export API_KEY=$(uuidgen)             # clients send it as X-API-Key
 export MCP_AUTH_TOKEN=$(uuidgen)      # must match the token configured on the downstream MCP servers
+ollama pull qwen3:4b && ollama pull nomic-embed-text   # default provider; or run with spring.ai.model.chat=openai + OPENAI_API_KEY
 ./mvnw spring-boot:run                # :8080
 ```
 
@@ -234,6 +251,7 @@ To exercise the full flow, also start the downstream MCP servers (see each servi
 ```bash
 curl -s -X POST http://localhost:8080/chat \
   -H 'Content-Type: application/json' \
+  -H "X-API-Key: $API_KEY" \
   -H 'X-User-Id: jane.doe' \
   -d '{"message":"What deployments are scheduled for this week?"}'
 ```
@@ -243,6 +261,7 @@ curl -s -X POST http://localhost:8080/chat \
 ```bash
 curl -s -X POST http://localhost:8080/chat \
   -H 'Content-Type: application/json' \
+  -H "X-API-Key: $API_KEY" \
   -H 'X-User-Id: jane.doe' \
   -d '{"message":"/analyze-tickets"}'
 ```
@@ -250,8 +269,8 @@ curl -s -X POST http://localhost:8080/chat \
 ### <span style="color:hsl(27,80%,58%)">Actuator (health includes per-MCP-server reachability via `McpClientHealthIndicator`)</span>
 
 ```bash
-curl -s http://localhost:8080/actuator/health | jq
-curl -s http://localhost:8080/actuator/prometheus | head -40
-curl -s http://localhost:8080/actuator/prometheus | grep ai_tokens
-curl -s http://localhost:8080/actuator/prometheus | grep resilience4j_circuitbreaker_state
+curl -s http://localhost:8080/actuator/health | jq                        # open
+curl -s -H "X-API-Key: $API_KEY" http://localhost:8080/actuator/prometheus | head -40
+curl -s -H "X-API-Key: $API_KEY" http://localhost:8080/actuator/prometheus | grep ai_tokens
+curl -s -H "X-API-Key: $API_KEY" http://localhost:8080/actuator/prometheus | grep resilience4j_circuitbreaker_state
 ```

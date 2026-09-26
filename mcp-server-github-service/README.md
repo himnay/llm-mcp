@@ -116,26 +116,19 @@ sequenceDiagram
 
 ## <span style="color:hsl(209,80%,58%)">Configuration</span>
 
-| Property / Env Var | Default | Description |
-|-------------------------------=----------|----------------------------------|----------------------------------------------------------|
-| `SERVER_PORT`                            | `8085`                           | HTTP port |
-| `GITHUB_TOKEN` (`github.token`)          | *(empty → unauthenticated)*      | PAT/fine-grained token forwarded as
-`Authorization: Bearer` to `api.github.com` |
-| `github.api-base-url`                    | `https://api.github.com`         | GitHub REST API base URL |
-| `github.default-page-size`               | `30`                             | `per_page` for paginated list
-endpoints |
-| `MCP_AUTH_TOKEN` (`mcp.security.token`)  | *(empty → insecure dev mode)*    | Shared bearer token required from MCP
-clients |
-| `mcp.security.default-user`              | `system`                         | Fallback acting user when
-`X-Acting-User` is absent |
-| `mcp.security.require-user-for-writes`   | `false`                          | Reject `createIssue` from the default
-user when `true`   |
-| `mcp.security.rate-limit-per-minute`     | `120`                            | Per-user fixed-window request cap |
-| `mcp.output.max-chars`                   | `8000` *(see `OutputSizeCapUtil`)* | Max characters returned per tool
-before truncation |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`            | `http://localhost:4318`          | OTLP traces endpoint (
-Tempo)                             |
-| `TRACING_SAMPLING`                       | `1.0`                            | Trace sampling probability |
+| Property / Env Var                      | Default                       | Description                                                                       |
+|-----------------------------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `SERVER_PORT`                           | `8085`                        | HTTP port                                                                         |
+| `GITHUB_TOKEN` (`github.token`)         | *(empty → unauthenticated)*   | PAT / fine-grained token forwarded as `Authorization: Bearer` to `api.github.com` |
+| `github.api-base-url`                   | `https://api.github.com`      | GitHub REST API base URL                                                          |
+| `github.default-page-size`              | `30`                          | `per_page` for paginated list endpoints                                           |
+| `MCP_AUTH_TOKEN` (`mcp.security.token`) | *(empty → insecure dev mode)* | Shared bearer token required from MCP clients (compared in constant time)         |
+| `mcp.security.default-user`             | `system`                      | Fallback acting user when `X-Acting-User` is absent                               |
+| `mcp.security.require-user-for-writes`  | `false`                       | Reject `createIssue` from the default user when `true`                            |
+| `mcp.security.rate-limit-per-minute`    | `120`                         | Per-user fixed-window request cap                                                 |
+| `mcp.output.max-chars`                  | `8000`                        | Max characters returned per read tool before truncation (`OutputSizeCapUtil`)     |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`           | `http://localhost:4318`       | OTLP traces endpoint (Tempo)                                                      |
+| `TRACING_SAMPLING`                      | `1.0`                         | Trace sampling probability                                                        |
 
 ---
 

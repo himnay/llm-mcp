@@ -2,6 +2,7 @@ package com.org.ai.resilience;
 
 import com.org.ai.audit.ToolAuditLog;
 import com.org.ai.exception.ToolInvocationException;
+import com.org.ai.web.RequestContext;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -15,90 +16,73 @@ import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.*;
 
 /**
  * Wraps every MCP tool callback with per-server Resilience4j retry + circuit breaker.
  * Retry fires first (transient errors get retried before the circuit sees the failure);
- * only persistent failures propagate to the circuit breaker.
+ * only persistent failures propagate to the circuit breaker. Write tools (names matching
+ * {@code assistant.write-tool-keywords}) are never retried: a write that reached the server but
+ * whose response was lost would otherwise run twice.
  * When a server's circuit is OPEN the tool returns a structured error message instead
  * of making a doomed network call so the AI model can explain the outage gracefully.
+ *
+ * <p>The tool-to-server routing is built at startup from each connected server's own tool list
+ * (see {@code AppConfig}); it used to be a hand-maintained map that drifted as servers gained tools.
+ * Tool calls run on a separate virtual thread (for the timeout), so the caller's
+ * {@link RequestContext} is carried over explicitly — otherwise {@code X-Acting-User} never reached
+ * the MCP servers.</p>
  */
 @Slf4j
 public class ResilientToolCallbackProvider implements ToolCallbackProvider {
 
-    private static final Map<String, String> TOOL_SERVER = Map.ofEntries(
-            Map.entry("applyLeave", "mcp-hr"),
-            Map.entry("findReplacement", "mcp-hr"),
-            Map.entry("createTicket", "mcp-ticket"),
-            Map.entry("getTickets", "mcp-ticket"),
-            Map.entry("getTicket", "mcp-ticket"),
-            Map.entry("updateTicketStatus", "mcp-ticket"),
-            Map.entry("assignTicket", "mcp-ticket"),
-            Map.entry("getDeployments", "mcp-deployment"),
-            Map.entry("getDeployment", "mcp-deployment"),
-            Map.entry("createDeployment", "mcp-deployment"),
-            Map.entry("assignOwner", "mcp-deployment"),
-            Map.entry("rescheduleDeployment", "mcp-deployment"),
-            Map.entry("cancelDeployment", "mcp-deployment"),
-            Map.entry("getNotifications", "mcp-notification"),
-            Map.entry("sendNotification", "mcp-notification"),
-            Map.entry("getRepository", "mcp-github"),
-            Map.entry("getCommitHistory", "mcp-github"),
-            Map.entry("getCommitMetrics", "mcp-github"),
-            Map.entry("listBranches", "mcp-github"),
-            Map.entry("getPullRequests", "mcp-github"),
-            Map.entry("getIssues", "mcp-github"),
-            Map.entry("getContributors", "mcp-github"),
-            Map.entry("getWorkflowRuns", "mcp-github"),
-            Map.entry("getReleases", "mcp-github"),
-            Map.entry("searchRepositories", "mcp-github"),
-            Map.entry("getCodeFrequency", "mcp-github"),
-            Map.entry("createIssue", "mcp-github"),
-            Map.entry("listEmails", "mcp-gmail"),
-            Map.entry("getEmail", "mcp-gmail"),
-            Map.entry("searchEmails", "mcp-gmail"),
-            Map.entry("getEmailThread", "mcp-gmail"),
-            Map.entry("getGmailProfile", "mcp-gmail"),
-            Map.entry("listLabels", "mcp-gmail"),
-            Map.entry("getEmailsByLabel", "mcp-gmail"),
-            Map.entry("markAsRead", "mcp-gmail"),
-            Map.entry("markAsUnread", "mcp-gmail"),
-            Map.entry("createDraft", "mcp-gmail"),
-            Map.entry("sendEmail", "mcp-gmail"),
-            Map.entry("deleteEmail", "mcp-gmail")
-    );
-
     private final ToolCallbackProvider delegate;
+    private final Map<String, String> toolServers;
+    private final List<String> writeToolKeywords;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final RetryRegistry retryRegistry;
     private final int toolTimeoutSeconds;
     private final ToolAuditLog auditLog;
 
     public ResilientToolCallbackProvider(ToolCallbackProvider delegate,
-                                         CircuitBreakerRegistry circuitBreakerRegistry,
-                                         RetryRegistry retryRegistry) {
-        this(delegate, circuitBreakerRegistry, retryRegistry, 30, null);
-    }
-
-    public ResilientToolCallbackProvider(ToolCallbackProvider delegate,
-                                         CircuitBreakerRegistry circuitBreakerRegistry,
-                                         RetryRegistry retryRegistry,
-                                         int toolTimeoutSeconds) {
-        this(delegate, circuitBreakerRegistry, retryRegistry, toolTimeoutSeconds, null);
-    }
-
-    public ResilientToolCallbackProvider(ToolCallbackProvider delegate,
+                                         Map<String, String> toolServers,
+                                         List<String> writeToolKeywords,
                                          CircuitBreakerRegistry circuitBreakerRegistry,
                                          RetryRegistry retryRegistry,
                                          int toolTimeoutSeconds,
                                          ToolAuditLog auditLog) {
         this.delegate = delegate;
+        this.toolServers = Map.copyOf(toolServers);
+        this.writeToolKeywords = writeToolKeywords.stream().map(k -> k.toLowerCase(Locale.ROOT)).toList();
         this.circuitBreakerRegistry = circuitBreakerRegistry;
         this.retryRegistry = retryRegistry;
         this.toolTimeoutSeconds = toolTimeoutSeconds;
         this.auditLog = auditLog;
+    }
+
+    /** True when the tool's leading verb is one of the configured write/destructive verbs. */
+    boolean isWriteTool(String toolName) {
+        return writeToolKeywords.contains(leadingVerb(toolName));
+    }
+
+    /**
+     * The tool name's leading verb — {@code createIssue} → {@code create}, {@code list_repos} →
+     * {@code list}. Write detection compares whole verbs: substring matching made the read
+     * {@code getDeployments} a "write" because it contains {@code deploy}.
+     */
+    static String leadingVerb(String toolName) {
+        if (toolName == null || toolName.isEmpty()) {
+            return "";
+        }
+        String name = Character.toLowerCase(toolName.charAt(0)) + toolName.substring(1);
+        int end = 0;
+        while (end < name.length() && Character.isLowerCase(name.charAt(end))) {
+            end++;
+        }
+        return name.substring(0, end);
     }
 
     @Override
@@ -110,9 +94,9 @@ public class ResilientToolCallbackProvider implements ToolCallbackProvider {
 
     private ToolCallback wrap(ToolCallback callback) {
         String toolName = callback.getToolDefinition().name();
-        String serverName = TOOL_SERVER.getOrDefault(toolName, "mcp-unknown");
+        String serverName = toolServers.getOrDefault(toolName, "mcp-unknown");
         CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker(serverName);
-        Retry retry = retryRegistry.retry(serverName);
+        Retry retry = isWriteTool(toolName) ? null : retryRegistry.retry(serverName);
         return new ResilientToolCallback(callback, cb, retry, serverName, toolTimeoutSeconds, auditLog);
     }
 
@@ -125,6 +109,7 @@ public class ResilientToolCallbackProvider implements ToolCallbackProvider {
         private final int toolTimeoutSeconds;
         private final ToolAuditLog auditLog;
 
+        /** {@code retry} is null for write tools, which must not be re-executed. */
         ResilientToolCallback(ToolCallback delegate, CircuitBreaker cb, Retry retry,
                               String serverName, int toolTimeoutSeconds, ToolAuditLog auditLog) {
             this.delegate = delegate;
@@ -159,11 +144,12 @@ public class ResilientToolCallbackProvider implements ToolCallbackProvider {
             // Retry wraps the circuit breaker — transient failures are retried before
             // the circuit breaker counts them as failures.
             Callable<String> withCb = CircuitBreaker.decorateCallable(circuitBreaker, action);
-            Callable<String> withRetryAndCb = Retry.decorateCallable(retry, withCb);
+            Callable<String> withRetryAndCb = retry == null ? withCb : Retry.decorateCallable(retry, withCb);
+            Callable<String> withContext = RequestContext.propagate(withRetryAndCb);
             String toolName = delegate.getToolDefinition().name();
             long start = System.currentTimeMillis();
             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-            Future<String> future = executor.submit(withRetryAndCb);
+            Future<String> future = executor.submit(withContext);
             try {
                 String result = future.get(toolTimeoutSeconds, TimeUnit.SECONDS);
                 long durationMs = System.currentTimeMillis() - start;

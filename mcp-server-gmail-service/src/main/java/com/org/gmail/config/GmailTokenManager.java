@@ -2,10 +2,15 @@ package com.org.gmail.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -67,12 +72,16 @@ public class GmailTokenManager {
         }
         try {
             log.info("Refreshing Gmail OAuth2 access token");
-            String body = "grant_type=refresh_token"
-                    + "&refresh_token=" + props.getRefreshToken()
-                    + "&client_id=" + props.getClientId()
-                    + "&client_secret=" + props.getClientSecret();
+            // A form map is URL-encoded by the converter; hand-concatenating the values broke on any
+            // secret or refresh token containing '+', '&', '=' or '/'.
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("grant_type", "refresh_token");
+            body.add("refresh_token", props.getRefreshToken());
+            body.add("client_id", props.getClientId());
+            body.add("client_secret", props.getClientSecret());
 
             RestClient tokenClient = RestClient.builder()
+                .requestFactory(boundedTimeouts())
                     .baseUrl(props.getTokenEndpoint())
                     .build();
 
@@ -118,5 +127,13 @@ public class GmailTokenManager {
         return props.getRefreshToken() != null && !props.getRefreshToken().isBlank()
                 && props.getClientId() != null && !props.getClientId().isBlank()
                 && props.getClientSecret() != null && !props.getClientSecret().isBlank();
+    }
+
+    /** Bounded connect/read timeouts — the JDK client's default read timeout is infinite, so a hung upstream would pin the calling thread. */
+    private static JdkClientHttpRequestFactory boundedTimeouts() {
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+        factory.setReadTimeout(Duration.ofSeconds(30));
+        return factory;
     }
 }

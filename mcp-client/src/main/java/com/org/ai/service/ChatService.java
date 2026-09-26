@@ -2,6 +2,7 @@ package com.org.ai.service;
 
 import com.org.ai.config.AssistantProperties;
 import com.org.ai.config.PromptInjectionGuard;
+import com.org.ai.mcp.BoundedToolCallingManager;
 import com.org.ai.mcp.SemanticToolSelector;
 import com.org.ai.web.RequestContext;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -20,8 +21,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -43,7 +42,8 @@ public class ChatService {
         if (!injectionGuard.isQuerySafe(message)) {
             return injectionGuard.blockMessage();
         }
-        String conversationId = RequestContext.user();
+        String user = RequestContext.user();
+        String conversationId = user;
         String processedPrompt = promptLoader.loadPrompt(message);
 
         String systemPrompt = new PromptTemplate(systemPromptTemplate).render(Map.of(
@@ -58,6 +58,7 @@ public class ChatService {
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .user(processedPrompt)
                 .toolCallbacks(semanticToolSelector.selectTools(processedPrompt))
+                .toolContext(actingUserContext(user))
                 .call()
                 .chatResponse();
 
@@ -66,7 +67,11 @@ public class ChatService {
         return content;
     }
 
-    /** Streams chat. */
+    /**
+     * Streams a chat reply token by token. The conversation id comes from the caller, so it is
+     * scoped to the acting user — otherwise any caller could read or append to another user's
+     * chat memory just by naming its id.
+     */
     public void streamChat(String conversationId, String message, SseEmitter emitter) {
         if (!injectionGuard.isQuerySafe(message)) {
             try {
@@ -77,22 +82,26 @@ public class ChatService {
             }
             return;
         }
+        String user = RequestContext.user();
+        String scopedConversationId = user + ":" + conversationId;
         String processedPrompt = promptLoader.loadPrompt(message);
 
         String systemPrompt = new PromptTemplate(systemPromptTemplate).render(Map.of(
                 "assistantName", assistantProperties.getName(),
-                "currentUser", conversationId,
+                "currentUser", user,
                 "currentTime", ZonedDateTime.now().toString()
         ));
 
-        Executor executor = Executors.newVirtualThreadPerTaskExecutor();
-        executor.execute(() -> {
+        // Tool selection embeds the prompt (blocking), so leave the request thread straight away;
+        // one virtual thread per stream, nothing to shut down afterwards.
+        Thread.startVirtualThread(() -> {
             try {
                 chatClient.prompt()
                         .system(systemPrompt)
-                        .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                        .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, scopedConversationId))
                         .user(processedPrompt)
                         .toolCallbacks(semanticToolSelector.selectTools(processedPrompt))
+                        .toolContext(actingUserContext(user))
                         .stream()
                         .content()
                         .doOnNext(token -> {
@@ -109,6 +118,11 @@ public class ChatService {
                 emitter.completeWithError(e);
             }
         });
+    }
+
+    /** Carries the acting user to tool execution, which may run off the request thread. */
+    private static Map<String, Object> actingUserContext(String user) {
+        return user == null ? Map.of() : Map.of(BoundedToolCallingManager.ACTING_USER, user);
     }
 
     private void recordTokenUsage(ChatResponse response, String user) {

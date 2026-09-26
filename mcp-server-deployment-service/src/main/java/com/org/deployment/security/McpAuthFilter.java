@@ -13,6 +13,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +26,7 @@ import java.util.Map;
  *   <li>Acting-user propagation via the {@code X-Acting-User} header → {@link ActingUserContext}</li>
  *   <li>Per-user in-memory rate limiting</li>
  * </ol>
- * {@code /actuator/health} and {@code /actuator/info} are always permitted.
+ * {@code /actuator/health}, {@code /actuator/info} and {@code /actuator/prometheus} are always permitted.
  */
 @Slf4j
 @Component
@@ -66,7 +68,10 @@ public class McpAuthFilter extends OncePerRequestFilter {
                 return;
             }
             String provided = authHeader.substring(BEARER_PREFIX.length());
-            if (!configuredToken.equals(provided)) {
+            // Constant-time comparison: String.equals returns at the first differing byte, so response
+            // timing would reveal how much of a guessed token was right.
+            if (!MessageDigest.isEqual(configuredToken.getBytes(StandardCharsets.UTF_8),
+                    provided.getBytes(StandardCharsets.UTF_8))) {
                 writeError(response, HttpStatus.UNAUTHORIZED, "Invalid bearer token");
                 return;
             }
@@ -93,7 +98,8 @@ public class McpAuthFilter extends OncePerRequestFilter {
     private boolean isPermitted(String path) {
         return path.equals("/actuator/health")
                 || path.startsWith("/actuator/health/")
-                || path.equals("/actuator/info");
+                || path.equals("/actuator/info")
+                || path.equals("/actuator/prometheus"); // scraped without credentials; env/loggers stay protected
     }
 
     private void writeError(HttpServletResponse response, HttpStatus status, String message)
