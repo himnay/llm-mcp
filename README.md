@@ -242,7 +242,7 @@ All modules share the same stack:
 
 | Concern       | Technology                                                                    |
 |---------------|-------------------------------------------------------------------------------|
-| Language      | Java 25                                                                       |
+| Language      | Java 27                                                                       |
 | Framework     | Spring Boot 4.1.1                                                             |
 | Web           | Spring MVC                                                                    |
 | AI / MCP      | Spring AI 2.0.1 (MCP server + client)                                         |
@@ -251,12 +251,12 @@ All modules share the same stack:
 | Observability | Spring Boot Actuator + Micrometer + Prometheus + OTLP Tracing → Grafana Tempo |
 | Build         | Maven (each module has its own `./mvnw` wrapper)                              |
 
-> **Build note:** all eight modules (the seven MCP servers plus `mcp-client`) build on Java 25 with Spring Boot 4.1.1
-> and the Spring AI 2.0.1 BOM, inherited from `super-pom` 1.1.3 / `learning-bom` 3.0.1 — no module overrides
+> **Build note:** all eight modules (the seven MCP servers plus `mcp-client`) build on Java 27 with Spring Boot 4.1.1
+> and the Spring AI 2.0.1 BOM, inherited from `super-pom` 1.2.0 / `learning-bom` 3.0.1 — no module overrides
 > `java.version`, `maven.compiler.release` or `spring-ai.version`. Integration tests use Testcontainers 2.x
 > (`testcontainers-postgresql`, `org.testcontainers.postgresql.PostgreSQLContainer`), and `mvn verify` passes for every
 > module (153 tests; the Postgres-backed ones need Docker). Every module's multi-stage `Dockerfile` uses
-> `eclipse-temurin:25-jdk`/`25-jre`.
+> `sapmachine:27-jdk-ubuntu`/`27-jre-ubuntu` (Temurin 27 images weren't on Docker Hub yet).
 
 ---
 
@@ -864,16 +864,16 @@ project — what each technology is, and exactly how this codebase uses it.
 
 ---
 
-### <span style="color:hsl(164,80%,58%)">Java 25</span>
+### <span style="color:hsl(164,80%,58%)">Java 27</span>
 
-**What it is:** The latest release of the Java platform (GA June 2025, Azul Zulu build). Builds on the virtual threads (
+**What it is:** The current feature release of the Java platform (GA September 2026). Builds on the virtual threads (
 Project Loom), record classes, pattern matching, and sealed types introduced in Java 21.
 
-**How it's used here:** Every module targets Java 25 (`<java.version>25</java.version>` in the `super-pom`). The project
+**How it's used here:** Every module targets Java 27 (`<java.version>27</java.version>` in the `super-pom`). The project
 makes use of modern language features throughout: `switch` expressions with pattern matching in
 `PostgresConversationStore` (mapping message types to `UserMessage`/`AssistantMessage`), `Map.ofEntries` for concise
 immutable maps in `ResilientToolCallbackProvider`, `List.of` and stream pipelines everywhere. Virtual threads are
-available on the Java 25 runtime and ready to enable via Spring Boot's `spring.threads.virtual.enabled=true`.
+available on the Java 27 runtime and ready to enable via Spring Boot's `spring.threads.virtual.enabled=true`.
 
 ---
 
