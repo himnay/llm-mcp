@@ -28,3 +28,32 @@ management:
 assistant:
   security:
     api-key: test-api-key   # auth stays on in tests; the app refuses to start with auth on and no key
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  ai:
+    # Tests stay on the OpenAI beans (fake key, no real calls) — no Ollama needed on CI
+    model:
+      chat: openai
+      embedding: openai
+    openai:
+      api-key: test-key
+      chat:
+        model: gpt-4o-mini
+logging:
+  level:
+    root: WARN
+    com.org: DEBUG
+
+app:
+  security:
+    injection-guard:
+      enabled: true
+management:
+  tracing:
+    export:
+      enabled: false
